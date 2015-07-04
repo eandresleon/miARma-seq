@@ -864,9 +864,16 @@ sub CutAdaptStats{
 		}
 		close OUTPUT;
 
-		if($inputfile =~ /.*\.fastq$/ or $inputfile =~ /.*\.fastq\.gz$/ or $inputfile=~ /.*\.fq$/ or $inputfile=~ /.*\.fq\.gz$/ or $inputfile=~ /.*\.fq.bz2$/ or $inputfile=~ /.*\.fastq\.bz2$/){	
+		if($inputfile){
 			#Command of search of the initial string in each file
-			my $command= "zmore  $inputfile | grep -c $readstart";
+			my $command;
+			#In linux machines, zmore doesnt not uncompress bzfiles, so we do it always with bzcat
+			if($inputfile =~ /\.bz2$/){
+				$command= "bzcat  $inputfile | grep -c $readstart";
+			}
+			else{
+				$command= "zmore  $inputfile | grep -c $readstart";
+			}
 			#Executing the command and retaining the value 
 			my $value=`$command`;
     		chomp($value);
@@ -875,9 +882,7 @@ sub CutAdaptStats{
     		#second dimension corresponds with the tag pre. In first dimension, .fastq
     		#is added to equalise the first dimension of input and output files.
 			#In case is compressed
-			$inputfile =~s/\.gz//g;
-
-    		my($filename, $dirs, $suffix) = fileparse($inputfile);  
+    		#my($filename, $dirs, $suffix) = fileparse($inputfile); 
     		$reads{$inputfile}{"pre"}=$value;
    		}
 		
@@ -890,10 +895,6 @@ sub CutAdaptStats{
     		#The number of input reads is saved in the hash %reads. This hash has 2 
     		#dimensions, the first dimension corresponds with the file name and the 
     		#second dimension corresponds with the tag post. 
-			$outputfile=~s/.bz2\|.gz//g;
-    		my($cutname, $dirs, $suffix) = fileparse($outputfile);
-    		$cutname =~ /(.*)_cut/;
-    		my $filename=$1; 
     		$reads{$inputfile}{"post"}=$value;
     	}
     	
@@ -1050,7 +1051,8 @@ sub AdaptTriming{
 				$fake_file=$file;
 			}
 			#Extracting the name of the file
-			my $name=fileparse($fake_file, qr{\.f.*});
+			#my $name=fileparse($fake_file, qr{\.f.*});
+			my $name=fileparse($fake_file);
 			my $outputfile = $output_dir.$name."_at.fastq";
 			
 			#Opening the results file where the reads will be printed
@@ -1203,7 +1205,8 @@ sub ReadFilter{
 	#Checking the mandatory arguments
 	if($dir and $projectdir and $logfile and $file and $minreadlength and $maxreadlength){
 		#Checking the file extension
-		if($file =~ /.*\.fastq$/ or $file=~ /.*\.fq$/){
+		#if($file =~ /.*\.fastq$/ or $file=~ /.*\.fq$/){
+		if($file !~ /^\./){
 			#Printing the process information on the log file
 			open(LOG,">> ".$logfile) || die "READFILTER ERROR :: ".date()."Can't open '$logfile': $!";
 			print LOG "READFILTER :: ".date()." Keeping the reads between $minreadlength and $maxreadlength of $file \n";
@@ -1278,7 +1281,9 @@ sub ReadFilter{
 		}
 		else
 		{
-			die ("READFILTER ERROR :: ".date()."File($file) has an invalid format. ReadFilter only accepts .fastq or .fq files ");
+			if($file !~ /^\./){
+				die ("READFILTER ERROR :: ".date()."File($file) has an invalid format. ReadFilter only accepts .fastq or .fq files ");
+			}
 		}
 	}
 	else
@@ -1427,7 +1432,7 @@ sub Minion{
 		print STATS "MINION :: ".date()." Adapter prediction for $file sample\n";
 		#Defining the execution command
 		my $bzfiles;
-		if($file =~ /bz2/){
+		if($file =~ /\.bz2$/){
 			$bzfiles="bunzip2 -c  $dir/$file | minion search-adapter $minionparameters ";
 		}
 		else{
@@ -1765,7 +1770,7 @@ sub Reaper{
 			my $name=fileparse($file, qr{\.f.*});
 			
 			my $bzfiles;
-			if($file =~ /bz2/){
+			if($file =~ /\.bz2$/){
 				$bzfiles="bunzip2 -c $dir/$file | reaper ";
 			}
 			else{
