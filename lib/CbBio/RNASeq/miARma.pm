@@ -141,7 +141,6 @@ sub run_miARma{
 		else{
 			#First, we are going to check if input files are real fastq files
 			check_input_format(-config => $cfg);
-			
 		}
 	}
 	else{
@@ -608,9 +607,14 @@ sub check_input_format{
 	my @fastq_files;
 	
 	if($dir_fastq){
-		opendir(FASTQF, $dir_fastq) || exit "Can't find fastq files on $dir_fastq\n"; 
-		my @files= readdir(FASTQF);
-		push(@fastq_files,map("$dir_fastq$_",@files));
+		if(opendir(FASTQF, $dir_fastq)){
+			my @files= readdir(FASTQF);
+			push(@fastq_files,map("$dir_fastq$_",@files));
+		}
+		else{
+			print STDERR "miARma :: ".date() ." Can't find fastq files on $dir_fastq\n\n";
+			exit;
+		}
 	}
 	my $error=0;
 	if(scalar(@fastq_files)>0){
