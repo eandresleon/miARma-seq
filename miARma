@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+
+#########################################################################	
+#	miARma, miRNA and RNASeq multiprocess Analysis						#
+#																		#
+#	Created at Computational Biology and Bioinformatics Group (CbBio)	#
+#	Institute of Biomedicine of Seville. IBIS (Spain)					#
+#	Copyright (c) 2015 IBIS. All rights reserved.						#
+#	mail : miARma-devel@cbbio.es 										#
+#########################################################################
+
+use strict;
+my $configuration_file;
+my $miARmaPath;
+BEGIN {
+	
+	#checking input parameter
+	if(@ARGV<1){
+		print "\nSet the configuration file\n";
+		print "example: perl $0 config.ini \n";
+		print "[Execution stopped]\n\n";
+		exit(1);
+	}
+	# configuration file
+	$configuration_file=$ARGV[0];
+	my $check=0;
+	# Searching for needed parameters before start
+	open(FILE,$configuration_file) || die "Cant read config file ($configuration_file)\n";
+	while(<FILE>){
+		chomp;
+		if(lc($_) =~ /miarmapath/){
+			$miARmaPath=$_;
+			$miARmaPath=~s/.+=(.+)/$1/g;
+			$check=1;
+		}
+	}
+	close FILE;
+	if($check ==0){
+		print STDERR "\nSEVERE ERROR :: $configuration_file is incorrect. Please check the parameter miARmaPath under [General] Section\n\n";
+		exit;
+	}
+}
+
+#loading miARma libraries
+use lib "$miARmaPath/lib/";
+use lib "$miARmaPath/lib/Perl";
+use CbBio::RNASeq::miARma;
+
+run_miARma(
+	config=>$configuration_file,
+	miARmaPath=>$miARmaPath
+)
+

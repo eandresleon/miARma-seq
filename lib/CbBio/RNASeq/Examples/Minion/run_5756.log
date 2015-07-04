@@ -1,0 +1,8 @@
+MINION :: 09:59:12 [13-10-2014] Executing minion search-adapter -i /Users/apple/Pipeline/examples/Cutadapt/reads/SRR873382.fastq -show 2 | tee /tmp/minion.sq >> /Users/apple/Pipeline/examples/Minion/stats_5756.log 
+MINION :: 09:59:18 [13-10-2014] Executing minion search-adapter -i /Users/apple/Pipeline/examples/Cutadapt/reads/SRR873383.fastq -show 2 | tee /tmp/minion.sq >> /Users/apple/Pipeline/examples/Minion/stats_5756.log 
+MINION :: 09:59:25 [13-10-2014] Executing minion search-adapter -i /Users/apple/Pipeline/examples/Cutadapt/reads/SRR873384.fastq -show 2 | tee /tmp/minion.sq >> /Users/apple/Pipeline/examples/Minion/stats_5756.log 
+MINION :: 09:59:32 [13-10-2014] Executing minion search-adapter -i /Users/apple/Pipeline/examples/Cutadapt/reads/SRR873385.fastq -show 2 | tee /tmp/minion.sq >> /Users/apple/Pipeline/examples/Minion/stats_5756.log 
+MINION :: 09:59:38 [13-10-2014] Executing minion search-adapter -i /Users/apple/Pipeline/examples/Cutadapt/reads/SRR873386.fastq -show 2 | tee /tmp/minion.sq >> /Users/apple/Pipeline/examples/Minion/stats_5756.log 
+MINION :: 09:59:45 [13-10-2014] Executing minion search-adapter -i /Users/apple/Pipeline/examples/Cutadapt/reads/SRR873387.fastq -show 2 | tee /tmp/minion.sq >> /Users/apple/Pipeline/examples/Minion/stats_5756.log 
+MINION :: 09:59:56 [13-10-2014] Executing minion search-adapter -i /Users/apple/Pipeline/examples/Cutadapt/reads/SRR873388.fastq -show 2 | tee /tmp/minion.sq >> /Users/apple/Pipeline/examples/Minion/stats_5756.log 
+MINION :: 10:00:03 [13-10-2014] Executing minion search-adapter -i /Users/apple/Pipeline/examples/Cutadapt/reads/SRR873389.fastq -show 2 | tee /tmp/minion.sq >> /Users/apple/Pipeline/examples/Minion/stats_5756.log 

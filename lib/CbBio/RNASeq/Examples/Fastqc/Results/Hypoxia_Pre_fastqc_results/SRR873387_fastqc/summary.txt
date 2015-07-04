@@ -1,0 +1,11 @@
+PASS	Basic Statistics	SRR873387.fastq
+PASS	Per base sequence quality	SRR873387.fastq
+PASS	Per sequence quality scores	SRR873387.fastq
+FAIL	Per base sequence content	SRR873387.fastq
+FAIL	Per base GC content	SRR873387.fastq
+FAIL	Per sequence GC content	SRR873387.fastq
+PASS	Per base N content	SRR873387.fastq
+PASS	Sequence Length Distribution	SRR873387.fastq
+FAIL	Sequence Duplication Levels	SRR873387.fastq
+FAIL	Overrepresented sequences	SRR873387.fastq
+FAIL	Kmer Content	SRR873387.fastq

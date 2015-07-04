@@ -1,0 +1,184 @@
+FASTQC :: 10:06:26 [21-09-2014] Executing mkdir -p /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ ; fastqc -f fastq -t 8 /Users/apple/Pipeline/examples/Fastq/reads/SRR873382.fastq -o /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ >> /Users/apple/Pipeline/examples/Fastq/run_1980.log 2>&1
+Started analysis of SRR873382.fastq
+Approx 5% complete for SRR873382.fastq
+Approx 10% complete for SRR873382.fastq
+Approx 15% complete for SRR873382.fastq
+Approx 20% complete for SRR873382.fastq
+Approx 25% complete for SRR873382.fastq
+Approx 30% complete for SRR873382.fastq
+Approx 35% complete for SRR873382.fastq
+Approx 40% complete for SRR873382.fastq
+Approx 45% complete for SRR873382.fastq
+Approx 50% complete for SRR873382.fastq
+Approx 55% complete for SRR873382.fastq
+Approx 60% complete for SRR873382.fastq
+Approx 65% complete for SRR873382.fastq
+Approx 70% complete for SRR873382.fastq
+Approx 75% complete for SRR873382.fastq
+Approx 80% complete for SRR873382.fastq
+Approx 85% complete for SRR873382.fastq
+Approx 90% complete for SRR873382.fastq
+Approx 95% complete for SRR873382.fastq
+Approx 100% complete for SRR873382.fastq
+Analysis complete for SRR873382.fastq
+FASTQC :: 10:07:22 [21-09-2014] Executing mkdir -p /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ ; fastqc -f fastq -t 8 /Users/apple/Pipeline/examples/Fastq/reads/SRR873383.fastq -o /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ >> /Users/apple/Pipeline/examples/Fastq/run_1980.log 2>&1
+Started analysis of SRR873383.fastq
+Approx 5% complete for SRR873383.fastq
+Approx 10% complete for SRR873383.fastq
+Approx 15% complete for SRR873383.fastq
+Approx 20% complete for SRR873383.fastq
+Approx 25% complete for SRR873383.fastq
+Approx 30% complete for SRR873383.fastq
+Approx 35% complete for SRR873383.fastq
+Approx 40% complete for SRR873383.fastq
+Approx 45% complete for SRR873383.fastq
+Approx 50% complete for SRR873383.fastq
+Approx 55% complete for SRR873383.fastq
+Approx 60% complete for SRR873383.fastq
+Approx 65% complete for SRR873383.fastq
+Approx 70% complete for SRR873383.fastq
+Approx 75% complete for SRR873383.fastq
+Approx 80% complete for SRR873383.fastq
+Approx 85% complete for SRR873383.fastq
+Approx 90% complete for SRR873383.fastq
+Approx 95% complete for SRR873383.fastq
+Approx 100% complete for SRR873383.fastq
+Analysis complete for SRR873383.fastq
+FASTQC :: 10:08:13 [21-09-2014] Executing mkdir -p /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ ; fastqc -f fastq -t 8 /Users/apple/Pipeline/examples/Fastq/reads/SRR873384.fastq -o /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ >> /Users/apple/Pipeline/examples/Fastq/run_1980.log 2>&1
+Started analysis of SRR873384.fastq
+Approx 5% complete for SRR873384.fastq
+Approx 10% complete for SRR873384.fastq
+Approx 15% complete for SRR873384.fastq
+Approx 20% complete for SRR873384.fastq
+Approx 25% complete for SRR873384.fastq
+Approx 30% complete for SRR873384.fastq
+Approx 35% complete for SRR873384.fastq
+Approx 40% complete for SRR873384.fastq
+Approx 45% complete for SRR873384.fastq
+Approx 50% complete for SRR873384.fastq
+Approx 55% complete for SRR873384.fastq
+Approx 60% complete for SRR873384.fastq
+Approx 65% complete for SRR873384.fastq
+Approx 70% complete for SRR873384.fastq
+Approx 75% complete for SRR873384.fastq
+Approx 80% complete for SRR873384.fastq
+Approx 85% complete for SRR873384.fastq
+Approx 90% complete for SRR873384.fastq
+Approx 95% complete for SRR873384.fastq
+Approx 100% complete for SRR873384.fastq
+Analysis complete for SRR873384.fastq
+FASTQC :: 10:09:04 [21-09-2014] Executing mkdir -p /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ ; fastqc -f fastq -t 8 /Users/apple/Pipeline/examples/Fastq/reads/SRR873385.fastq -o /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ >> /Users/apple/Pipeline/examples/Fastq/run_1980.log 2>&1
+Started analysis of SRR873385.fastq
+Approx 5% complete for SRR873385.fastq
+Approx 10% complete for SRR873385.fastq
+Approx 15% complete for SRR873385.fastq
+Approx 20% complete for SRR873385.fastq
+Approx 25% complete for SRR873385.fastq
+Approx 30% complete for SRR873385.fastq
+Approx 35% complete for SRR873385.fastq
+Approx 40% complete for SRR873385.fastq
+Approx 45% complete for SRR873385.fastq
+Approx 50% complete for SRR873385.fastq
+Approx 55% complete for SRR873385.fastq
+Approx 60% complete for SRR873385.fastq
+Approx 65% complete for SRR873385.fastq
+Approx 70% complete for SRR873385.fastq
+Approx 75% complete for SRR873385.fastq
+Approx 80% complete for SRR873385.fastq
+Approx 85% complete for SRR873385.fastq
+Approx 90% complete for SRR873385.fastq
+Approx 95% complete for SRR873385.fastq
+Approx 100% complete for SRR873385.fastq
+Analysis complete for SRR873385.fastq
+FASTQC :: 10:09:56 [21-09-2014] Executing mkdir -p /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ ; fastqc -f fastq -t 8 /Users/apple/Pipeline/examples/Fastq/reads/SRR873386.fastq -o /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ >> /Users/apple/Pipeline/examples/Fastq/run_1980.log 2>&1
+Started analysis of SRR873386.fastq
+Approx 5% complete for SRR873386.fastq
+Approx 10% complete for SRR873386.fastq
+Approx 15% complete for SRR873386.fastq
+Approx 20% complete for SRR873386.fastq
+Approx 25% complete for SRR873386.fastq
+Approx 30% complete for SRR873386.fastq
+Approx 35% complete for SRR873386.fastq
+Approx 40% complete for SRR873386.fastq
+Approx 45% complete for SRR873386.fastq
+Approx 50% complete for SRR873386.fastq
+Approx 55% complete for SRR873386.fastq
+Approx 60% complete for SRR873386.fastq
+Approx 65% complete for SRR873386.fastq
+Approx 70% complete for SRR873386.fastq
+Approx 75% complete for SRR873386.fastq
+Approx 80% complete for SRR873386.fastq
+Approx 85% complete for SRR873386.fastq
+Approx 90% complete for SRR873386.fastq
+Approx 95% complete for SRR873386.fastq
+Approx 100% complete for SRR873386.fastq
+Analysis complete for SRR873386.fastq
+FASTQC :: 10:10:48 [21-09-2014] Executing mkdir -p /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ ; fastqc -f fastq -t 8 /Users/apple/Pipeline/examples/Fastq/reads/SRR873387.fastq -o /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ >> /Users/apple/Pipeline/examples/Fastq/run_1980.log 2>&1
+Started analysis of SRR873387.fastq
+Approx 5% complete for SRR873387.fastq
+Approx 10% complete for SRR873387.fastq
+Approx 15% complete for SRR873387.fastq
+Approx 20% complete for SRR873387.fastq
+Approx 25% complete for SRR873387.fastq
+Approx 30% complete for SRR873387.fastq
+Approx 35% complete for SRR873387.fastq
+Approx 40% complete for SRR873387.fastq
+Approx 45% complete for SRR873387.fastq
+Approx 50% complete for SRR873387.fastq
+Approx 55% complete for SRR873387.fastq
+Approx 60% complete for SRR873387.fastq
+Approx 65% complete for SRR873387.fastq
+Approx 70% complete for SRR873387.fastq
+Approx 75% complete for SRR873387.fastq
+Approx 80% complete for SRR873387.fastq
+Approx 85% complete for SRR873387.fastq
+Approx 90% complete for SRR873387.fastq
+Approx 95% complete for SRR873387.fastq
+Approx 100% complete for SRR873387.fastq
+Analysis complete for SRR873387.fastq
+FASTQC :: 10:11:41 [21-09-2014] Executing mkdir -p /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ ; fastqc -f fastq -t 8 /Users/apple/Pipeline/examples/Fastq/reads/SRR873388.fastq -o /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ >> /Users/apple/Pipeline/examples/Fastq/run_1980.log 2>&1
+Started analysis of SRR873388.fastq
+Approx 5% complete for SRR873388.fastq
+Approx 10% complete for SRR873388.fastq
+Approx 15% complete for SRR873388.fastq
+Approx 20% complete for SRR873388.fastq
+Approx 25% complete for SRR873388.fastq
+Approx 30% complete for SRR873388.fastq
+Approx 35% complete for SRR873388.fastq
+Approx 40% complete for SRR873388.fastq
+Approx 45% complete for SRR873388.fastq
+Approx 50% complete for SRR873388.fastq
+Approx 55% complete for SRR873388.fastq
+Approx 60% complete for SRR873388.fastq
+Approx 65% complete for SRR873388.fastq
+Approx 70% complete for SRR873388.fastq
+Approx 75% complete for SRR873388.fastq
+Approx 80% complete for SRR873388.fastq
+Approx 85% complete for SRR873388.fastq
+Approx 90% complete for SRR873388.fastq
+Approx 95% complete for SRR873388.fastq
+Approx 100% complete for SRR873388.fastq
+Analysis complete for SRR873388.fastq
+FASTQC :: 10:12:30 [21-09-2014] Executing mkdir -p /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ ; fastqc -f fastq -t 8 /Users/apple/Pipeline/examples/Fastq/reads/SRR873389.fastq -o /Users/apple/Pipeline/examples/Fastq/Hypoxia_Pre_fastqc_results/ >> /Users/apple/Pipeline/examples/Fastq/run_1980.log 2>&1
+Started analysis of SRR873389.fastq
+Approx 5% complete for SRR873389.fastq
+Approx 10% complete for SRR873389.fastq
+Approx 15% complete for SRR873389.fastq
+Approx 20% complete for SRR873389.fastq
+Approx 25% complete for SRR873389.fastq
+Approx 30% complete for SRR873389.fastq
+Approx 35% complete for SRR873389.fastq
+Approx 40% complete for SRR873389.fastq
+Approx 45% complete for SRR873389.fastq
+Approx 50% complete for SRR873389.fastq
+Approx 55% complete for SRR873389.fastq
+Approx 60% complete for SRR873389.fastq
+Approx 65% complete for SRR873389.fastq
+Approx 70% complete for SRR873389.fastq
+Approx 75% complete for SRR873389.fastq
+Approx 80% complete for SRR873389.fastq
+Approx 85% complete for SRR873389.fastq
+Approx 90% complete for SRR873389.fastq
+Approx 95% complete for SRR873389.fastq
+Approx 100% complete for SRR873389.fastq
+Analysis complete for SRR873389.fastq
