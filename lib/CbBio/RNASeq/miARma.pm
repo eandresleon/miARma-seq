@@ -276,7 +276,7 @@ sub run_miARma{
 					push(@files,map("$cut_dir$_",@cut_files));
 				}
 				#Reading Reaper results directory, collecting the files and completing with the path
-				my $rea_dir=$cfg->val("General","projectdir")."/reaper_results/";
+				my $rea_dir=$cfg->val("General","projectdir")."/Reaper_results/";
 				if($rea_dir){
 					opendir(READIR, $rea_dir) || warn "Aligner:: Folder $rea_dir is not found, but Reaper has been specified as an adaptersoft\n"; 
 					my @rea_files= readdir(READIR);
