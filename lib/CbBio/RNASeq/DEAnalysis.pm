@@ -138,6 +138,10 @@ sub DE_Analysis{
 	  	my $projectdir = abs_path($projectdir);
 	  	my $file = abs_path($file);
 	  	my $targetfile = abs_path($targetfile);
+		
+		my $addtofile=fileparse($file);
+		$addtofile=~s/(.*)-ReadCount\.tab/$1/g;
+		
 		#Checking hidden files
 		if($file =~ /^\./){
 		}
@@ -186,7 +190,7 @@ sub DE_Analysis{
 				dir=>$dir,
 				file=>fileparse($file),
 				targetfile=>$targetfile,
-				label=>$label,
+				label=>$label ."_" . $addtofile,
 				filter=>$filter,
 				logfile=>$logfile,
 				verbose=>$verbose,
@@ -223,7 +227,7 @@ sub DE_Analysis{
 					dir=>$dir,
 					file=>$file,
 					targetfile=>$targetfile,
-					label=>$label,
+					label=>$label ."_". $addtofile,
 					filter=>$filter,
 					contrastfile=>$edger_contrastfile,
 					logfile=>$logfile,
@@ -305,7 +309,7 @@ sub DE_Analysis{
 					dir=>$dir,
 					file=>$file,
 					targetfile=>$targetfile,
-					label=>$label,
+					label=>$label ."_". $addtofile,
 					filter=>$filter,
 					contrastfile=>$noiseq_contrastfile,
 					logfile=>$logfile,
