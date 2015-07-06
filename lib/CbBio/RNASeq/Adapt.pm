@@ -1053,6 +1053,7 @@ sub AdaptTriming{
 			#Extracting the name of the file
 			#my $name=fileparse($fake_file, qr{\.f.*});
 			my $name=fileparse($fake_file);
+			$name=~s/\.\w+$//g;
 			my $outputfile = $output_dir.$name."_at.fastq";
 			
 			#Opening the results file where the reads will be printed
