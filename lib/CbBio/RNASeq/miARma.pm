@@ -109,7 +109,8 @@ sub run_miARma{
 	use DateTime;
 	
 	my $cfg = Config::IniFiles->new( -file => $configuration_file, -default => "General" );
-		
+	my $log_file=undef;
+	my $stat_file=undef;
 	#Check for general parameters
 	if($cfg->SectionExists("General")==1){
 		
@@ -119,7 +120,7 @@ sub run_miARma{
 			help_check_general();
 		}
 		#Mandatory parameters: label
-		elsif($cfg->exists("General","label") eq ""){
+		elsif($cfg->exists("General","label") eq "" and $cfg->val("General","label") ne ""){
 			print STDERR "\nERROR " . date() . " label parameter in Section [General] is missing. Please check documentation\n";
 			help_check_general();
 		}
@@ -129,14 +130,28 @@ sub run_miARma{
 			help_check_general();
 		}
 		#Mandatory parameters: path for results
-		elsif($cfg->exists("General","projectdir") eq ""){
+		elsif($cfg->exists("General","projectdir") eq "" and $cfg->val("General","projectdir") ne "" ){
 			print STDERR "\nERROR " . date() . " projectdir parameter in Section [General] is missing. Please check documentation\n";
 			help_check_general();
 		}
-		#Mandatory parameters: stats folder
-		elsif($cfg->exists("General","stats_file") eq ""){
-			print STDERR "\nERROR " . date() . " stats_file parameter in Section [General] is missing. Please check documentation\n";
+		#Mandatory parameters: organism
+		elsif($cfg->exists("General","organism") eq "" and $cfg->val("General","organism") ne "" ){
+			print STDERR "\nERROR " . date() . " organism parameter in Section [General] is missing. Please check documentation\n";
 			help_check_general();
+		}
+		#Mandatory parameters: analysis type
+		elsif($cfg->exists("General","type") eq "" and $cfg->val("General","type") ne "" ){
+			print STDERR "\nERROR " . date() . " type parameter in Section [General] is missing. Please check documentation\n";
+			help_check_general();
+		}
+		#optional parameters: stats folder
+		elsif($cfg->exists("General","stats_file") eq "" or undef($stat_file)){
+			$stat_file=$cfg->val("General","projectdir"). "/miARma_stat.$$.log";
+			help_check_general();
+		}
+		#optional parameters: log_file
+		elsif($cfg->exists("General","logfile") eq "" or undef($log_file)){
+			$log_file=$cfg->val("General","projectdir"). "/miARma_logfile.$$.log";
 		}
 		else{
 			#First, we are going to check if input files are real fastq files
@@ -159,7 +174,7 @@ sub run_miARma{
 			
 			#run quality;
 			use CbBio::RNASeq::Quality;
-			
+			print STDERR "LOGGING to $log_file\n";
 			# Reading the directory collecting the files and completing with the path
 			my $dir=$cfg->val("Quality","read_dir");
 			if(opendir(DIR, $dir)){
@@ -178,7 +193,7 @@ sub run_miARma{
 						projectdir=>$cfg->val("General","projectdir"),
 						threads=>$cfg->val("General","threads"),
 						verbose=>$cfg->val("General","verbose"),
-						logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+						logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 						prefix=>$cfg->val("Quality","prefix"),
 					);
 				}
@@ -187,8 +202,8 @@ sub run_miARma{
 				FastQCStats(
 					dir=>$output_dir, 
 					verbose=>$cfg->val("General","verbose"),
-					statsfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
-					logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile")
+					statsfile=>$stat_file || $cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
+					logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 				);
 			}
 			 else{
@@ -219,8 +234,8 @@ sub run_miARma{
 					dir=>$dir,
 					files=>\@files,
 					adapter=>$cfg->val("Adapter","adapter")|| undef,,
-					logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
-					statsfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
+					logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+					statsfile=>$stat_file || $cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
 					verbose=>$cfg->val("General","verbose")|| undef,,
 					projectdir=>$cfg->val("General","projectdir"),
 					min=>$cfg->val("Adapter","min")|| undef,,
@@ -306,8 +321,8 @@ sub run_miARma{
 						threads=>$cfg->val("General","threads") || 1,
 					    bowtie2index=>$cfg->val("Aligner","bowtie2index") || undef,
 					    bowtie1index=>$cfg->val("Aligner","bowtie1index") || undef,
-						logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile") || undef,
-						statsfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","stats_file") || undef,
+						logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+						statsfile=>$stat_file || $cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
 						verbose=>$cfg->val("General","verbose") || undef,
 					    bowtiemiss=>$cfg->val("Aligner","bowtiemiss") || undef,
 					    bowtieleng=>$cfg->val("Aligner","bowtieleng") || undef,
@@ -368,7 +383,7 @@ sub run_miARma{
 						parameters=>$cfg->val("ReadCount","parameters") || undef, 
 						strand=>$cfg->val("ReadCount","strand") || undef, 
 						featuretype=>$cfg->val("ReadCount","featuretype") || undef,
-						logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile") || undef,
+						logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 						verbose=>$cfg->val("General","verbose") || 0,
 						projectdir=>$cfg->val("General","projectdir")|| undef,
 						miARmaPath=>$miARmaPath,
@@ -382,7 +397,7 @@ sub run_miARma{
 				featureFormat( 
 				  	input=>\@htseqfiles, 
 				  	projectdir=>$cfg->val("General","projectdir")|| undef,
-				  	logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile") || undef,
+					logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 				  );
 			}
 			else{
@@ -433,7 +448,7 @@ sub run_miARma{
 						noiseq_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
 						DEsoft=>$cfg->val("DEAnalysis","DEsoft")|| undef,
 						filtermethod=>$cfg->val("DEAnalysis","DEsoft")|| undef,
-						logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile") || undef,
+						logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 						verbose=>$cfg->val("General","verbose") || 0,
 						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue")|| undef,
 						repthreshold=>$cfg->val("DEAnalysis","repthreshold")|| undef,
@@ -456,7 +471,7 @@ sub run_miARma{
 		use CbBio::RNASeq::TargetPrediction;
 		TargetPrediction(
 			miRNAs_folder=>$cfg->val("General","projectdir"),
-			logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile") || undef,
+			logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 			verbose=>$cfg->val("General","verbose") || 0,
 			projectdir=>$cfg->val("General","projectdir")|| undef,
 			organism=>$cfg->val("General","organism")|| undef,
@@ -520,10 +535,10 @@ sub run_miARma{
 					aligner=>"miRDeep",
 					threads=>$cfg->val("General","threads") || 1,
 				    bowtie1index=>$cfg->val("DeNovo","bowtie1index") || undef,
-					statsfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
+					statsfile=>$stat_file || $cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
 					verbose=>$cfg->val("General","verbose")|| undef,,
 					projectdir=>$cfg->val("General","projectdir"),
-					logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+					logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 					miARmaPath=>$miARmaPath,
 					adapter=>$cfg->val("DeNovo","adapter") || undef,
 					precursors=>$cfg->val("DeNovo","precursor_miRNA_file"),
@@ -550,7 +565,7 @@ sub run_miARma{
 					#Selecting only the sam files for their processing
 					my $result=miRDeepCount(
 					  	file=>$file,
-						logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+						logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 						verbose=>$cfg->val("General","verbose")|| undef,
 						projectdir=>$cfg->val("General","projectdir"),
 						miARmaPath=>$miARmaPath,
@@ -562,7 +577,7 @@ sub run_miARma{
 				$result_file=miRDeepFormat( 
 				  	input=>\@allRNAfiles, 
 					projectdir=>$cfg->val("General","projectdir"),
-					logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+					logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 				);
 			}
 			use CbBio::RNASeq::DEAnalysis;
@@ -582,7 +597,7 @@ sub run_miARma{
 					noiseq_contrastfile=>$cfg->val("DeNovo","contrastfile")|| undef,
 					DEsoft=>$cfg->val("DeNovo","DEsoft")|| undef,
 					filtermethod=>$cfg->val("DeNovo","DEsoft")|| undef,
-					logfile=>$cfg->val("General","projectdir")."/".$cfg->val("General","logfile") || undef,
+					logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
 					verbose=>$cfg->val("General","verbose") || 0,
 					cpmvalue=>$cfg->val("DeNovo","cpmvalue")|| undef,
 					repthreshold=>$cfg->val("DeNovo","repthreshold")|| undef,
@@ -680,8 +695,8 @@ read_dir=miRNA_raw_reads_folder/
 label=Hypoxia
 miARmaPath=.
 projectdir=results/
-logfile=miARma_analysis_logfile.log
-stats_file=stats.log
+organism=human
+type=miRNA
 
 };
 
