@@ -111,49 +111,74 @@ sub run_miARma{
 	my $cfg = Config::IniFiles->new( -file => $configuration_file, -default => "General" );
 	my $log_file=undef;
 	my $stat_file=undef;
+	my $severe_error=0;
 	#Check for general parameters
 	if($cfg->SectionExists("General")==1){
+		
+		#Optionals
+		#optional parameters: stats folder
+		if($cfg->exists("General","stats_file") ne "" or defined($stat_file)){
+			$stat_file=$cfg->val("General","stats_file");
+			$cfg->newval("General", "stats_file", $stat_file);
+			$cfg->RewriteConfig;
+		}
+		if($cfg->exists("General","stats_file") eq "" or undef($stat_file)){
+			$stat_file="miARma_stat.$$.log";
+			$cfg->newval("General", "stats_file", $stat_file);
+			$cfg->RewriteConfig;
+		}
+		#optional parameters: log_file
+		if($cfg->exists("General","logfile") ne "" or defined($log_file)){
+			$log_file=$cfg->val("General","logfile");
+			$cfg->newval("General", "logfile", $log_file);
+			$cfg->RewriteConfig;
+		}
+		if($cfg->exists("General","logfile") eq "" or undef($log_file)){
+			$log_file="miARma_logfile.$$.log";
+			$cfg->newval("General", "logfile", $log_file);
+			$cfg->RewriteConfig;
+		}
+		
+		#Mandatory
 		
 		#Mandatory parameters: read folder
 		if($cfg->exists("General","read_dir") eq "" or ($cfg->val("General","read_dir") eq "")){
 			print STDERR "\nERROR " . date() . " read_dir/RNA_read_dir parameter in Section [General] is missing/unfilled. Please check documentation\n";
+			$severe_error=1;			
 			help_check_general();
 		}
 		#Mandatory parameters: label
-		elsif($cfg->exists("General","label") eq "" and $cfg->val("General","label") ne ""){
+		elsif($cfg->exists("General","label") eq "" or $cfg->val("General","label") eq ""){
 			print STDERR "\nERROR " . date() . " label parameter in Section [General] is missing. Please check documentation\n";
+			$severe_error=1;			
 			help_check_general();
 		}
 		#Mandatory parameters: path for binaries
-		elsif($cfg->exists("General","miARmaPath") eq "" and $cfg->val("General","miARmaPath") ne ""){
+		elsif($cfg->exists("General","miARmaPath") eq "" or $cfg->val("General","miARmaPath") eq ""){
 			print STDERR "\nERROR " . date() . " miARmaPath parameter in Section [General] is missing. Please check documentation\n";
+			$severe_error=1;			
 			help_check_general();
 		}
 		#Mandatory parameters: path for results
-		elsif($cfg->exists("General","projectdir") eq "" and $cfg->val("General","projectdir") ne "" ){
+		elsif($cfg->exists("General","projectdir") eq "" or $cfg->val("General","projectdir") eq "" ){
 			print STDERR "\nERROR " . date() . " projectdir parameter in Section [General] is missing. Please check documentation\n";
+			$severe_error=1;			
 			help_check_general();
 		}
 		#Mandatory parameters: organism
-		elsif($cfg->exists("General","organism") eq "" and $cfg->val("General","organism") ne "" ){
+		elsif($cfg->exists("General","organism") eq "" or $cfg->val("General","organism") eq "" ){
 			print STDERR "\nERROR " . date() . " organism parameter in Section [General] is missing. Please check documentation\n";
+			$severe_error=1;			
 			help_check_general();
 		}
 		#Mandatory parameters: analysis type
-		elsif($cfg->exists("General","type") eq "" and $cfg->val("General","type") ne "" ){
+		elsif($cfg->exists("General","type") eq "" or $cfg->val("General","type") eq "" ){
 			print STDERR "\nERROR " . date() . " type parameter in Section [General] is missing. Please check documentation\n";
+			$severe_error=1;			
 			help_check_general();
 		}
-		#optional parameters: stats folder
-		elsif($cfg->exists("General","stats_file") eq "" or undef($stat_file)){
-			$stat_file=$cfg->val("General","projectdir"). "/miARma_stat.$$.log";
-		}
-		#optional parameters: log_file
-		elsif($cfg->exists("General","logfile") eq "" or undef($log_file)){
-			$log_file=$cfg->val("General","projectdir"). "/miARma_logfile.$$.log";
-		}
 		else{
-			#First, we are going to check if input files are real fastq files
+			#First, we are going to check if input files are real fastq files if no error is found
 			check_input_format(-config => $cfg);
 		}
 	}
@@ -173,7 +198,7 @@ sub run_miARma{
 			
 			#run quality;
 			use CbBio::RNASeq::Quality;
-			print STDERR "LOGGING to $log_file\n";
+
 			# Reading the directory collecting the files and completing with the path
 			my $dir=$cfg->val("Quality","read_dir");
 			if(opendir(DIR, $dir)){
