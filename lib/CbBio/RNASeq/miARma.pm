@@ -147,7 +147,6 @@ sub run_miARma{
 		#optional parameters: stats folder
 		elsif($cfg->exists("General","stats_file") eq "" or undef($stat_file)){
 			$stat_file=$cfg->val("General","projectdir"). "/miARma_stat.$$.log";
-			help_check_general();
 		}
 		#optional parameters: log_file
 		elsif($cfg->exists("General","logfile") eq "" or undef($log_file)){
