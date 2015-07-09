@@ -112,6 +112,8 @@ sub run_miARma{
 	my $log_file=undef;
 	my $stat_file=undef;
 	my $severe_error=0;
+	my $post_qual=0;
+	
 	#Check for general parameters
 	if($cfg->SectionExists("General")==1){
 		
@@ -190,49 +192,68 @@ sub run_miARma{
 	#Quality section
 	if($cfg->SectionExists("Quality")==1){
 		#Mandatory parameters: label
-		if($cfg->exists("Quality","prefix") eq ""){
+		if($cfg->exists("Quality","prefix") eq ""){ 
 			print STDERR "\nERROR " . date() . " prefix parameter in Section [Quality] is missing. Please check documentation\n";
 			help_check_quality();
 		}
+		
 		else{
+			
+			my $dir=undef;
+			if(lc($cfg->val("Quality","prefix")) eq "pre"){
+				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Quality","prefix")."\" Quality Analysis\n";
+				$dir=$cfg->val("Quality","read_dir");
+			}
+			elsif(lc($cfg->val("Quality","prefix")) eq "post"){
+				$post_qual=1;
+			}
+			elsif(lc($cfg->val("Quality","prefix")) eq "both"){
+				print STDERR "miARma :: ".date()." Starting a Pre Quality Analysis\n";
+				$dir=$cfg->val("Quality","read_dir");
+				$post_qual=1;
+			}
+			else{
+				print STDERR "\nERROR " . date() . " prefix parameter in Section [Quality] doesn't accept ".$cfg->val("Quality","prefix")." as a value. Only pre, post or both are accepted as correct values\n";
+				help_check_quality();
+			}
 			
 			#run quality;
 			use CbBio::RNASeq::Quality;
-
-			# Reading the directory collecting the files and completing with the path
-			my $dir=$cfg->val("Quality","read_dir");
-			if(opendir(DIR, $dir)){
-				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Quality","prefix")."\" Quality Analysis\n";
-				my @files= readdir(DIR);
-				@files=map("$dir/$_",@files);
-				my $output_dir;
+			
+			if($dir){
+				# Reading the directory collecting the files and completing with the path
+				if(opendir(DIR, $dir)){
+					my @files= readdir(DIR);
+					@files=map("$dir/$_",@files);
+					my $output_dir;
 				
-				# # FASTQC EXECUTION
-				# # Reading the array with the names of the files
-				foreach my $file(@files){
-					#Calling FastQC subroutine of Quality.pm package.
-					$output_dir=FastQC(
-						miARmaPath=>$miARmaPath,
-						file=>$file,
-						projectdir=>$cfg->val("General","projectdir"),
-						threads=>$cfg->val("General","threads"),
+					# # FASTQC EXECUTION
+					# # Reading the array with the names of the files
+					foreach my $file(@files){
+						#Calling FastQC subroutine of Quality.pm package.
+						$output_dir=FastQC(
+							miARmaPath=>$miARmaPath,
+							file=>$file,
+							projectdir=>$cfg->val("General","projectdir"),
+							threads=>$cfg->val("General","threads"),
+							verbose=>$cfg->val("General","verbose"),
+							logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+							prefix=>"Pre",
+						);
+					}
+					# # FASTQCSTATS EXECUTION
+					# # Calling FastQCStats sobroutine of Quality.pm package. 
+					FastQCStats(
+						dir=>$output_dir, 
 						verbose=>$cfg->val("General","verbose"),
+						statsfile=>$stat_file || $cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
 						logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
-						prefix=>$cfg->val("Quality","prefix"),
 					);
 				}
-				# # FASTQCSTATS EXECUTION
-				# # Calling FastQCStats sobroutine of Quality.pm package. 
-				FastQCStats(
-					dir=>$output_dir, 
-					verbose=>$cfg->val("General","verbose"),
-					statsfile=>$stat_file || $cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
-					logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
-				);
-			}
-			 else{
-			 	print "ERROR :: Please check that your reads are saved in: ($dir)\n";
-			 	help_check_quality();
+				 else{
+				 	print "1 ERROR :: Please check that your reads are saved in: ($dir)\n";
+				 	help_check_quality();
+				}
 			}
 		}
 	}
@@ -249,11 +270,11 @@ sub run_miARma{
 			# Reading the directory collecting the files and completing with the path
 					
 			my $dir=$cfg->val("General","read_dir");
-						
+			my @files_adapter;		
 			if(opendir(DIR, $dir)){
 				print STDERR "miARma :: ".date()." Starting a adapter removal analysis\n";
 				my @files= readdir(DIR);
-				AdapterRemoval(
+				@files_adapter=AdapterRemoval(
 					adaptersoft=>$cfg->val("Adapter","adaptersoft"),
 					dir=>$dir,
 					files=>\@files,
@@ -282,6 +303,30 @@ sub run_miARma{
 			else{
 				print "ERROR :: Adapt:: Please check that your reads are saved in: ($dir)\n";
 			 	help_check_general();
+			}
+			#Just in case the user wants to see the quality of the processed reads
+			if($post_qual==1){
+				print STDERR "miARma :: ".date()." Starting a Post Quality Analysis\n";
+				my $output_dir_post;
+				foreach my $processed_files(@files_adapter){
+					$output_dir_post=FastQC(
+						miARmaPath=>$miARmaPath,
+						file=>$processed_files,
+						projectdir=>$cfg->val("General","projectdir"),
+						threads=>$cfg->val("General","threads"),
+						verbose=>$cfg->val("General","verbose"),
+						logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+						prefix=>"Post",
+					);
+				}
+				# # FASTQCSTATS EXECUTION
+				# # Calling FastQCStats sobroutine of Quality.pm package. 
+				FastQCStats(
+					dir=>$output_dir_post, 
+					verbose=>$cfg->val("General","verbose"),
+					statsfile=>$stat_file || $cfg->val("General","projectdir")."/".$cfg->val("General","stats_file"),
+					logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+				);
 			}
 		}
 	}
@@ -738,7 +783,7 @@ prefix=Pre
 };
 
 	print STDERR $usage;
-	return();
+	exit();
 }
 	
 	sub help_check_aligner{
@@ -758,7 +803,7 @@ bowtie2index=/genomes/bowtie2/hg19
 };
 
 	print STDERR $usage;
-	return();
+	exit();
 }
 	
 	sub help_check_adapter{
@@ -771,7 +816,7 @@ adaptersoft=CutAdapt
 };
 
 	print STDERR $usage;
-	return();
+	exit();
 	}
 }
 

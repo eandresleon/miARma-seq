@@ -337,7 +337,7 @@ sub FastQCStats{
 			close DIRRES;
 			}
 		}
-		print STDERR "\n\nFASTQC :: ".date()." Please check $dir/Pre_fastqc_results for detailed quality information about each sample.\nA summary can be consulted in $statsfile\n\n";
+		print STDERR "FASTQC :: ".date()." Please check $dir for detailed quality information about each sample.\nA summary can be consulted in $statsfile\n";
 	}
 	else
 	{

@@ -286,6 +286,8 @@ sub AdapterRemoval{
 		  				logfile=> $logfile,
 		  				statsfile=>$statsfile,
 		  			);
+					print STDERR "\nADAPTERREMOVAL :: ".date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n";
+					
 				}
 				if($reaper_exec == 1){
 					#Optional parameters to perform the analysis are predefined as undef variables
@@ -342,6 +344,8 @@ sub AdapterRemoval{
 						file=>$stats_path,
 						dir=>$abs_path."/Reaper_results/"
 		  			);
+					print STDERR "\nADAPTERREMOVAL :: ".date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n";
+					
 				}
 				if($adaptrim_exec == 1){
 					#Optional parameters to perform the analysis are predefined as undef variables
@@ -367,6 +371,8 @@ sub AdapterRemoval{
 						projectdir=>$projectdir
 					);
 					push (@adapter_results, $reaper_result);
+					print STDERR "\nADAPTERREMOVAL :: ".date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n";
+					
 				}
 		  	}else{
 				if($file !~ /^\./){
@@ -385,7 +391,6 @@ sub AdapterRemoval{
 		}
 	}
 	#Returning the names of the new files
-	print STDERR "\n\nADAPTERREMOVAL :: ".date()." Please check $dir_used for results.\nA summary can be consulted in $statsfile\n\n";
 	
 	return(@adapter_results);
 	
@@ -696,13 +701,13 @@ sub CutAdapt{
 	my $min_quality=0;
 	#If user has provided the minimun or maximum length will be collected by args and
 	#the min and max variables will be overwritten
-	if(exists $args{"min"}){
+	if(defined $args{"min"}){
 		$min=$args{"min"};
 	}
-	if(exists $args{"max"}){
+	if(defined $args{"max"}){
 		$max=$args{"max"};
 	}
-	if(exists $args{"min_quality"}){
+	if(defined $args{"min_quality"}){
 		$min_quality=$args{"min_quality"};
 	}
 	#Collecting cutadapt parameters provided by the user
