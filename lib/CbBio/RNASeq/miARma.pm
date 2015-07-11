@@ -1,5 +1,5 @@
 #########################################################################	
-#	Check package		 									#
+#	Check package		 												#
 #																		#
 #	Created at Computational Biology and Bioinformatics Group (CbBio)	#
 #	Institute of Biomedicine of Seville. IBIS (Spain)					#
@@ -337,47 +337,93 @@ sub run_miARma{
 			print STDERR "\nERROR " . date() . " aligner parameter in Section [Aligner] is missing/unfilled. Please check documentation\n";
 			help_check_aligner();
 		}
-		elsif( lc($cfg->val("Aligner","aligner")) eq "bowtie1" and ($cfg->val("Aligner","bowtie1index") eq "")){
-			print STDERR "\nERROR " . date() . " Bowtie1 has been selected as aligner but bowtie1index is missing/unfilled. Please check documentation\n";
+		elsif( lc($cfg->val("Aligner","aligner")) eq "bowtie1" and ( $cfg->val("Aligner","bowtie1index") eq "" and $cfg->val("Aligner","fasta") eq "")){
+			print STDERR "\nERROR " . date() . " Bowtie1 has been selected as aligner but bowtie1index/fasta is missing/unfilled. Please check documentation\n";
 			help_check_aligner();
 		}
-		elsif( lc($cfg->val("Aligner","aligner")) eq "bowtie2" and ($cfg->val("Aligner","bowtie2index") eq "")){
-			print STDERR "\nERROR " . date() . " Bowtie2 has been selected as aligner but bowtie2index is missing/unfilled. Please check documentation\n";
+		elsif( lc($cfg->val("Aligner","aligner")) eq "bowtie2" and ( $cfg->val("Aligner","bowtie2index") eq "" and $cfg->val("Aligner","fasta") eq "")){
+			print STDERR "\nERROR " . date() . " Bowtie2 has been selected as aligner but bowtie2index/fasta is missing/unfilled. Please check documentation\n";
 			help_check_aligner();
 		}
 		else{
 			#run Adapter
 			use CbBio::RNASeq::Aligner;
+
+			my $do_index=$cfg->val("Aligner","fasta");
+			if($do_index and $cfg->val("Aligner","bowtie2index") ne "" and lc($cfg->val("Aligner","aligner")) eq "bowtie2"){
+				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie2index are excluyent, dicarding fasta parameter\n";
+				$do_index=undef;
+			}
+			if($do_index and $cfg->val("Aligner","bowtie1index") ne "" and lc($cfg->val("Aligner","aligner")) eq "bowtie1"){
+				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie1index are excluyent, dicarding fasta parameter\n";
+				$do_index=undef;
+			}
+			
+			if($do_index){
+				if($cfg->exists("Aligner","indexname") ne ""){
+					print STDERR "miARma :: " . date() . " Indexing ".$cfg->val("Aligner","fasta") ." for a ".$cfg->val("Aligner","aligner")." analysis\n";
+					my $index_value=IndexGeneration(
+					  	aligner=>$cfg->val("Aligner","aligner"),
+					  	fasta=>$cfg->val("Aligner","fasta"),
+					  	dir=>$cfg->val("General","projectdir"),
+						logfile=>$log_file || $cfg->val("General","projectdir")."/".$cfg->val("General","logfile"),
+					  	indexname=>$cfg->val("Aligner","indexname"),
+						miARmaPath=>$miARmaPath
+					 );
+					if(lc($cfg->val("Aligner","aligner")) eq "bowtie1" and $cfg->val("Aligner","bowtie1index") eq ""){
+			 			$cfg->newval("Aligner", "bowtie1index", $index_value);
+			 			$cfg->RewriteConfig;
+					}
+					if(lc($cfg->val("Aligner","aligner")) eq "bowtie2" and $cfg->val("Aligner","bowtie2index") eq ""){
+			 			$cfg->newval("Aligner", "bowtie2index", $index_value);
+			 			$cfg->RewriteConfig;
+					}
+				 }
+				 else{
+		 			print STDERR "\nERROR " . date() . " You are requesting a index but no indexname has been provided. Please check documentation\n";
+		 			help_check_index();
+				 }
+			}
 			
 			my @files;
 			if(lc($cfg->val("General","type"))=="mirna"){
 			
 				#Reading CutAdapt results directory, collecting the files and completing with the path
 				my $cut_dir=$cfg->val("General","projectdir")."/cutadapt_results/";
-				if($cut_dir){
+				if(-e $cut_dir){
 					opendir(CUTDIR, $cut_dir) || warn "Aligner:: Folder $cut_dir is not found, but cutadapt has been specified as an adaptersoft\n"; 
 					my @cut_files= readdir(CUTDIR);
 					push(@files,map("$cut_dir$_",@cut_files));
 				}
 				#Reading Reaper results directory, collecting the files and completing with the path
 				my $rea_dir=$cfg->val("General","projectdir")."/Reaper_results/";
-				if($rea_dir){
+				if(-e $rea_dir){
 					opendir(READIR, $rea_dir) || warn "Aligner:: Folder $rea_dir is not found, but Reaper has been specified as an adaptersoft\n"; 
 					my @rea_files= readdir(READIR);
 					push(@files,map("$rea_dir$_",@rea_files));
 				}
 				#Reading Trimming results directory, collecting the files and completing with the path
 				my $trim_dir=$cfg->val("General","projectdir")."/AdaptTriming_results/";
-				if($trim_dir){
+				if(-e $trim_dir){
 					opendir(READIR, $trim_dir) || warn "Aligner:: Folder $trim_dir is not found, but Adaptrimming has been specified as an adaptersoft\n"; 
 					my @trim_files= readdir(READIR);
 					push(@files,map("$trim_dir$_",@trim_files));
 				}
+				if(!-e $cut_dir and !-e $rea_dir and !-e $trim_dir){
+					print STDERR "miARma :: ".date()." No processed files are found [neither cutadapt, nor reaper nor adaptrimming folders], assuming " .$cfg->val("General","read_dir").  " are already processed\n";
+					my $dir_reads_all=$cfg->val("General","read_dir");
+					if(-e $dir_reads_all){
+						opendir(READIR, $dir_reads_all) || die " No reads found to process\n";
+						my @dir_reads_all= readdir(READIR);
+						push(@files,map("$dir_reads_all$_",@dir_reads_all));
+					}
+					else{
+						print STDERR "Sorry but I couldn't find any read to align in : $cut_dir or in $rea_dir or in $trim_dir or in " . $cfg->val("General","read_dir") ."\n";
+						help_check_general();
+					}
+				}
 			}
-			else{
-				print "ERROR :: You are requesting a miRNA alignment analysis, but no files are found without adapter (needed for alinging)\n";
-			 	help_check_adapter();
-			}
+
 			if(scalar(@files)>0){
 				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis\n";
 			
@@ -805,7 +851,26 @@ bowtie2index=/genomes/bowtie2/hg19
 	print STDERR $usage;
 	exit();
 }
-	
+ sub help_check_index{
+	    my $usage = qq{
+Mandatory parameters:
+
+[Aligner]
+aligner=Bowtie1
+fasta=/genomes/bowtie1/hg19.fasta
+indexname=hg19
+or
+
+[Aligner]
+aligner=Bowtie2
+fasta=/genomes/bowtie1/hg19.fasta
+indexname=hg19
+
+};
+
+	print STDERR $usage;
+	exit();
+ }	
 	sub help_check_adapter{
 	    my $usage = qq{
 Mandatory parameters:

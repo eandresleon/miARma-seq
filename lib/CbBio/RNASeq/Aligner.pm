@@ -287,7 +287,6 @@ sub ReadAligment{
 			  	else{
 			  		die("READALIGNMENT ERROR:: ".date()."Index argument ($bowtie1index) has not been provided");
 			  	}
-
 			}
 			elsif (lc($aligner) eq "bowtie2"){
 
@@ -836,7 +835,8 @@ sub bowtie1_index{
   	 [bowtiemiss] Max # mismatches in seed alignment in bowtie analysis (0-1)
   	 [bowtielength] Length of seed substrings in bowtie analysis (>3, <32)
   	 [bowtieparameters] Other bowtie parameters to perform the analysis using the bowtie recommended syntaxis
-  	 [verbose] Option to show the execution data on the screen   
+  	 [verbose] Option to show the execution data on the screen
+	 [Seqtype] Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
   Returntype : File at directory Bowtie1_results.Also returns the path of the output file 
   Requeriments: bowtie1 function requires for a correct analysis:
   	- Perl v5.10.0 or higher software correctly installed
@@ -923,7 +923,7 @@ sub bowtie1{
 				$mate_file=~s/_1/_2/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
-						print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 analysis\n";
+						print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (Paired-End) analysis\n";
 						if($file =~ /\.gz$/){
 							print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
 							#In case gzip
@@ -965,9 +965,25 @@ sub bowtie1{
 			}
 		}
 		else{
-			print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 analysis\n";
-			
-			$command="bowtie ".$bowtiepardef." ".$bowtieindex." ".$file." ".$projectdir.$output_dir.$output_file_final."_bw1.bam";
+			print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (single-end) analysis\n";
+			if($file =~ /\.gz$/){
+				print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
+				#In case gzip
+				$command="gunzip -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $projectdir.$output_dir.$output_file_final."_bw1.bam" ;
+				$file=~s/\.gz$//g;
+				$compressed_file=1;
+			}
+			elsif($file =~ /\.bz2$/){
+				#in case bzip2
+				#New extension
+				$command="bunzip2 -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $projectdir.$output_dir.$output_file_final."_bw1.bam" ;
+				$compressed_file=1;
+				$file=~s/\.bz2$//g;
+			}
+			else{
+				$command="bowtie ".$bowtiepardef." ".$bowtieindex." ".$file." ".$projectdir.$output_dir.$output_file_final."_bw1.bam";
+				$compressed_file=0;
+			}			
 		}
 		if($verbose){
 			#commandef is the command will be executed by system composed of the results directory creation 
@@ -1093,7 +1109,7 @@ sub bowtie2_index{
 	my @bowtie2_bin=`which bowtie2`;
 	#Executing the command
 	if(scalar(@bowtie2_bin)<1){
-		die "BOWTIE2_INDEX ERROR :: system args failed: $? : Is bowtie2 installed and exported to \$PATH ?";
+		die "BOWTIE2 ERROR ::system args failed: $? : Is bowtie2 installed and exported to \$PATH (".$ENV{PATH}.") ?";
 	}
 	#Arguments provided by user are collected by %args. Dir, path of fasta file, indexname 
 	#and logfile are mandatory arguments.
