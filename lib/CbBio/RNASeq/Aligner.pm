@@ -754,7 +754,7 @@ sub bowtie1_index{
 	
 	#Checking the mandatory arguments
 	if ($fasta and $dir and $indexname and $logfile){
-		print STDERR "BOWTIE1_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours";
+		print STDERR "BOWTIE1_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
 		#bowtie-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex1 directory with the name index 
 		my $command="bowtie-build -f ".$fasta." ".$dir."/Bowtie1_index/".$indexname;
@@ -1124,7 +1124,7 @@ sub bowtie2_index{
 
 	#Checking the mandatory arguments
 	if ($fasta and $dir and $logfile and $indexname){
-		print STDERR "BOWTIE2_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours";
+		print STDERR "BOWTIE2_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
 		#bowtie2-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex2 directory with the name index 
 		$command= "bowtie2-build -f ".$fasta." ".$dir."/Bowtie2_index/".$indexname;

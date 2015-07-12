@@ -123,22 +123,27 @@ sub run_miARma{
 			$stat_file=$cfg->val("General","stats_file");
 			$cfg->newval("General", "stats_file", $stat_file);
 			$cfg->RewriteConfig;
+			system("touch $stat_file");
 		}
 		if($cfg->exists("General","stats_file") eq "" or undef($stat_file)){
 			$stat_file="miARma_stat.$$.log";
 			$cfg->newval("General", "stats_file", $stat_file);
 			$cfg->RewriteConfig;
+			system("touch $stat_file");
 		}
 		#optional parameters: log_file
 		if($cfg->exists("General","logfile") ne "" or defined($log_file)){
 			$log_file=$cfg->val("General","logfile");
 			$cfg->newval("General", "logfile", $log_file);
 			$cfg->RewriteConfig;
+			system("touch $log_file");
 		}
 		if($cfg->exists("General","logfile") eq "" or undef($log_file)){
 			$log_file="miARma_logfile.$$.log";
 			$cfg->newval("General", "logfile", $log_file);
 			$cfg->RewriteConfig;
+			system("touch $log_file");
+			
 		}
 		
 		#Mandatory
@@ -181,7 +186,7 @@ sub run_miARma{
 		}
 		else{
 			#First, we are going to check if input files are real fastq files if no error is found
-			check_input_format(-config => $cfg);
+			#check_input_format(-config => $cfg);
 		}
 	}
 	else{
@@ -351,18 +356,18 @@ sub run_miARma{
 
 			my $do_index=$cfg->val("Aligner","fasta");
 			if($do_index and $cfg->val("Aligner","bowtie2index") ne "" and lc($cfg->val("Aligner","aligner")) eq "bowtie2"){
-				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie2index are excluyent, dicarding fasta parameter\n";
+				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie2index are excluyent, discarding fasta parameter\n";
 				$do_index=undef;
 			}
 			if($do_index and $cfg->val("Aligner","bowtie1index") ne "" and lc($cfg->val("Aligner","aligner")) eq "bowtie1"){
-				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie1index are excluyent, dicarding fasta parameter\n";
+				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie1index are excluyent, discarding fasta parameter\n";
 				$do_index=undef;
 			}
 			
 			if($do_index){
 				if($cfg->exists("Aligner","indexname") ne ""){
 					print STDERR "miARma :: " . date() . " Indexing ".$cfg->val("Aligner","fasta") ." for a ".$cfg->val("Aligner","aligner")." analysis\n";
-					my $index_value=IndexGeneration(
+					my @index_value=IndexGeneration(
 					  	aligner=>$cfg->val("Aligner","aligner"),
 					  	fasta=>$cfg->val("Aligner","fasta"),
 					  	dir=>$cfg->val("General","projectdir"),
@@ -370,12 +375,15 @@ sub run_miARma{
 					  	indexname=>$cfg->val("Aligner","indexname"),
 						miARmaPath=>$miARmaPath
 					 );
+					 
+ 					print STDERR "miARma :: " . date() . " Index $index_value[0] created\n";
+
 					if(lc($cfg->val("Aligner","aligner")) eq "bowtie1" and $cfg->val("Aligner","bowtie1index") eq ""){
-			 			$cfg->newval("Aligner", "bowtie1index", $index_value);
+			 			$cfg->newval("Aligner", "bowtie1index", $index_value[0]);
 			 			$cfg->RewriteConfig;
 					}
 					if(lc($cfg->val("Aligner","aligner")) eq "bowtie2" and $cfg->val("Aligner","bowtie2index") eq ""){
-			 			$cfg->newval("Aligner", "bowtie2index", $index_value);
+			 			$cfg->newval("Aligner", "bowtie2index", $index_value[0]);
 			 			$cfg->RewriteConfig;
 					}
 				 }
@@ -423,7 +431,7 @@ sub run_miARma{
 					}
 				}
 			}
-
+			check_input_format(-files=>\@files);
 			if(scalar(@files)>0){
 				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis\n";
 			
@@ -521,7 +529,6 @@ sub run_miARma{
 			}
 		}
 	}
-	
 	if($cfg->SectionExists("DEAnalysis")==1){
 		#Mandatory parameters: read folder
 		if($cfg->exists("DEAnalysis","targetfile") eq "" or ($cfg->val("DEAnalysis","targetfile") eq "")){
@@ -731,59 +738,88 @@ sub run_miARma{
 sub check_input_format{
 	use File::Basename;
 	my %args=@_;
-	my $cfg=$args{"-config"};#configuration file
 	
-	my $dir_fastq=$cfg->val("General","read_dir");
+	#In case you provide a config file
 	my @fastq_files;
-	
-	if($dir_fastq){
-		if(opendir(FASTQF, $dir_fastq)){
-			my @files= readdir(FASTQF);
-			push(@fastq_files,map("$dir_fastq$_",@files));
-		}
-		else{
-			print STDERR "miARma :: ".date() ." Can't find fastq files on $dir_fastq\n\n";
-			exit;
+	my $cfg=$args{"-config"};#configuration file
+	my @files;
+	if($args{"-files"}){
+		@files=@{$args{"-files"}};
+	}
+	my $dir_fastq;
+	if($cfg and scalar(@files)<0){
+		$dir_fastq=$cfg->val("General","read_dir");
+		if($dir_fastq){
+			if(opendir(FASTQF, $dir_fastq)){
+				my @files= readdir(FASTQF);
+				push(@fastq_files,map("$dir_fastq$_",@files));
+			}
+			else{
+				print STDERR "miARma :: ".date() ." Can't find fastq files on $dir_fastq\n\n";
+				exit;
+			}
 		}
 	}
-	my $error=0;
+	#In case yo provide an array of files
+	if(scalar(@files)>0){
+		@fastq_files=@files;
+	}
+	my $exit=0;
 	if(scalar(@fastq_files)>0){
-		print STDERR "miARma :: " . date() . " Checking if files in \"$dir_fastq\" are in the correct fastq format\n";
+		print STDERR "miARma :: " . date() . " Checking if files in \"$dir_fastq\" are in the correct fastq format\n" if($dir_fastq);
+		print STDERR "miARma :: " . date() . " Checking if files are in the correct fastq format\n" if(!$dir_fastq);
+		
 		foreach my $file(@fastq_files){
-			
-			my ($real_file,$path)=fileparse($file);
-			if($real_file !~ /^\./){
-				my $compressed_file=0;
-				if($real_file =~ /.*\.gz/){
-					my $file_tmp="gunzip -d -f -c $file |";
-					$file=$file_tmp;
-					$compressed_file=1;
-				}
-				elsif($real_file =~ /.*\.bz2/){
-					my $file_tmp="bunzip2 -f -d -c $file |";
-					$file=$file_tmp;
-					$compressed_file=1;
-				}
+			if($file){
+				my ($real_file,$path)=fileparse($file);
+				if($real_file !~ /^\./){
+					my $error=0;
+					my $compressed_file=0;
+					if($real_file =~ /.*\.gz/){
+						my $file_tmp="gunzip -d -f -c $file |";
+						$file=$file_tmp;
+						$compressed_file=1;
+					}
+					elsif($real_file =~ /.*\.bz2/){
+						my $file_tmp="bunzip2 -f -d -c $file |";
+						$file=$file_tmp;
+						$compressed_file=1;
+					}
 
-				open IN,$file or die "Cannot open FASTQ file ($file)\n";
-				my $i=0;
-				my $mes="Please make sure your file ($real_file) is in accordance with the FASTQ format specifications";
-				while(<IN>){
-			    	chomp;
-			    	$i++;
-					if($i == 1){if(/^@\S+/){}else{print STDERR "miARmA ERROR :: ".date() . " First line of FASTQ reads file ($real_file) is not in accordance with the fastq format specifications\n$mes\n";exit;}}                 
-					if($i == 2){if(/^\S+$/){}else{print STDERR "miARmA ERROR :: ".date() . " Second line of FASTQ reads file ($real_file) contains whitespace in sequence\n$mes\n";exit;}}     
-					if($i == 3){if(/^\+/){}else{print STDERR "miARmA ERROR :: ".date() . " Third line of FASTQ reads file ($real_file) does not start with a '+' character.\n$mes\n";exit;}}     
-					if($i == 4){if(/^\S+$/){}else{print STDERR "miARmA ERROR :: ".date() . " Fourth line of FASTQ reads file ($real_file) contains whitespace\n$mes\n";exit;}}     
+					open IN,$file or die "Cannot open FASTQ file ($file)\n";
+					my $i=0;
+					my $mes="Please make sure your file ($real_file) is in accordance with the FASTQ format specifications";
+					while(<IN>){
+				    	chomp;
+				    	$i++;
+						if($i == 1){if(/^@\S+/){}else{
+							$error=1;
+							#print STDERR "miARmA ERROR :: ".date() . " First line of FASTQ reads file ($real_file) is not in accordance with the fastq format specifications\n$mes\n";}
+						}}                 
+						if($i == 2){if(/^\S+$/){}else{
+							$error=1;
+							#print STDERR "miARmA ERROR :: ".date() . " Second line of FASTQ reads file ($real_file) contains whitespace in sequence\n$mes\n";}
+						}}    
+						if($i == 3){if(/^\+/){}else{
+							$error=1;
+							#print STDERR "miARmA ERROR :: ".date() . " Third line of FASTQ reads file ($real_file) does not start with a '+' character.\n$mes\n";}
+						}}   
+						if($i == 4){if(/^\S+$/){}else{
+							$error=1;
+							#print STDERR "miARmA ERROR :: ".date() . " Fourth line of FASTQ reads file ($real_file) contains whitespace\n$mes\n";}
+						}}  
 					
-					last if($i == 4);
-				}
-				close IN;
-				#The file seems correct, but cutadapt needs to have a fastq/fq extension
-				if($real_file !~ /\.fq(\.bz2)?$/ and $real_file !~ /\.fastq(\.bz2)?$/ and $real_file !~ /\.fq(\.gz)$/ and $real_file !~ /\.fastq(\.gz)$/ and lc($cfg->val("Adapter","adaptersoft")) =~ /cutadapt/){
-					print STDERR "ERROR :: Due to cutadapt restrictions, file extension must be .fq or .fastq (or corresponding compressed files .fq.gz/.fq.bz2 or .fastq.gz/fastq.bz2)\nPlease, consider to rename the file $real_file\n";
-					$error=1;
-					next;
+						last if($i == 4);
+					}
+					close IN;					
+				
+					if($error == 0){
+						#No error, so they are fastq files, but is the extension correct ?
+						if($real_file =~ /.*\.fastq$/ and $real_file =~ /.*\.fastq\.lane\.clean$/ and $real_file =~ /.*\.fastq.gz$/ and $real_file =~ /.*\.fq$/ and $real_file =~ /.*\.fq.gz$/ and $real_file =~ /.*\.fq\.bz2$/ and $real_file =~ /.*\.fastq\.bz2$/){
+							print STDERR "$real_file is a fastq file, but due to cutadapt and other softwares, this file should include a fastq/fq extension. [Comppresed are also valid as .fq.gz]\n";
+							$exit=1;
+						}
+					}
 				}
 			}
 		}
@@ -792,11 +828,9 @@ sub check_input_format{
 		print STDERR "Can't find fastq files on $dir_fastq\n";
 		exit;
 	}
-	if($error == 0){
-		return();
-	}
-	else{
-		print STDERR "Quitting miARma\n";
+	#Summary
+	if($exit==1){
+		print STDERR "Please fix the names of your files\nQuitting\n\n";
 		exit;
 	}
 }	
