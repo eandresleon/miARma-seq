@@ -1305,7 +1305,7 @@ sub bowtie2{
 			}
 		}
 		else{
-			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $projectdir.$output_dir.$name."_bw2.sam";
+			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $projectdir.$output_dir.$name."_bw2.sam";
 		}
 		
 		#Bowtie execution with verbose option
