@@ -1269,6 +1269,7 @@ sub bowtie2{
 	my $statsfile=$args{"statsfile"}; #path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
+	my $aligner=$aligner{"aligner"};
 	
 	#Variable declaration and describing results directory 
 	my $commanddef;
@@ -1301,7 +1302,13 @@ sub bowtie2{
 		print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 analysis\n";
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
-		
+		my $output_file_bw2;
+		if($aligner){
+			$output_file_bw2=$projectdir.$output_dir.$name."_bw2.sam";
+		}
+		else{
+			$output_file_bw2=$projectdir.$output_dir.$name."_noadapt_bw2.bam";
+		}
 		#Bowtie2 execution command
 		my $command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
@@ -1312,7 +1319,7 @@ sub bowtie2{
 				$mate_file=~s/_1/_2/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
-						$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." --met-file ".$projectdir.$output_dir.$name.".metrics -S --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $projectdir.$output_dir.$name."_bw2.sam";
+						$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." --met-file ".$projectdir.$output_dir.$name.".metrics -S --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
 					}
 				}
 				else{
@@ -1325,7 +1332,7 @@ sub bowtie2{
 			}
 		}
 		else{
-			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $projectdir.$output_dir.$name."_bw2.sam";
+			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
 		}
 		
 		#Bowtie execution with verbose option
@@ -1356,7 +1363,7 @@ sub bowtie2{
 		 or die "BOWTIE2 ERROR :: system args failed: $? ($commanddef)";
 		close STATS;
 		#The path of the output file is returned to the main program
-		return ($projectdir.$output_dir.$name."_bw2.sam");		
+		return ($output_file_bw2);		
 	}
 	else
 	{
