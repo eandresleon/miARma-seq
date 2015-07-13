@@ -237,6 +237,8 @@ sub ReadAligment{
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $miARmaPath=$args{"miARmaPath"};
 	my $organism=$args{"organism"}; #Organism to align
+	my $aligner=$args{"aligner"}; #are this reads processed by miArma 
+	
 	#Declaring the variables to collect the path of the new files
 	my $output_file1;
 	my $output_file2;
@@ -280,7 +282,8 @@ sub ReadAligment{
 						statsfile=>$statsfile, 
 						bowtie1parameters=>$bowtie1parameters,
 						projectdir=>$projectdir,
-						miARmaPath=>$miARmaPath
+						miARmaPath=>$miARmaPath,
+						aligner=>$aligner,
 			  		);
 			  		return($output_file1);
 			  	}
@@ -325,6 +328,8 @@ sub ReadAligment{
 					bowtieparameters=>$bowtie2parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
+					aligner=>$aligner,
+					
 				
 		  		);
 		  		return($output_file2);
@@ -373,6 +378,8 @@ sub ReadAligment{
 					bowtie1parameters=>$bowtie1parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
+					aligner=>$aligner,
+					
 				
 			  	);
 			  	push(@results, $output_file1);
@@ -390,6 +397,8 @@ sub ReadAligment{
 					bowtieparameters=>$bowtie2parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
+					aligner=>$aligner,
+					
 				
 		  		);
 		  		push(@results, $output_file2);
@@ -879,6 +888,7 @@ sub bowtie1{
 	my $statsfile=$args{"statsfile"}; #Path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
+	my $aligner=$args{"aligner"};
 	
 	# Variable declaration and describing results directory 
 	my $commanddef;
@@ -918,6 +928,14 @@ sub bowtie1{
 		my $compressed_file=0;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			#Check if the file is a paired-end file
+			my $output_file_bw;
+			if($aligner){
+				$output_file_bw=$projectdir.$output_dir.$output_file_final."_bw1.bam";
+			}
+			else{
+				$output_file_bw=$projectdir.$output_dir.$output_file_final."_noadapt_bw1.bam";
+			}
+			
 			if($file =~ /.*_1.*/){
 				#it contains the _1 label
 				$mate_file=~s/_1/_2/g;
@@ -932,7 +950,7 @@ sub bowtie1{
 							#Changing new extension
 							$file=~s/\.gz$//g;
 							$mate_file=~s/\.gz$//g;
-							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 $file -2 $mate_file ". $projectdir.$output_dir.$name."_bw1.bam";
+							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 $file -2 $mate_file ". $output_file_bw;
 							$compressed_file=1;
 						}
 						elsif($file =~ /\.bz2$/){
@@ -943,11 +961,12 @@ sub bowtie1{
 							#New extension
 							$file=~s/\.bz2$//g;
 							$mate_file=~s/\.bz2$//g;
-							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 - ".`< bunzip2 -d -c -k $file`." -2 - ". `< bunzip2 -d -c -k $mate_file` ." " . $projectdir.$output_dir.$output_file_final."_bw1.bam" ;
+							
+							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 - ".`< bunzip2 -d -c -k $file`." -2 - ". `< bunzip2 -d -c -k $mate_file` ." " . $output_file_bw;
 							$compressed_file=1;
 						}
 						else{
-							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." " . $projectdir.$output_dir.$output_file_final."_bw1.bam";
+							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." " . $output_file_bw;
 							$compressed_file=0;
 						}
 					}
@@ -966,22 +985,30 @@ sub bowtie1{
 		}
 		else{
 			print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (single-end) analysis\n";
+			my $output_file_bw;
+			if($aligner){
+				$output_file_bw=$projectdir.$output_dir.$output_file_final."_bw1.bam" ;
+			}
+			else{
+				$output_file_bw=$projectdir.$output_dir.$output_file_final."_noadapt_bw1.bam";
+			}
+			
 			if($file =~ /\.gz$/){
 				print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
 				#In case gzip
-				$command="gunzip -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $projectdir.$output_dir.$output_file_final."_bw1.bam" ;
+				$command="gunzip -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". ;
 				$file=~s/\.gz$//g;
 				$compressed_file=1;
 			}
 			elsif($file =~ /\.bz2$/){
 				#in case bzip2
 				#New extension
-				$command="bunzip2 -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $projectdir.$output_dir.$output_file_final."_bw1.bam" ;
+				$command="bunzip2 -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $output_file_bw ;
 				$compressed_file=1;
 				$file=~s/\.bz2$//g;
 			}
 			else{
-				$command="bowtie ".$bowtiepardef." ".$bowtieindex." ".$file." ".$projectdir.$output_dir.$output_file_final."_bw1.bam";
+				$command="bowtie ".$bowtiepardef." ".$bowtieindex." ".$file." ".$output_file_bw;
 				$compressed_file=0;
 			}			
 		}
@@ -1015,7 +1042,8 @@ sub bowtie1{
 		or die "BOWTIE1 ERROR :: system args failed: $? ($commanddef)";
 		close STATS;
 		#The path of the output file is returned to the main program
-		return($projectdir.$output_dir.$name."_bw1.sam");
+		
+		return($output_file_bw);
 	}
 	else
 	{

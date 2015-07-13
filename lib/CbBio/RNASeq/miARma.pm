@@ -454,6 +454,7 @@ sub run_miARma{
 					    bowtie2parameters=>$cfg->val("General","bowtie2parameters")|| undef,
 					    miARmaPath=>$miARmaPath,
 						organism=>$cfg->val("General","organism")|| undef,
+						adapter=>$cfg->val("Adapter","adaptersoft")|| undef,
 					);
 				}
 			}
