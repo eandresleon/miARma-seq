@@ -894,7 +894,6 @@ sub bowtie1{
 	my $commanddef;
 	my $output_dir="/Bowtie1_results/";
 	my $mate_file=$file;
-	my $output_file_final;
 	
 	#Variable to collect the optional parameters 
 	my $bowtiepardef= "--sam ";
@@ -926,16 +925,17 @@ sub bowtie1{
 		#Bowtie execution command
 		my $command;
 		my $compressed_file=0;
+		
+		my $output_file_bw;
+		if($aligner){
+			$output_file_bw=$projectdir.$output_dir.$output_file_final."_bw1.bam";
+		}
+		else{
+			$output_file_bw=$projectdir.$output_dir.$output_file_final."_noadapt_bw1.bam";
+		}
+		
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			#Check if the file is a paired-end file
-			my $output_file_bw;
-			if($aligner){
-				$output_file_bw=$projectdir.$output_dir.$output_file_final."_bw1.bam";
-			}
-			else{
-				$output_file_bw=$projectdir.$output_dir.$output_file_final."_noadapt_bw1.bam";
-			}
-			
 			if($file =~ /.*_1.*/){
 				#it contains the _1 label
 				$mate_file=~s/_1/_2/g;
@@ -984,15 +984,7 @@ sub bowtie1{
 			}
 		}
 		else{
-			print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (single-end) analysis\n";
-			my $output_file_bw;
-			if($aligner){
-				$output_file_bw=$projectdir.$output_dir.$output_file_final."_bw1.bam" ;
-			}
-			else{
-				$output_file_bw=$projectdir.$output_dir.$output_file_final."_noadapt_bw1.bam";
-			}
-			
+			print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (single-end) analysis\n";			
 			if($file =~ /\.gz$/){
 				print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
 				#In case gzip
