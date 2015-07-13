@@ -1299,7 +1299,6 @@ sub bowtie2{
 	
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $bowtieindex and $logfile and $statsfile){ 
-		print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 analysis\n";
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
 		my $output_file_bw2;
@@ -1312,6 +1311,8 @@ sub bowtie2{
 		#Bowtie2 execution command
 		my $command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
+			print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 (paired-end) analysis\n";
+			
 			#Check if the file is a paired-end file
 			if($file =~ /.*_1.*/){
 				#it contains the _1 label
@@ -1332,6 +1333,7 @@ sub bowtie2{
 			}
 		}
 		else{
+			print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 (single-end) analysis\n";
 			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
 		}
 		
