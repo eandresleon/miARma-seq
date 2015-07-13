@@ -988,7 +988,7 @@ sub bowtie1{
 			if($file =~ /\.gz$/){
 				print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
 				#In case gzip
-				$command="gunzip -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". ;
+				$command="gunzip -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $output_file_bw;
 				$file=~s/\.gz$//g;
 				$compressed_file=1;
 			}
