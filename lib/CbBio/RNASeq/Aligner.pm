@@ -1269,7 +1269,7 @@ sub bowtie2{
 	my $statsfile=$args{"statsfile"}; #path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
-	my $aligner=$aligner{"aligner"};
+	my $aligner=$args{"aligner"};
 	
 	#Variable declaration and describing results directory 
 	my $commanddef;
