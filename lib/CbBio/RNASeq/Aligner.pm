@@ -931,7 +931,7 @@ sub bowtie1{
 			$output_file_bw=$projectdir.$output_dir.$output_file_final."_bw1.bam";
 		}
 		else{
-			$output_file_bw=$projectdir.$output_dir.$output_file_final."_noadapt_bw1.bam";
+			$output_file_bw=$projectdir.$output_dir.$output_file_final."_nat_bw1.bam";
 		}
 		
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
@@ -1307,7 +1307,7 @@ sub bowtie2{
 			$output_file_bw2=$projectdir.$output_dir.$name."_bw2.sam";
 		}
 		else{
-			$output_file_bw2=$projectdir.$output_dir.$name."_noadapt_bw2.bam";
+			$output_file_bw2=$projectdir.$output_dir.$name."_nat_bw2.bam";
 		}
 		#Bowtie2 execution command
 		my $command;
