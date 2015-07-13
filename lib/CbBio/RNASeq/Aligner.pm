@@ -237,7 +237,7 @@ sub ReadAligment{
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $miARmaPath=$args{"miARmaPath"};
 	my $organism=$args{"organism"}; #Organism to align
-	my $aligner=$args{"aligner"}; #are this reads processed by miArma 
+	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
 	
 	#Declaring the variables to collect the path of the new files
 	my $output_file1;
@@ -328,7 +328,7 @@ sub ReadAligment{
 					bowtieparameters=>$bowtie2parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
-					aligner=>$aligner,
+					adapter=>$adapter,
 					
 				
 		  		);
@@ -378,7 +378,7 @@ sub ReadAligment{
 					bowtie1parameters=>$bowtie1parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
-					aligner=>$aligner,
+					adapter=>$adapter,
 					
 				
 			  	);
@@ -397,7 +397,7 @@ sub ReadAligment{
 					bowtieparameters=>$bowtie2parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
-					aligner=>$aligner,
+					adapter=>$adapter,
 					
 				
 		  		);
@@ -888,7 +888,7 @@ sub bowtie1{
 	my $statsfile=$args{"statsfile"}; #Path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
-	my $aligner=$args{"aligner"};
+	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
 	
 	# Variable declaration and describing results directory 
 	my $commanddef;
@@ -927,7 +927,7 @@ sub bowtie1{
 		my $compressed_file=0;
 		
 		my $output_file_bw;
-		if($aligner){
+		if($adapter){
 			$output_file_bw=$projectdir.$output_dir.$output_file_final."_bw1.bam";
 		}
 		else{
@@ -1269,7 +1269,7 @@ sub bowtie2{
 	my $statsfile=$args{"statsfile"}; #path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
-	my $aligner=$args{"aligner"};
+	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
 	
 	#Variable declaration and describing results directory 
 	my $commanddef;
@@ -1303,7 +1303,7 @@ sub bowtie2{
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
 		my $output_file_bw2;
-		if($aligner){
+		if($adapter){
 			$output_file_bw2=$projectdir.$output_dir.$name."_bw2.sam";
 		}
 		else{
