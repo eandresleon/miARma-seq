@@ -579,6 +579,18 @@ sub run_miARma{
 						noiseq_normethod=>$cfg->val("DEAnalysis","noiseq_normethod")|| undef,
 						replicates=>$cfg->val("DEAnalysis","replicates") || undef,
 						miARmaPath=>$miARmaPath,
+						repthreshold=>$cfg->val("DEAnalysis","repthreshold") || undef,
+						bcvvalue=>$cfg->val("DEAnalysis","bcvvalue") || undef,
+						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue") || undef,
+						cutoffvalue=>$cfg->val("DEAnalysis","cutoffvalue") || undef,
+						Rdir=>$cfg->val("DEAnalysis","Rdir") || undef,
+				     	replicatevalue=>$cfg->val("DEAnalysis","replicatevalue") || undef,
+						kvalue=>$cfg->val("DEAnalysis","kvalue") || undef,
+						lcvalue=>$cfg->val("DEAnalysis","lcvalue") || undef,
+						pnrvalue=>$cfg->val("DEAnalysis","pnrvalue") || undef,
+						nssvalue=>$cfg->val("DEAnalysis","nssvalue") || undef,
+						vvalue=>$cfg->val("DEAnalysis","vvalue") || undef,
+						qvalue=>$cfg->val("DEAnalysis","qvalue") || undef,						
 					);
 				}
 			}
