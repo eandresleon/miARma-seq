@@ -367,7 +367,7 @@ sub featureFormat{
 			push(@results, $fileresults) if($fileresults);
 		}
 		#Returning the path of the results file
-		print STDERR "\n\nSEQCOUNT :: ".date()." Please check the folder: $projectdir/HtseqFormat_results.\n\n";
+		print STDERR "\n\nSEQCOUNT :: ".date()." Please check the folder: $projectdir"."$output_dir.\n\n";
 		
 		return(@results);
 	}else{

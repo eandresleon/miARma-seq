@@ -237,6 +237,8 @@ sub ReadAligment{
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $miARmaPath=$args{"miARmaPath"};
 	my $organism=$args{"organism"}; #Organism to align
+	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
+	
 	#Declaring the variables to collect the path of the new files
 	my $output_file1;
 	my $output_file2;
@@ -280,14 +282,14 @@ sub ReadAligment{
 						statsfile=>$statsfile, 
 						bowtie1parameters=>$bowtie1parameters,
 						projectdir=>$projectdir,
-						miARmaPath=>$miARmaPath
+						miARmaPath=>$miARmaPath,
+						aligner=>$aligner,
 			  		);
 			  		return($output_file1);
 			  	}
 			  	else{
 			  		die("READALIGNMENT ERROR:: ".date()."Index argument ($bowtie1index) has not been provided");
 			  	}
-
 			}
 			elsif (lc($aligner) eq "bowtie2"){
 
@@ -326,6 +328,8 @@ sub ReadAligment{
 					bowtieparameters=>$bowtie2parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
+					adapter=>$adapter,
+					
 				
 		  		);
 		  		return($output_file2);
@@ -374,6 +378,8 @@ sub ReadAligment{
 					bowtie1parameters=>$bowtie1parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
+					adapter=>$adapter,
+					
 				
 			  	);
 			  	push(@results, $output_file1);
@@ -391,6 +397,8 @@ sub ReadAligment{
 					bowtieparameters=>$bowtie2parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
+					adapter=>$adapter,
+					
 				
 		  		);
 		  		push(@results, $output_file2);
@@ -755,7 +763,7 @@ sub bowtie1_index{
 	
 	#Checking the mandatory arguments
 	if ($fasta and $dir and $indexname and $logfile){
-		print STDERR "BOWTIE1_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours";
+		print STDERR "BOWTIE1_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
 		#bowtie-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex1 directory with the name index 
 		my $command="bowtie-build -f ".$fasta." ".$dir."/Bowtie1_index/".$indexname;
@@ -836,7 +844,8 @@ sub bowtie1_index{
   	 [bowtiemiss] Max # mismatches in seed alignment in bowtie analysis (0-1)
   	 [bowtielength] Length of seed substrings in bowtie analysis (>3, <32)
   	 [bowtieparameters] Other bowtie parameters to perform the analysis using the bowtie recommended syntaxis
-  	 [verbose] Option to show the execution data on the screen   
+  	 [verbose] Option to show the execution data on the screen
+	 [Seqtype] Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
   Returntype : File at directory Bowtie1_results.Also returns the path of the output file 
   Requeriments: bowtie1 function requires for a correct analysis:
   	- Perl v5.10.0 or higher software correctly installed
@@ -879,12 +888,12 @@ sub bowtie1{
 	my $statsfile=$args{"statsfile"}; #Path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
+	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
 	
 	# Variable declaration and describing results directory 
 	my $commanddef;
 	my $output_dir="/Bowtie1_results/";
 	my $mate_file=$file;
-	my $output_file_final;
 	
 	#Variable to collect the optional parameters 
 	my $bowtiepardef= "--sam ";
@@ -916,6 +925,15 @@ sub bowtie1{
 		#Bowtie execution command
 		my $command;
 		my $compressed_file=0;
+		
+		my $output_file_bw;
+		if($adapter){
+			$output_file_bw=$projectdir.$output_dir.$output_file_final."_bw1.bam";
+		}
+		else{
+			$output_file_bw=$projectdir.$output_dir.$output_file_final."_nat_bw1.bam";
+		}
+		
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			#Check if the file is a paired-end file
 			if($file =~ /.*_1.*/){
@@ -923,7 +941,7 @@ sub bowtie1{
 				$mate_file=~s/_1/_2/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
-						print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 analysis\n";
+						print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (Paired-End) analysis\n";
 						if($file =~ /\.gz$/){
 							print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
 							#In case gzip
@@ -932,7 +950,7 @@ sub bowtie1{
 							#Changing new extension
 							$file=~s/\.gz$//g;
 							$mate_file=~s/\.gz$//g;
-							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 $file -2 $mate_file ". $projectdir.$output_dir.$name."_bw1.bam";
+							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 $file -2 $mate_file ". $output_file_bw;
 							$compressed_file=1;
 						}
 						elsif($file =~ /\.bz2$/){
@@ -943,11 +961,12 @@ sub bowtie1{
 							#New extension
 							$file=~s/\.bz2$//g;
 							$mate_file=~s/\.bz2$//g;
-							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 - ".`< bunzip2 -d -c -k $file`." -2 - ". `< bunzip2 -d -c -k $mate_file` ." " . $projectdir.$output_dir.$output_file_final."_bw1.bam" ;
+							
+							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 - ".`< bunzip2 -d -c -k $file`." -2 - ". `< bunzip2 -d -c -k $mate_file` ." " . $output_file_bw;
 							$compressed_file=1;
 						}
 						else{
-							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." " . $projectdir.$output_dir.$output_file_final."_bw1.bam";
+							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." " . $output_file_bw;
 							$compressed_file=0;
 						}
 					}
@@ -965,9 +984,25 @@ sub bowtie1{
 			}
 		}
 		else{
-			print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 analysis\n";
-			
-			$command="bowtie ".$bowtiepardef." ".$bowtieindex." ".$file." ".$projectdir.$output_dir.$output_file_final."_bw1.bam";
+			print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (single-end) analysis\n";			
+			if($file =~ /\.gz$/){
+				print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
+				#In case gzip
+				$command="gunzip -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $output_file_bw;
+				$file=~s/\.gz$//g;
+				$compressed_file=1;
+			}
+			elsif($file =~ /\.bz2$/){
+				#in case bzip2
+				#New extension
+				$command="bunzip2 -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $output_file_bw ;
+				$compressed_file=1;
+				$file=~s/\.bz2$//g;
+			}
+			else{
+				$command="bowtie ".$bowtiepardef." ".$bowtieindex." ".$file." ".$output_file_bw;
+				$compressed_file=0;
+			}			
 		}
 		if($verbose){
 			#commandef is the command will be executed by system composed of the results directory creation 
@@ -999,7 +1034,8 @@ sub bowtie1{
 		or die "BOWTIE1 ERROR :: system args failed: $? ($commanddef)";
 		close STATS;
 		#The path of the output file is returned to the main program
-		return($projectdir.$output_dir.$name."_bw1.sam");
+		
+		return($output_file_bw);
 	}
 	else
 	{
@@ -1093,7 +1129,7 @@ sub bowtie2_index{
 	my @bowtie2_bin=`which bowtie2`;
 	#Executing the command
 	if(scalar(@bowtie2_bin)<1){
-		die "BOWTIE2_INDEX ERROR :: system args failed: $? : Is bowtie2 installed and exported to \$PATH ?";
+		die "BOWTIE2 ERROR ::system args failed: $? : Is bowtie2 installed and exported to \$PATH (".$ENV{PATH}.") ?";
 	}
 	#Arguments provided by user are collected by %args. Dir, path of fasta file, indexname 
 	#and logfile are mandatory arguments.
@@ -1108,7 +1144,7 @@ sub bowtie2_index{
 
 	#Checking the mandatory arguments
 	if ($fasta and $dir and $logfile and $indexname){
-		print STDERR "BOWTIE2_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours";
+		print STDERR "BOWTIE2_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
 		#bowtie2-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex2 directory with the name index 
 		$command= "bowtie2-build -f ".$fasta." ".$dir."/Bowtie2_index/".$indexname;
@@ -1233,6 +1269,7 @@ sub bowtie2{
 	my $statsfile=$args{"statsfile"}; #path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
+	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
 	
 	#Variable declaration and describing results directory 
 	my $commanddef;
@@ -1262,13 +1299,20 @@ sub bowtie2{
 	
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $bowtieindex and $logfile and $statsfile){ 
-		print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 analysis\n";
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
-		
+		my $output_file_bw2;
+		if($adapter){
+			$output_file_bw2=$projectdir.$output_dir.$name."_bw2.sam";
+		}
+		else{
+			$output_file_bw2=$projectdir.$output_dir.$name."_nat_bw2.bam";
+		}
 		#Bowtie2 execution command
 		my $command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
+			print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 (paired-end) analysis\n";
+			
 			#Check if the file is a paired-end file
 			if($file =~ /.*_1.*/){
 				#it contains the _1 label
@@ -1276,7 +1320,7 @@ sub bowtie2{
 				$mate_file=~s/_1/_2/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
-						$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." --met-file ".$projectdir.$output_dir.$name.".metrics -S --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $projectdir.$output_dir.$name."_bw2.sam";
+						$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." --met-file ".$projectdir.$output_dir.$name.".metrics -S --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
 					}
 				}
 				else{
@@ -1289,7 +1333,8 @@ sub bowtie2{
 			}
 		}
 		else{
-			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $projectdir.$output_dir.$name."_bw2.sam";
+			print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 (single-end) analysis\n";
+			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
 		}
 		
 		#Bowtie execution with verbose option
@@ -1320,7 +1365,7 @@ sub bowtie2{
 		 or die "BOWTIE2 ERROR :: system args failed: $? ($commanddef)";
 		close STATS;
 		#The path of the output file is returned to the main program
-		return ($projectdir.$output_dir.$name."_bw2.sam");		
+		return ($output_file_bw2);		
 	}
 	else
 	{

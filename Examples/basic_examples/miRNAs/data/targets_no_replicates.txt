@@ -1,0 +1,5 @@
+"Name"	"Time"
+"SRR873382"	"Norm_1"	"T0h"
+"SRR873384"	"Hyp_16_1"	"T16h"
+"SRR873386"	"Hyp_32_1"	"T32h"
+"SRR873388"	"Hyp_48_1"	"T48h"
