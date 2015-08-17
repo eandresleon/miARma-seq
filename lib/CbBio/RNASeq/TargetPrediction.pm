@@ -472,7 +472,7 @@ sub miRGate{
 						$fc=$miRNAs->{$found_miRNA}->{UP}
 					}
 					if(lc($miRNA) eq lc($found_miRNA)){
-						print OUT $miRNA ."\t" . $fc ."\t". $ensembl ."\t" . $hgnc ."\t" . $utr ."\tNA\tNA\t";
+						print OUT $miRNA ."\t" . $fc ."\t". $ensembl ."\t" . $hgnc ."\t" . $utr ."\tNA\tNA";
 						print OUT "\t" . $method ."\t" . $target_site ."\t" . $score ."\t" . $energy ."\n";
 					}
 				}
@@ -553,12 +553,12 @@ sub miRGate{
 				foreach my $gene (keys %$UTRs){
 					if(($gene eq $result->{$id}->{EnsEMBL}) or ($gene eq $result->{$id}->{HGNC}) or ($gene eq $result->{$id}->{utr})){
 						if(exists ($UTRs->{$gene}->{DOWN}) and $miRNAs->{$miRNA}->{UP}){
-							print OUT $miRNA ."\t" . $miRNAs->{$miRNA}->{UP} ."\t" . $result->{$id}->{EnsEMBL} ."\t" . $result->{$id}->{HGNC} ."\t" . $result->{$id}->{utr} ."\t" . $UTRs->{$gene}->{DOWN} ."\t";
+							print OUT $miRNA ."\t" . $miRNAs->{$miRNA}->{UP} ."\t" . $result->{$id}->{EnsEMBL} ."\t" . $result->{$id}->{HGNC} ."\t" . $result->{$id}->{utr} ."\t" . $UTRs->{$gene}->{DOWN};
 							print OUT "\t" . $result->{$id}->{method} ."\t" . $result->{$id}->{target_site} ."\t" . $result->{$id}->{normalized_score} ."\t";
 							print OUT "\t" . $result->{$id}->{score} ."\t".$result->{$id}->{energy} ."\n";
 						}
 						if(exists ($UTRs->{$gene}->{UP}) and $miRNAs->{$miRNA}->{DOWN}){
-							print OUT $miRNA ."\t" . $miRNAs->{$miRNA}->{DOWN} ."\t" . $result->{$id}->{EnsEMBL} ."\t" . $result->{$id}->{HGNC} ."\t" . $result->{$id}->{utr} ."\t" . $UTRs->{$gene}->{UP} ."\t";
+							print OUT $miRNA ."\t" . $miRNAs->{$miRNA}->{DOWN} ."\t" . $result->{$id}->{EnsEMBL} ."\t" . $result->{$id}->{HGNC} ."\t" . $result->{$id}->{utr} ."\t" . $UTRs->{$gene}->{UP};
 							print OUT "\t" . $result->{$id}->{method} ."\t" . $result->{$id}->{target_site} ."\t" . $result->{$id}->{normalized_score} ."\t";
 							print OUT "\t" . $result->{$id}->{score} ."\t".$result->{$id}->{energy} ."\n";
 						}
