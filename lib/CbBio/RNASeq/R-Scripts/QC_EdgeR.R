@@ -186,12 +186,12 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   
   
   #Clustering analysis plot
-  par(mfrow=c(1,1), col.main="black", col.lab="black", col.axis="black", bg="white", fg="black", font=2, cex.axis=0.6, cex.main=0.8)
+  par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.6, cex.main=0.8)
   pr.hc.c<- hclust(na.omit(dist(t(data))))
-  plot(pr.hc.c, xlab="Sample Distance",main=paste("Hierarchical Clustering of ", label, sep=""), labels=samplenames)
+  plot(pr.hc.c, xlab="Sample Distance",main=paste("Hierarchical Clustering of ", label, sep=""), labels=samplenames,col=boxcol)
   #Normalized clustering analysis plot 
   pr.hc.c<- hclust(na.omit(dist(t(dgenorm$counts))))
-  plot(pr.hc.c, xlab="Sample Distance",main=paste("Hierarchical Clustering of Normalized samples of ", label, sep=""), labels=samplenames)
+  plot(pr.hc.c, xlab="Sample Distance",main=paste("Hierarchical Clustering of Normalized samples of ", label, sep=""), labels=samplenames,col=boxcol)
   
   #########################################################################
   #3. MDS PLOT (EDGER) AND PCA ANALYSIS
