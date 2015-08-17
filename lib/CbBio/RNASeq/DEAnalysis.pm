@@ -97,10 +97,6 @@ to execute one of these functions or both.
   	 [nssvalue] Number of samples to simulate for each condition (nss>= 2) to perform the DE analysis with Noiseq. By default, nss = 5. 
   	 [vvalue] Variability in the simulated sample total reads to perform the DE analysis with Noiseq. By default, v = 0.02. Sample total reads is computed as a random value from a uniform distribution in the interval [(pnr-v)*sum(counts), (pnr+v)*sum(counts)]
   	 [qvalue] Probability of differential expression to perform the DE analysis with Noiseq. By default=0.8
-  	 [lengthfile] Path of the file with the information about the length of each element to perform the DE analysis with Noiseq. This file must contain the name of the element and the legnth of this element under the name.
-  	 [gcfile] Path of the file with the information about the gc content of each element to perform the DE analysis with Noiseq. This file must contain the name of the element and the gc content (%) of this element under the name.
-  	 [biotypefile] Path of the file with the information about the biotype of each element to perform the DE analysis with Noiseq. This file must contain the name of the element and the biotype of this element under the name.
-  	 [chromsfile] Path of the file with the genomic location information of each element to perform the DE analysis with Noiseq. This file must contain 4 columns corresponding to: the name of the element, the number of chromosome, and the coordinates of the start and end of the element.
   	 [verbose] Optional argument to show the execution data on screen
   
   Requeriments: DE_Analysis function requires for a correct analysis:
@@ -644,11 +640,7 @@ EOF
   	 [nssvalue] Number of samples to simulate for each condition (nss>= 2). By default, nss = 5. 
   	 [vvalue] Variability in the simulated sample total reads. By default, v = 0.02. Sample total reads is computed as a random value from a uniform distribution in the interval [(pnr-v)*sum(counts), (pnr+v)*sum(counts)]
   	 [qvalue] Probability of differential expression. By default=0.8
-  	 [lengthfile] Path of the file with the information about the length of each element. This file must contain the name of the element and the legnth of this element under the name.
-  	 [gcfile] Path of the file with the information about the gc content of each element. This file must contain the name of the element and the gc content (%) of this element under the name.
-  	 [biotypefile] Path of the file with the information about the biotype of each element. This file must contain the name of the element and the biotype of this element under the name.
-  	 [chromsfile] Path of the file with the genomic location information of each element. This file must contain 4 columns corresponding to: the name of the element, the number of chromosome, and the coordinates of the start and end of the element.
-  	 [verbose] Optional argument to show the execution data on screen
+   	 [verbose] Optional argument to show the execution data on screen
   Requeriments: DE_noiseq function requires for a correct analysis:
   	- Perl v5.10.0 or higher software correctly installed
   	- R v3.1.0 or higher software correctly installed
@@ -694,22 +686,6 @@ sub DE_noiseq{
 		my $Rcommand="projectdir=\"".$output_dir."\",dir=\"".$dir."\", file=\"".$file."\", targetsfile=\"".$targetfile."\", label=\"".$label."\", filter=\"".$filter."\", contrastfile=\"".$contrastfile."\"";
 
 		#If user has provided any optional parameter will be added to Rcommand
-		if(defined $args{"lengthfile"}){
-			my $lengthfile=$args{"lengthfile"}; #Path of the file with the information about the length of each element.
-			$Rcommand.=", lenghtfile=\"".$lengthfile."\"";
-		}
-		if(defined $args{"gcfile"}){
-			my $gcfile=$args{"gcfile"}; #Path of the file with the information about the gc content of each element.
-			$Rcommand.=", gcfile=\"".$gcfile."\"";
-		}
-		if(defined $args{"biotypefile"}){
-			my $biotypefile=$args{"biotypefile"}; #Path of the file with the information about the biotype of each element.
-			$Rcommand.=", biotypefile=\"".$biotypefile."\"";
-		}
-		if(defined $args{"chromsfile"}){
-			my $chromsfile=$args{"chromsfile"};  #Path of the file with the genomic location information of each element.
-			$Rcommand.=", chromsfile=\"".$chromsfile."\"";
-		}
 		if(defined $args{"filtermethod"}){
 			my $filtermethod=$args{"filtermethod"}; #Method that will be used to filter proccess.
 			$Rcommand.=", filtermethod=\"".$filtermethod."\"";
@@ -847,10 +823,6 @@ EOF
   	 		[nssvalue] Number of samples to simulate for each condition (nss>= 2). By default, nss = 5. 
   	 		[vvalue] Variability in the simulated sample total reads. By default, v = 0.02. Sample total reads is computed as a random value from a uniform distribution in the interval [(pnr-v)*sum(counts), (pnr+v)*sum(counts)]
   	 		[qvalue] Probability of differential expression. By default=0.8
-  	 		[lengthfile] Path of the file with the information about the length of each element. This file must contain the name of the element and the legnth of this element under the name.
-  	 		[gcfile] Path of the file with the information about the gc content of each element. This file must contain the name of the element and the gc content (%) of this element under the name.
-  	 		[biotypefile] Path of the file with the information about the biotype of each element. This file must contain the name of the element and the biotype of this element under the name.
-  	 		[chromsfile] Path of the file with the genomic location information of each element. This file must contain 4 columns corresponding to: the name of the element, the number of chromosome, and the coordinates of the start and end of the element.
   	 		[verbose] Optional argument to show the execution data on screen
   	 		               
 			Examples:
