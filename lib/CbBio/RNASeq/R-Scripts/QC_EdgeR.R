@@ -154,16 +154,16 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   #Obtaining the names of the samples
   samplenames<-as.character(targets[,1])
   #Boxplot of the samples
-  boxplot(log2(data), main=paste("Boxplot of ",label," samples",sep=""),las=2, names=samplenames)
+  boxplot(log2(data), main=paste("Boxplot of ",label," samples",sep=""),las=2, names=samplenames, ylab="log2(counts)", xlab="Samples")
   #Normalization of the samples
   dgenorm<-calcNormFactors(dge)
   #Boxplot of the normalized samples
-  boxplot(log2(dgenorm$counts), col=boxcol, main=paste("Boxplot of ", label , " normalized samples",sep=""),las=2, names=samplenames)
+   boxplot(log2(dgenorm$counts), col=boxcol, main=paste("Boxplot of ", label , " normalized samples",sep=""),las=2, names=samplenames, ylab="log2(counts)", xlab="Samples")
   
   
   #Density plots of the number of reads 
   par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.8)
-  plot(density(log10(data[,1])),col=boxcol[1],ylim=c(0,0.3), main=paste("Density plot of number of reads of ", label, sep=""), lwd=1.5)
+  plot(density(log10(data[,1])),col=boxcol[1],ylim=c(0,0.3), main=paste("Density plot of number of reads of ", label, sep=""), lwd=1.5,xlab=log10(counts))
   lineformat<-NA
   countb<-1
   for (a in 1:length(levels(group))){
@@ -178,7 +178,7 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   legend("topright", samplenames, col=boxcol, lty=lineformat, lwd=4, cex=0.8)
   
   #Density plot of normalized counts data
-  plot(density(log10(dgenorm$counts[,1])),col=boxcol[1],ylim=c(0,0.5), main=paste("Density plot of normalized and filtered number of reads of ", label, sep=""), lwd=1.5)
+  plot(density(log10(dgenorm$counts[,1])),col=boxcol[1],ylim=c(0,0.5), main=paste("Density plot of normalized and filtered number of reads of ", label, sep=""), lwd=1.5,xlab=log10(counts))
   for (a in 2:length(colnames(data))){
     lines(density(log10(dgenorm$counts[,a])),col=boxcol[a], lwd=1.5, lty=lineformat[a])
   }
@@ -218,7 +218,8 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
     
   rsd <- rowSds(as.matrix(dgenorm))
   sel <- order(rsd, decreasing=TRUE)[1:250]
-  heatmap(na.omit(as.matrix(dgenorm[sel,])),margins=c(10,8),main="Heatmap 250 most DE entities",cexRow=0.5,cexCol=0.5,labCol=samplenames)  
+  hmcol= colorRampPalette(brewer.pal(9, "YlGnBu"))(100)
+  heatmap(na.omit(as.matrix(dgenorm[sel,])),margins=c(10,8),main="Heatmap 250 most DE entities",cexRow=0.15,cexCol=0.5,labCol=samplenames, col=hmcol)
   
   dev.off()
   #Printing the date and information of the proccess
