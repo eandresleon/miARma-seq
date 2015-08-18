@@ -163,7 +163,7 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   
   #Density plots of the number of reads 
   par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.8)
-  plot(density(log10(data[,1])),col=boxcol[1],ylim=c(0,0.3), main=paste("Density plot of number of reads of ", label, sep=""), lwd=1.5,xlab="log10(counts)")
+  plot(density(log10(data[,1])),col=boxcol[1],ylim=c(0,0.3), main=paste("Density plot of number of reads of ", label, sep=""), lwd=1.5, xlab="log10(counts)")
   lineformat<-NA
   countb<-1
   for (a in 1:length(levels(group))){
@@ -218,9 +218,9 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
     
   rsd <- rowSds(as.matrix(dgenorm))
   sel <- order(rsd, decreasing=TRUE)[1:250]
-  hmcol= colorRampPalette(brewer.pal(9, "YlGnBu"))(100) 
+  #hmcol= colorRampPalette(brewer.pal(9, "YlGnBu"))(100) 
   heatmap(na.omit(as.matrix(dgenorm[sel,])),margins=c(10,8),main="Heatmap 250 most DE entities",cexRow=0.5,cexCol=0.5,labCol=samplenames)  
-  heatmap(na.omit(as.matrix(dgenorm[sel,])),margins=c(10,8),main="Heatmap 250 most DE entities",cexRow=0.5,cexCol=0.5,labCol=samplenames, col=hmcol)
+  #heatmap(na.omit(as.matrix(dgenorm[sel,])),margins=c(10,8),main="Heatmap 250 most DE entities",cexRow=0.5,cexCol=0.5,labCol=samplenames, col=hmcol)
   dev.off()
   #Printing the date and information of the proccess
   time<-Sys.time()
