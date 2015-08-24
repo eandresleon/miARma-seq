@@ -1,0 +1,7 @@
+Name	Type
+SRR1039508	Untreated
+SRR1039512	Untreated
+SRR1039516	Untreated
+SRR1039509	Treated
+SRR1039513	Treated
+SRR1039517	Treated
