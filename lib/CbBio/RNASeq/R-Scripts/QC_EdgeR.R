@@ -219,8 +219,8 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   rsd <- rowSds(as.matrix(dgenorm))
   sel <- order(rsd, decreasing=TRUE)[1:250]
   #hmcol= colorRampPalette(brewer.pal(9, "YlGnBu"))(100) 
-  heatmap(na.omit(as.matrix(dgenorm[sel,])),margins=c(10,8),main="Heatmap 250 most DE entities",cexRow=0.5,cexCol=0.5,labCol=samplenames)  
   #heatmap(na.omit(as.matrix(dgenorm[sel,])),margins=c(10,8),main="Heatmap 250 most DE entities",cexRow=0.5,cexCol=0.5,labCol=samplenames, col=hmcol)
+  heatmap(na.omit(as.matrix(dgenorm[sel,])),margins=c(10,8),main="Heatmap 250 most DE entities",cexRow=0.5,cexCol=0.5,labCol=samplenames)  
   dev.off()
   #Printing the date and information of the proccess
   time<-Sys.time()
