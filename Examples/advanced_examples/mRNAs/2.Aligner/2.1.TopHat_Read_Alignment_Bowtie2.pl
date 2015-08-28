@@ -30,7 +30,7 @@ BEGIN{
 	$miARmaPath="../../../../";#Path to software. Full path is recommended
 	$reads_dir="../../../basic_examples/mRNAs/reads/"; #Path of the directory with the reaper results
 	$projectdir="."; #Directory to save the results
-	$threads=4; #Optional number of threads to perform the analysis
+	$threads=14; #Optional number of threads to perform the analysis
 	$GTF="../../../../data/Homo_sapiens_CHR_.GRCh37.74.gtf";
 	$bowtie2index="../../../../Genomes/Indexes/bowtie2/human/hg19"; #Indexed genome to align your reads in format .bt2 (Mandatory for analysis with bowtie2)
 	$verbose=""; #Option to show the execution data on the screen   
