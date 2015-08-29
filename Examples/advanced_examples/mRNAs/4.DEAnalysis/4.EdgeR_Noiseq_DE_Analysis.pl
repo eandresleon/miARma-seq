@@ -23,8 +23,8 @@ my $repthreshold; #Number of replicates that have to contains at least a defined
 my $miARmaPath;#Path to software
 
 BEGIN{
-	$miARmaPath="../../";#Path to software. Full path is recommended
-	$dir="../3.Read_count/HtseqFormat_results/"; #Path of the directory with the tab files
+	$miARmaPath="../../../../";#Path to software. Full path is recommended
+	$dir="../3.ReadCount/Readcount_results/"; #Path of the directory with the tab files
 	$projectdir="."; #Path of the directory where the output files will be saved.
 	$targetfile="targets.txt"; #Path of the target file.
 	$contrastfile="contrast.txt"; #Path of the contrast file.
