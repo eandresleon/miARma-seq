@@ -12,7 +12,6 @@ my $parameters; #Other featureCounts parameters to perform the analysis using th
 my $strand; #Whether the data is from a strand-specific assay (yes, no or reverse, yes by default) for featureCounts analysis
 my $featuretype; #Feature type (3rd column in GFF file) to be used, all features of other type are ignored (default:exon) for featureCounts analysis
 my $logfile; #Run.log file where execution data will be saved
-my $inputformat; #Format of the input file : sam or bam (default:sam)
 my $verbose; #Option to show the execution data on the screen
 my $projectdir; #Directory where htseq_results directory will be created
 my $bw1_dir; #Path of the directory with the bowtie1 results
@@ -21,18 +20,17 @@ my $threads; #Optional number of threads to perform the analysis
 my $miARmaPath;#Path to software
 
 BEGIN{
-	$miARmaPath="../../";#Path to software. Full path is recommended
+	$miARmaPath="../../../../";#Path to software. Full path is recommended
 	$database="Homo_sapiens_GRCh37.74_chr.gtf"; #GFF file used to calculate the number of reads in featureCounts analysis
 	$seqid="transcript_id"; #GFF attribute to be used as feature ID (default: gene_id) for featureCounts analysis
 	$parameters=" -Q 10"; #Other featureCounts parameters to perform the analysis using the featureCounts recommended syntaxis
-	$strand="no"; #Whether the data is from a strand-specific assay (yes, no or reverse, yes by default) for featureCounts analysis
+	$strand="yes"; #Whether the data is from a strand-specific assay (yes, no or reverse, yes by default) for featureCounts analysis
 	$featuretype="exon"; #Feature type (3rd column in GFF file) to be used, all features of other type are ignored (default:exon) for featureCounts analysis
 	$logfile="/run_".$$.".log"; #Run.log file where execution data will be saved
-	$inputformat="bam"; #Format of the input file : sam or bam (default:sam)
-	$verbose="verbose"; #Option to show the execution data on the screen
+	$verbose=""; #Option to show the execution data on the screen
 	$projectdir="."; #Directory where htseq_results directory will be created
-	$bw1_dir="../2.Read_alignment/Bowtie1_results/"; #Path of the directory with the bowtie1 results
-	$bw2_dir="../2.Read_alignment/Bowtie2_results/"; #Path of the directory with the bowtie2 results
+	$bw1_dir="../2.Aligner/Bowtie1_results/"; #Path of the directory with the bowtie1 results
+	$bw2_dir="../2.Aligner/Bowtie2_results/"; #Path of the directory with the bowtie2 results
 	$threads=8; #Optional number of threads to perform the analysis
 }
 
@@ -60,6 +58,7 @@ my $result; #result file
 # HTSEQCOUNT EXECUTION
 #Reading the array with the path of the files
 foreach my $file(@files){
+	print STDERR "Reading : $file\n";
 	#Selecting only the sam files for their processing
 	$result=featureCount(
 	  	file=>$file,
@@ -69,7 +68,6 @@ foreach my $file(@files){
 	  	strand=>$strand, 
 	  	featuretype=>$featuretype,
 	  	logfile=>$projectdir.$logfile,
-	  	inputformat=>$inputformat,
 		verbose=>$verbose, 
 	  	projectdir=>$projectdir,
 		threads=>$threads,
@@ -78,9 +76,3 @@ foreach my $file(@files){
 	push(@htseqfiles, $result);
 }
 
-#HTSEQFORMATEXECUTION
-featureFormat( 
-  	input=>\@htseqfiles, 
-  	projectdir=>$projectdir,
-  	logfile=>$projectdir.$logfile
-  );
