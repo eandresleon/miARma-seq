@@ -238,7 +238,6 @@ sub ReadAligment{
 	my $miARmaPath=$args{"miARmaPath"};
 	my $organism=$args{"organism"}; #Organism to align
 	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
-	
 	#Declaring the variables to collect the path of the new files
 	my $output_file1;
 	my $output_file2;
@@ -431,7 +430,7 @@ sub ReadAligment{
 						$library_type=$args{"library_type"};
 					}
 					if(defined($args{"tophat_seg_mismatches"})){
-						$tophat_seg_mismatches=$args{"bowtieleng"};
+						$tophat_seg_mismatches=$args{"tophat_seg_mismatches"};
 					}
 					if(defined($args{"threads"})){
 						$threads=$args{"threads"}; 
@@ -1533,13 +1532,13 @@ sub TopHat{
 		my $tophat_aligner=lc($args{"tophat_aligner"});
 		$bowtiepardef.=" --$tophat_aligner";
 	}
-	
+
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $bowtieindex and $logfile and $statsfile and $GTF and $bowtieindex){ 
 		print STDERR "TOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n";
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
-		
+
 		my $command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			#Check if the file is a paired-end file
@@ -1562,7 +1561,6 @@ sub TopHat{
 			}
 		}
 		else{
-			print STDERR $Seqtype."\n";
 			$command="tophat --fusion-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file;
 		}
 		#tophat execution command
