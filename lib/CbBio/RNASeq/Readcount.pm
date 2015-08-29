@@ -152,7 +152,12 @@ sub featureCount{
 		my $quality=$args{"quality"};
 		$htseqpardef.=" -Q $quality";
 	}
-	
+	if(defined($args{"Seqtype"})){
+		my $Seqtype=$args{"Seqtype"};
+		if(lc($Seqtype) =~ /Paired/){
+			$htseqpardef.=" -p ";
+		}
+	}
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $database and $logfile){
 		if($file !~ /no_aligned/ and $file !~ /unmapped/){

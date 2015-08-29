@@ -18,10 +18,11 @@ my $bw1_dir; #Path of the directory with the bowtie1 results
 my $bw2_dir; #Path of the directory with the bowtie2 results
 my $threads; #Optional number of threads to perform the analysis
 my $miARmaPath;#Path to software
+my $Seqtype;#Type of sequencing ; could be Paired or Single. [Single by default]
 
 BEGIN{
 	$miARmaPath="../../../../";#Path to software. Full path is recommended
-	$database="Homo_sapiens_GRCh37.74_chr.gtf"; #GFF file used to calculate the number of reads in featureCounts analysis
+	$database="../../../../data/Homo_sapiens_CHR_.GRCh37.74.gtf"; #GFF file used to calculate the number of reads in featureCounts analysis
 	$seqid="transcript_id"; #GFF attribute to be used as feature ID (default: gene_id) for featureCounts analysis
 	$parameters=" -Q 10"; #Other featureCounts parameters to perform the analysis using the featureCounts recommended syntaxis
 	$strand="yes"; #Whether the data is from a strand-specific assay (yes, no or reverse, yes by default) for featureCounts analysis
@@ -32,6 +33,8 @@ BEGIN{
 	$bw1_dir="../2.Aligner/Bowtie1_results/"; #Path of the directory with the bowtie1 results
 	$bw2_dir="../2.Aligner/Bowtie2_results/"; #Path of the directory with the bowtie2 results
 	$threads=8; #Optional number of threads to perform the analysis
+	$Seqtype="Paired";#Type of sequencing ; could be Paired or Single. [Single by default]
+
 }
 
 use lib "$miARmaPath/lib/";
@@ -58,7 +61,6 @@ my $result; #result file
 # HTSEQCOUNT EXECUTION
 #Reading the array with the path of the files
 foreach my $file(@files){
-	print STDERR "Reading : $file\n";
 	#Selecting only the sam files for their processing
 	$result=featureCount(
 	  	file=>$file,
@@ -71,8 +73,14 @@ foreach my $file(@files){
 		verbose=>$verbose, 
 	  	projectdir=>$projectdir,
 		threads=>$threads,
-		miARmaPath=>$miARmaPath
+		miARmaPath=>$miARmaPath,
+		Seqtype=>$Seqtype
 	);
 	push(@htseqfiles, $result);
 }
-
+#HTSEQFORMATEXECUTION
+featureFormat( 
+  	input=>\@htseqfiles, 
+  	projectdir=>$projectdir,
+  	logfile=>$projectdir.$logfile
+);
