@@ -23,25 +23,28 @@ my $aligner; #Aligner which will be use in the analysis (Allowed values: tophat)
 my $tophat_aligner;# Tophat uses bowtie2 by default, bowtie1 can be also specified. Especifing bowth, means to repeat the analysis one with each aligner (Allowed values: Bowtie1, Bowtie2 and Bowtie1-Bowtie2/Bowtie2-Bowtie1))
 my $miARmaPath;#Path to software
 my $statsfile; #Stats.log file where stats data will be saved
+my $GTF; #is a file used to hold information about gene structure
+my $Seqtype;
 
 BEGIN{
-	$miARmaPath="../../";#Path to software. Full path is recommended
-	$reads_dir="../reads/"; #Path of the directory with the reaper results
+	$miARmaPath="../../../../";#Path to software. Full path is recommended
+	$reads_dir="../../../basic_examples/mRNAs/reads/"; #Path of the directory with the reaper results
 	$projectdir="."; #Directory to save the results
 	$threads=4; #Optional number of threads to perform the analysis
-	$bowtie1index="../../Genomes/Indexes/bowtie1/human/hg19"; #Indexed genome to align your reads in format .ebwt (Mandatory for analysis with bowtie1)
-	$bowtie2index="../../Genomes/Indexes/bowtie2/human//hg19"; #Indexed genome to align your reads in format .bt2 (Mandatory for analysis with bowtie2)
-	$verbose=""; #Option to show the execution data on the screen   
+	$GTF="../../../../data/Homo_sapiens_CHR_.GRCh37.74.gtf";
+	$bowtie1index="../../../../Genomes/Indexes/bowtie1/human/hg19"; #Indexed genome to align your reads in format .bt2 (Mandatory for analysis with bowtie2)
+	$verbose="1"; #Option to show the execution data on the screen   
 	$logfile="/run_".$$.".log"; #Run.log file where execution data will be saved
 	$tophat_multihits=5; #Max # mismatches in seed alignment in bowtie analysis (0-1)
 	$read_mismatches=2; #Length of seed substrings in bowtie analysis (>3, <32)
 	$tophat_seg_mismatches=1; #Read segments are mapped independently, allowing up to this many mismatches in each segment alignment. The default is 2.
 	$tophat_seg_length=20; #Each read is cut up into segments, each at least this long. These segments are mapped independently. The default is 25.
 	$library_type="fr-firststrand"; #The default is unstranded (fr-unstranded). If either fr-firststrand or fr-secondstrand is specified, every read alignment will have an XS attribute tag. Consider supplying library type options below to select the correct RNA-seq protocol.
+	$Seqtype="Paired";
 	$statsfile="/stats_".$$.".log"; #Stats.log file where stats data will be saved
 	$tophatParameters="--splice-mismatches 0"; #Other tophat parameters to perform the analysis using the recommended syntaxis by tophat
 	$aligner="tophat"; #Aligner which will be use in the analysis (Allowed values: tophat)
-	$tophat_aligner="Bowtie1-Bowtie2" # Tophat uses bowtie2 by default, bowtie1 can be also specified. Especifing bowth, means to repeat the analysis one with each aligner (Allowed values: Bowtie1, Bowtie2 and Bowtie1-Bowtie2/Bowtie2-Bowtie1))
+	$tophat_aligner="Bowtie1" # Tophat uses bowtie2 by default, bowtie1 can be also specified. Especifing bowth, means to repeat the analysis one with each aligner (Allowed values: Bowtie1, Bowtie2 and Bowtie1-Bowtie2/Bowtie2-Bowtie1))
 }
 
 use lib "$miARmaPath/lib/";
@@ -66,7 +69,6 @@ foreach my $file(@read_files){
 		aligner=>$aligner,
 		tophat_aligner=>$tophat_aligner,
 		threads=>$threads,
-		bowtie2index=>$bowtie2index,
 		bowtie1index=>$bowtie1index,
 		verbose=>$verbose,
 		logfile=>$projectdir.$logfile,
@@ -78,6 +80,8 @@ foreach my $file(@read_files){
 		library_type=>$library_type,
 		projectdir=>$projectdir,
 		tophatParameters=>$tophatParameters,
-		miARmaPath=>$miARmaPath
+		miARmaPath=>$miARmaPath,
+		GTF=>$GTF,
+		Seqtype=>$Seqtype
 	);
 }
