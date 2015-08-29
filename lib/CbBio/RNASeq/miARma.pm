@@ -117,32 +117,6 @@ sub run_miARma{
 	#Check for general parameters
 	if($cfg->SectionExists("General")==1){
 		
-		#Optionals
-		#optional parameters: stats folder
-		if($cfg->exists("General","stats_file") ne "" or defined($stat_file)){
-			$stat_file=$cfg->val("General","stats_file");
-			system("touch $stat_file");
-		}
-		if($cfg->exists("General","stats_file") eq "" or undef($stat_file)){
-			$stat_file=$cfg->val("General","projectdir")."/miARma_stat.$$.log";
-			$cfg->newval("General", "stats_file", $stat_file);
-			$cfg->RewriteConfig;
-			system("touch $stat_file");
-		}
-		#optional parameters: log_file
-		if($cfg->exists("General","logfile") ne "" or defined($log_file)){
-			$log_file=$cfg->val("General","logfile");
-			system("touch $log_file");
-		}
-		if($cfg->exists("General","logfile") eq "" or undef($log_file)){
-			$log_file=$cfg->val("General","projectdir")."/miARma_logfile.$$.log";
-			$cfg->newval("General", "logfile", $log_file);
-			$cfg->RewriteConfig;
-			system("touch $log_file");
-			
-		}
-		#Mandatory
-		
 		#Mandatory parameters: read folder
 		if($cfg->exists("General","read_dir") eq "" or ($cfg->val("General","read_dir") eq "")){
 			print STDERR "\nERROR " . date() . " read_dir/RNA_read_dir parameter in Section [General] is missing/unfilled. Please check documentation\n";
@@ -182,6 +156,30 @@ sub run_miARma{
 		else{
 			#First, we are going to check if input files are real fastq files if no error is found
 			#check_input_format(-config => $cfg);
+			
+			system ("mkdir -p " . $cfg->val("General","projectdir"));
+			#optional parameters: stats folder
+			if($cfg->exists("General","stats_file") ne "" or defined($stat_file)){
+				$stat_file=$cfg->val("General","stats_file");
+				system("touch $stat_file");
+			}
+			if($cfg->exists("General","stats_file") eq "" or undef($stat_file)){
+				$stat_file=$cfg->val("General","projectdir")."/miARma_stat.$$.log";
+				$cfg->newval("General", "stats_file", $stat_file);
+				$cfg->RewriteConfig;
+				system("touch $stat_file");
+			}
+			#optional parameters: log_file
+			if($cfg->exists("General","logfile") ne "" or defined($log_file)){
+				$log_file=$cfg->val("General","logfile");
+				system("touch $log_file");
+			}
+			if($cfg->exists("General","logfile") eq "" or undef($log_file)){
+				$log_file=$cfg->val("General","projectdir")."/miARma_logfile.$$.log";
+				$cfg->newval("General", "logfile", $log_file);
+				$cfg->RewriteConfig;
+				system("touch $log_file");
+			}
 		}
 	}
 	else{
@@ -570,6 +568,7 @@ sub run_miARma{
 			}
 		}
 	}
+	#Diferential Expression
 	if($cfg->SectionExists("DEAnalysis")==1){
 		#Mandatory parameters: read folder
 		if($cfg->exists("DEAnalysis","targetfile") eq "" or ($cfg->val("DEAnalysis","targetfile") eq "")){
@@ -640,6 +639,7 @@ sub run_miARma{
 			}
 		}
 	}
+	#miRGate prediction
 	if($cfg->SectionExists("TargetPrediction")==1){
 		#run DEAnalysis
 		my $dir=$cfg->val("General","projectdir");		
@@ -656,6 +656,7 @@ sub run_miARma{
 		);
 		
 	}
+	#Denovo
 	if($cfg->SectionExists("DeNovo")==1){
 		
 		
