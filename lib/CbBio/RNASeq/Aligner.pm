@@ -1530,7 +1530,7 @@ sub TopHat{
 	}
 	
 	if(lc($args{"tophat_aligner"}) eq "bowtie1"){
-		my $tophat_aligner=$args{"tophat_aligner"};
+		my $tophat_aligner=lc($args{"tophat_aligner"});
 		$bowtiepardef.=" --$tophat_aligner";
 	}
 	
@@ -1570,7 +1570,7 @@ sub TopHat{
 		if($verbose){
 			#commandef is the command will be executed by system composed of the results directory 
 			#creation and the bowtie2 execution. The stats data will be printed on the screen
-			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command;
+			$commanddef= "mkdir -p ".$projectdir."/".$output_dir." ;".$command;
 			#Printing on the screen the date and the execution data
 			print STDOUT "TOPHAT :: ".date()." Executing $commanddef\n" ;
 		}   
@@ -1581,7 +1581,7 @@ sub TopHat{
 			print STATS "TOPHAT :: File:".$file."\n";
 			#commandef is the command will be executed by system composed of the results directory creation
 			#and the tophat execution. The stats data will be redirected to the stats.log file
-			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command." 2>> ".$statsfile;
+			$commanddef= "mkdir -p ".$projectdir."/".$output_dir." ;".$command." 2>> ".$statsfile;
 		}
 		#Opening the run.log and printing the execution data
 		open (LOG,">> ".$logfile) || die "TOPHAT ERROR :: Can't open $logfile: $!";
