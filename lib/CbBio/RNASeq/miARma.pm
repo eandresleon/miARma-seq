@@ -645,17 +645,57 @@ sub run_miARma{
 		#run DEAnalysis
 		my $dir=$cfg->val("General","projectdir");		
 		use CbBio::RNASeq::TargetPrediction;
-		TargetPrediction(
-			miRNAs_folder=>$cfg->val("General","projectdir"),
-			logfile=>$log_file || $cfg->val("General","logfile"),
-			verbose=>$cfg->val("General","verbose") || 0,
-			projectdir=>$cfg->val("General","projectdir")|| undef,
-			organism=>$cfg->val("General","organism")|| undef,
-			miARmaPath=>$miARmaPath,
-			edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
-			noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
-		);
 		
+		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") eq ""){
+			TargetPrediction(
+				miRNAs_folder=>$dir,
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				verbose=>$cfg->val("General","verbose") || 0,
+				projectdir=>$cfg->val("General","projectdir")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
+				miARmaPath=>$miARmaPath,
+				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
+				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+			);
+		}
+		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") ne ""){
+			TargetPrediction(
+				miRNAs_folder=>$dir,
+				genes_folder=>$cfg->val("TargetPrediction","genes_folder"),
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				verbose=>$cfg->val("General","verbose") || 0,
+				projectdir=>$cfg->val("General","projectdir")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
+				miARmaPath=>$miARmaPath,
+				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
+				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+			);
+		}
+		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") eq ""){
+			TargetPrediction(
+				genes_folder=>$dir,
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				verbose=>$cfg->val("General","verbose") || 0,
+				projectdir=>$cfg->val("General","projectdir")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
+				miARmaPath=>$miARmaPath,
+				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
+				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+			);
+		}
+		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") ne "") {
+			TargetPrediction(
+				genes_folder=>$dir,
+				miRNAs_folder=>$cfg->val("TargetPrediction","miRNAs_folder"),
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				verbose=>$cfg->val("General","verbose") || 0,
+				projectdir=>$cfg->val("General","projectdir")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
+				miARmaPath=>$miARmaPath,
+				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
+				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+			);
+		}
 	}
 	#Denovo
 	if($cfg->SectionExists("DeNovo")==1){
