@@ -446,10 +446,6 @@ sub run_miARma{
 					print STDERR "\nERROR " . date() . " gtf parameter in Section [Aligner] is missing. Please check documentation\n";
 					help_check_aligner();
 				}
-				elsif($cfg->exists("Aligner","library_type") eq "" or $cfg->val("Aligner","library_type") eq ""){
-					print STDERR "\nERROR " . date() . " library_type parameter in Section [Aligner] is missing. Please check documentation\n";
-					help_check_aligner();
-				}
 				
 				#Reading read directory, collecting the files and completing with the path
 				my $dir=$cfg->val("General","read_dir");
@@ -465,10 +461,16 @@ sub run_miARma{
 				
 			}
 			
+			my $libray_type="fr-firststrand";
+			if(lc($cfg->val("General","strand")) eq "no"){
+				$libray_type="fr-unstranded";
+			}
+			if(lc($cfg->val("General","strand")) eq "reverse"){
+				$libray_type="fr-secondstrand";
+			}
 			check_input_format(-files=>\@files);
 			if(scalar(@files)>0){
 				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis\n";
-			
 				# Reading the array with the names of the files
 				foreach my $file( sort @files){
 					ReadAligment(
@@ -493,7 +495,7 @@ sub run_miARma{
 						tophatParameters=>$cfg->val("Aligner","tophatParameters") || undef,
 						tophat_seg_mismatches=>$cfg->val("Aligner","tophat_seg_mismatches") || undef,
 						tophat_seg_length=>$cfg->val("Aligner","tophat_seg_length") || undef,
-						library_type=>$cfg->val("Aligner","library_type") || undef,
+						library_type=>$libray_type || "fr-firststrand",
 						tophat_multihits=>$cfg->val("Aligner","tophat_multihits") || undef,
 						read_mismatches=>$cfg->val("Aligner","read_mismatches") || undef,
 						tophat_aligner=>$cfg->val("Aligner","tophat_aligner") || undef,
@@ -548,7 +550,7 @@ sub run_miARma{
 						database=>$cfg->val("ReadCount","database"),
 						seqid=>$cfg->val("ReadCount","seqid") || undef,
 						parameters=>$cfg->val("ReadCount","parameters") || undef, 
-						strand=>$cfg->val("ReadCount","strand") || undef, 
+						strand=>$cfg->val("General","strand") || "yes", 
 						featuretype=>$cfg->val("ReadCount","featuretype") || undef,
 						logfile=>$log_file || $cfg->val("General","logfile"),
 						verbose=>$cfg->val("General","verbose") || 0,
@@ -912,7 +914,8 @@ miARmaPath=.
 projectdir=results/
 organism=human
 type=miRNA
-
+SetType=Paired
+strand=yes
 };
 
 	print STDERR $usage;
