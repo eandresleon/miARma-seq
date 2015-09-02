@@ -217,7 +217,7 @@ sub run_miARma{
 			
 			if($cfg->SectionExists("DeNovo")==1 and $post_qual==1){
 				print STDERR "\nWARN " . date() . " For DeNovo studies, Post quality analyses is not available\n";
-				$$post_qual=0;					
+				$post_qual=0;					
 			}
 			
 			#run quality;
