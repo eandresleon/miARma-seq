@@ -114,7 +114,7 @@ sub AdapterRemoval{
 	my $dir= $args{"dir"}; #Input directory where the files are
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
-	my $verbose=$args{"verbose"}; #Optional arguments to show the execution data on screen
+	my $verbose=$args{"verbose"} || 0; #Optional arguments to show the execution data on screen
 	my $statsfile=$args{"statsfile"}; #Path of stats.log file where stats data will be saved
 	my $miARmaPath=$args{"miARmaPath"};
 	#Declaring the variables to collect the path of the new files and the variables to control the function
