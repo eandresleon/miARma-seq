@@ -238,8 +238,8 @@ sub run_miARma{
 							miARmaPath=>$miARmaPath,
 							file=>$file,
 							projectdir=>$cfg->val("General","projectdir"),
-							threads=>$cfg->val("General","threads"),
-							verbose=>$cfg->val("General","verbose"),
+							threads=>$cfg->val("General","threads") || undef,
+							verbose=>$cfg->val("General","verbose") || undef,
 							logfile=>$log_file || $cfg->val("General","logfile"),
 							prefix=>"Pre",
 						);
@@ -248,7 +248,7 @@ sub run_miARma{
 					# # Calling FastQCStats sobroutine of Quality.pm package. 
 					FastQCStats(
 						dir=>$output_dir, 
-						verbose=>$cfg->val("General","verbose"),
+						verbose=>$cfg->val("General","verbose") || undef,
 						statsfile=>$stat_file || $cfg->val("General","stats_file"),
 						logfile=>$log_file || $cfg->val("General","logfile"),
 					);
