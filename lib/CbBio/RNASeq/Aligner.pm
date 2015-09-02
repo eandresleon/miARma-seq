@@ -1984,7 +1984,6 @@ sub miRDeep{
 		open (LOG,">> ".$logfile) || die "miRDeep ERROR :: Can't open $logfile: $!";
 		print LOG "miRDeep :: ".date()." Executing $commanddef_mapper\n";
 		print LOG "miRDeep :: ".date()." Executing $commanddef_novo\n";
-		close LOG;
 
 		print STDERR "miRDeep :: ".date()." Mapping $file with miRDeep mapper module\n";
 		#Executing the command or if system can't be executed die showing the error.
@@ -1997,12 +1996,14 @@ sub miRDeep{
 		 or die "miRDeep ERROR :: system args failed: $? ($commanddef_novo)";
 
 		#Clean all temporary files by miRDeep
-		my $clean_cmd= "mv result_*.csv $projectdir/$output_dir/$name\.xls && rm -rf $projectdir/dir_* $projectdir/*.bed $projectdir/*.html $projectdir/mirna_results_* $projectdir/expression_analyses $projectdir/mapper.log $projectdir/bowtie.log $projectdir/error_* $projectdir/mirdeep_runs";
-		
+		my $clean_cmd= "mv result_*.csv $projectdir/$output_dir/$name\.xls && rm -rf $miARmaPath/dir_* $miARmaPath/*.bed $miARmaPath/*.html $miARmaPath/mirna_results_* $miARmaPath/expression_analyses $miARmaPath/mapper.log $miARmaPath/bowtie.log $miARmaPath/error_* $miARmaPath/mirdeep_runs";
+		print LOG "miRDeep :: ".date()." $clean_cmd\n";
 		system($clean_cmd) == 0
 		 or die "miRDeep ERROR :: system args failed: $? ($clean_cmd)";
 		
 		close STATS;
+		close LOG;
+		
 		return();
 		
 		#The path of the output file is returned to the main program

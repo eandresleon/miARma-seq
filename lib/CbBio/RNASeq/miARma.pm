@@ -569,134 +569,6 @@ sub run_miARma{
 			}
 		}
 	}
-	#Diferential Expression
-	if($cfg->SectionExists("DEAnalysis")==1){
-		#Mandatory parameters: read folder
-		if($cfg->exists("DEAnalysis","targetfile") eq "" or ($cfg->val("DEAnalysis","targetfile") eq "")){
-			print STDERR "\nERROR " . date() . " targetfile parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
-			help_check_aligner();
-		}
-		elsif( lc($cfg->val("DEAnalysis","contrastfile")) eq "" and ($cfg->val("DEAnalysis","contrastfile") eq "")){
-			print STDERR "\nERROR " . date() . " contrastfile parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
-			help_check_aligner();
-		}
-		elsif( lc($cfg->val("DEAnalysis","filter")) eq "" and ($cfg->val("DEAnalysis","filter") eq "")){
-			print STDERR "\nERROR " . date() . " filter parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
-			help_check_aligner();
-		}
-		elsif( lc($cfg->val("DEAnalysis","DEsoft")) eq "" and ($cfg->val("DEAnalysis","DEsoft") eq "")){
-			print STDERR "\nERROR " . date() . " DEsoft parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
-			help_check_deanalysis();
-		}
-		else{
-			#run DEAnalysis
-			use CbBio::RNASeq::DEAnalysis;
-			print STDERR "miARma :: ".date()." Differential expression analysis using  ".$cfg->val("DEAnalysis","DEsoft") ." software(s)\n";
-			my $dir=$cfg->val("General","projectdir")."/Readcount_results/"; 
-
-			if(opendir(DIR, $dir)){
-				opendir(DIR, $dir) || die $!;
-				my @files= readdir(DIR);
-				@files=map("$dir$_",@files);
-
-				foreach my $file(@files){
-					DE_Analysis(
-						projectdir=>$cfg->val("General","projectdir")|| undef,
-						dir=>$dir,
-						file=>$file,
-						targetfile=>$cfg->val("DEAnalysis","targetfile"),
-						label=>$cfg->val("General","label"),
-						filter=>$cfg->val("DEAnalysis","filter")|| undef,
-						edger_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
-						noiseq_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
-						DEsoft=>$cfg->val("DEAnalysis","DEsoft")|| undef,
-						filtermethod=>$cfg->val("DEAnalysis","DEsoft")|| undef,
-						logfile=>$log_file || $cfg->val("General","logfile"),
-						verbose=>$cfg->val("General","verbose") || 0,
-						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue")|| undef,
-						repthreshold=>$cfg->val("DEAnalysis","repthreshold")|| undef,
-						edger_normethod=>$cfg->val("DEAnalysis","edger_normethod")|| undef,
-						noiseq_normethod=>$cfg->val("DEAnalysis","noiseq_normethod")|| undef,
-						replicates=>$cfg->val("DEAnalysis","replicates") || undef,
-						miARmaPath=>$miARmaPath,
-						repthreshold=>$cfg->val("DEAnalysis","repthreshold") || undef,
-						bcvvalue=>$cfg->val("DEAnalysis","bcvvalue") || undef,
-						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue") || undef,
-						cutoffvalue=>$cfg->val("DEAnalysis","cutoffvalue") || undef,
-						Rdir=>$cfg->val("DEAnalysis","Rdir") || undef,
-				     	replicatevalue=>$cfg->val("DEAnalysis","replicatevalue") || undef,
-						kvalue=>$cfg->val("DEAnalysis","kvalue") || undef,
-						lcvalue=>$cfg->val("DEAnalysis","lcvalue") || undef,
-						pnrvalue=>$cfg->val("DEAnalysis","pnrvalue") || undef,
-						nssvalue=>$cfg->val("DEAnalysis","nssvalue") || undef,
-						vvalue=>$cfg->val("DEAnalysis","vvalue") || undef,
-						qvalue=>$cfg->val("DEAnalysis","qvalue") || undef,						
-					);
-				}
-			}
-			else{
-				print "ERROR :: Please check that your tab files are saved in: ($dir)\n";
-				help_check_deanalysis();
-			}
-		}
-	}
-	#miRGate prediction
-	if($cfg->SectionExists("TargetPrediction")==1){
-		#run DEAnalysis
-		my $dir=$cfg->val("General","projectdir");		
-		use CbBio::RNASeq::TargetPrediction;
-		
-		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") eq ""){
-			TargetPrediction(
-				miRNAs_folder=>$dir,
-				logfile=>$log_file || $cfg->val("General","logfile"),
-				verbose=>$cfg->val("General","verbose") || 0,
-				projectdir=>$cfg->val("General","projectdir")|| undef,
-				organism=>$cfg->val("General","organism")|| undef,
-				miARmaPath=>$miARmaPath,
-				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
-				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
-			);
-		}
-		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") ne ""){
-			TargetPrediction(
-				miRNAs_folder=>$dir,
-				genes_folder=>$cfg->val("TargetPrediction","genes_folder"),
-				logfile=>$log_file || $cfg->val("General","logfile"),
-				verbose=>$cfg->val("General","verbose") || 0,
-				projectdir=>$cfg->val("General","projectdir")|| undef,
-				organism=>$cfg->val("General","organism")|| undef,
-				miARmaPath=>$miARmaPath,
-				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
-				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
-			);
-		}
-		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") eq ""){
-			TargetPrediction(
-				genes_folder=>$dir,
-				logfile=>$log_file || $cfg->val("General","logfile"),
-				verbose=>$cfg->val("General","verbose") || 0,
-				projectdir=>$cfg->val("General","projectdir")|| undef,
-				organism=>$cfg->val("General","organism")|| undef,
-				miARmaPath=>$miARmaPath,
-				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
-				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
-			);
-		}
-		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") ne "") {
-			TargetPrediction(
-				genes_folder=>$dir,
-				miRNAs_folder=>$cfg->val("TargetPrediction","miRNAs_folder"),
-				logfile=>$log_file || $cfg->val("General","logfile"),
-				verbose=>$cfg->val("General","verbose") || 0,
-				projectdir=>$cfg->val("General","projectdir")|| undef,
-				organism=>$cfg->val("General","organism")|| undef,
-				miARmaPath=>$miARmaPath,
-				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
-				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
-			);
-		}
-	}
 	#Denovo
 	if($cfg->SectionExists("DeNovo")==1){
 		
@@ -717,27 +589,11 @@ sub run_miARma{
 			print STDERR "\nERROR " . date() . " genome parameter in Section [DeNovo] is missing/unfilled. Please check documentation\n";
 			help_check_denovo();
 		}
-		# Read count of new miRNAs
-		elsif($cfg->exists("DeNovo","targetfile") eq "" or ($cfg->val("DeNovo","targetfile") eq "")){
-			print STDERR "\nERROR " . date() . " targetfile parameter in Section [DeNovo] is missing/unfilled. Please check documentation\n";
-			help_check_denovo();
-		}
-		elsif( lc($cfg->val("DeNovo","contrastfile")) eq "" and ($cfg->val("DeNovo","contrastfile") eq "")){
-			print STDERR "\nERROR " . date() . " contrastfile parameter in Section [DeNovo] is missing/unfilled. Please check documentation\n";
-			help_check_denovo();
-		}
-		elsif( lc($cfg->val("DeNovo","filter")) eq "" and ($cfg->val("DeNovo","filter") eq "")){
-			print STDERR "\nERROR " . date() . " filter parameter in Section [DeNovo] is missing/unfilled. Please check documentation\n";
-			help_check_denovo();
-		}
-		elsif( lc($cfg->val("DeNovo","DEsoft")) eq "" and ($cfg->val("DeNovo","DEsoft") eq "")){
-			print STDERR "\nERROR " . date() . " DEsoft parameter in Section [DeNovo] is missing/unfilled. Please check documentation\n";
-			help_check_denovo();
-		}
 		
 		else{
 			#run Aligner
 			use CbBio::RNASeq::Aligner;
+			use CbBio::RNASeq::Readcount;
 			
 			my $read_directory=$cfg->val("General","read_dir") . "/";
 			my @fastaq_files;
@@ -797,38 +653,148 @@ sub run_miARma{
 					logfile=>$log_file || $cfg->val("General","logfile"),
 				);
 			}
+		}
+	}	
+	#Diferential Expression
+	if($cfg->SectionExists("DEAnalysis")==1){
+		#Mandatory parameters: read folder
+		if($cfg->exists("DEAnalysis","targetfile") eq "" or ($cfg->val("DEAnalysis","targetfile") eq "")){
+			print STDERR "\nERROR " . date() . " targetfile parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
+			help_check_aligner();
+		}
+		elsif( lc($cfg->val("DEAnalysis","contrastfile")) eq "" and ($cfg->val("DEAnalysis","contrastfile") eq "")){
+			print STDERR "\nERROR " . date() . " contrastfile parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
+			help_check_aligner();
+		}
+		elsif( lc($cfg->val("DEAnalysis","filter")) eq "" and ($cfg->val("DEAnalysis","filter") eq "")){
+			print STDERR "\nERROR " . date() . " filter parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
+			help_check_aligner();
+		}
+		elsif( lc($cfg->val("DEAnalysis","DEsoft")) eq "" and ($cfg->val("DEAnalysis","DEsoft") eq "")){
+			print STDERR "\nERROR " . date() . " DEsoft parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
+			help_check_deanalysis();
+		}
+		else{
+			#run DEAnalysis
 			use CbBio::RNASeq::DEAnalysis;
-			use File::Basename;
+			print STDERR "miARma :: ".date()." Differential expression analysis using  ".$cfg->val("DEAnalysis","DEsoft") ." software(s)\n";
 			
-			my($file_name,$path)=fileparse($result_file);
+			my @files;
+			#if user did a regular readcount
+			my $read_count_dir=$cfg->val("General","projectdir")."/Readcount_results/";
+			if(-e $read_count_dir){
+				opendir(CUTDIR, $read_count_dir) || warn "DEAnalysis:: Folder $read_count_dir is not found\n"; 
+				my @cut_files= readdir(CUTDIR);
+				push(@files,map("$read_count_dir/$_",@cut_files));
+				
+			}
+			#if user did a denovo analysis
+			my $denovo_dir=$cfg->val("General","projectdir")."/DeNovo_ReadCount/"; 
+			if(-e $denovo_dir){
+				opendir(READIR, $denovo_dir) ||  warn "DEAnalysis:: Folder $denovo_dir is not found\n"; 
+				my @rea_files= readdir(READIR);
+				push(@files,map("$denovo_dir/$_",@rea_files));
+			}
 
-			if($result_file){
-				DE_Analysis(
-					projectdir=>$cfg->val("General","projectdir")|| undef,
-					dir=>$path,
-					file=>$result_file,
-					targetfile=>$cfg->val("DeNovo","targetfile"),
-					label=>"DeNovo_" . $cfg->val("General","label"),
-					filter=>$cfg->val("DeNovo","filter")|| undef,
-					edger_contrastfile=>$cfg->val("DeNovo","contrastfile")|| undef,
-					noiseq_contrastfile=>$cfg->val("DeNovo","contrastfile")|| undef,
-					DEsoft=>$cfg->val("DeNovo","DEsoft")|| undef,
-					filtermethod=>$cfg->val("DeNovo","DEsoft")|| undef,
-					logfile=>$log_file || $cfg->val("General","logfile"),
-					verbose=>$cfg->val("General","verbose") || 0,
-					cpmvalue=>$cfg->val("DeNovo","cpmvalue")|| undef,
-					repthreshold=>$cfg->val("DeNovo","repthreshold")|| undef,
-					edger_normethod=>$cfg->val("DeNovo","edger_normethod")|| undef,
-					noiseq_normethod=>$cfg->val("DeNovo","noiseq_normethod")|| undef,
-					replicates=>$cfg->val("DeNovo","replicates") || undef,
-					miARmaPath=>$miARmaPath,
-				);
+			if(scalar(@files)>0){
+				foreach my $file(  sort @files){
+					DE_Analysis(
+						projectdir=>$cfg->val("General","projectdir")|| undef,
+						file=>$file,
+						targetfile=>$cfg->val("DEAnalysis","targetfile"),
+						label=>$cfg->val("General","label"),
+						filter=>$cfg->val("DEAnalysis","filter")|| undef,
+						edger_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
+						noiseq_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
+						DEsoft=>$cfg->val("DEAnalysis","DEsoft")|| undef,
+						filtermethod=>$cfg->val("DEAnalysis","DEsoft")|| undef,
+						logfile=>$log_file || $cfg->val("General","logfile"),
+						verbose=>$cfg->val("General","verbose") || 0,
+						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue")|| undef,
+						repthreshold=>$cfg->val("DEAnalysis","repthreshold")|| undef,
+						edger_normethod=>$cfg->val("DEAnalysis","edger_normethod")|| undef,
+						noiseq_normethod=>$cfg->val("DEAnalysis","noiseq_normethod")|| undef,
+						replicates=>$cfg->val("DEAnalysis","replicates") || undef,
+						miARmaPath=>$miARmaPath,
+						repthreshold=>$cfg->val("DEAnalysis","repthreshold") || undef,
+						bcvvalue=>$cfg->val("DEAnalysis","bcvvalue") || undef,
+						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue") || undef,
+						cutoffvalue=>$cfg->val("DEAnalysis","cutoffvalue") || undef,
+						Rdir=>$cfg->val("DEAnalysis","Rdir") || undef,
+				     	replicatevalue=>$cfg->val("DEAnalysis","replicatevalue") || undef,
+						kvalue=>$cfg->val("DEAnalysis","kvalue") || undef,
+						lcvalue=>$cfg->val("DEAnalysis","lcvalue") || undef,
+						pnrvalue=>$cfg->val("DEAnalysis","pnrvalue") || undef,
+						nssvalue=>$cfg->val("DEAnalysis","nssvalue") || undef,
+						vvalue=>$cfg->val("DEAnalysis","vvalue") || undef,
+						qvalue=>$cfg->val("DEAnalysis","qvalue") || undef,						
+					);
+				}
 			}
 			else{
-				print STDERR "Can't find $result_file\n";
+				print "ERROR :: Please check that your tab files are saved in: ($read_count_dir / $denovo_dir)\n";
+				help_check_deanalysis();
 			}
 		}
 	}
+	#miRGate prediction
+	if($cfg->SectionExists("TargetPrediction")==1){
+		#run TargetP
+		my $dir=$cfg->val("General","projectdir");		
+		use CbBio::RNASeq::TargetPrediction;
+		
+		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") eq ""){
+			TargetPrediction(
+				miRNAs_folder=>$dir,
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				verbose=>$cfg->val("General","verbose") || 0,
+				projectdir=>$cfg->val("General","projectdir")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
+				miARmaPath=>$miARmaPath,
+				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
+				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+			);
+		}
+		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") ne ""){
+			TargetPrediction(
+				miRNAs_folder=>$dir,
+				genes_folder=>$cfg->val("TargetPrediction","genes_folder"),
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				verbose=>$cfg->val("General","verbose") || 0,
+				projectdir=>$cfg->val("General","projectdir")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
+				miARmaPath=>$miARmaPath,
+				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
+				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+			);
+		}
+		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") eq ""){
+			TargetPrediction(
+				genes_folder=>$dir,
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				verbose=>$cfg->val("General","verbose") || 0,
+				projectdir=>$cfg->val("General","projectdir")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
+				miARmaPath=>$miARmaPath,
+				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
+				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+			);
+		}
+		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") ne "") {
+			TargetPrediction(
+				genes_folder=>$dir,
+				miRNAs_folder=>$cfg->val("TargetPrediction","miRNAs_folder"),
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				verbose=>$cfg->val("General","verbose") || 0,
+				projectdir=>$cfg->val("General","projectdir")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
+				miARmaPath=>$miARmaPath,
+				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
+				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+			);
+		}
+	}
+
 
 sub check_input_format{
 	use File::Basename;

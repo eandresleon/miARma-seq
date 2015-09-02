@@ -979,7 +979,7 @@ sub miRDeepFormat{
 		open(LOG,">> ".$logfile) || die "miRDeep ERROR :: ".date()."Can't open '$logfile': $!";
 		
 		#Declaration of the output path 
-		my $output_dir="/miRNAs_results/";
+		my $output_dir="/DeNovo_ReadCount/";
 		#Reading each path of the input referenced array
 		foreach my $file(sort {$a cmp $b} @$input){
 			print LOG "LOG :: Reading $file\n";

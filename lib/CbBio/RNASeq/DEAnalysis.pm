@@ -64,7 +64,6 @@ to execute one of these functions or both.
 	
 	Mandatory parameters:
 	[projectdir] Path of the directory where the output files will be saved.
-	[dir] Path of the directory which contains the file with the reads. This directory will be configured as working directory for R
 	[file] Name of the tab file which contains the number of reads from the htseq analysis
 	[targetfile] Path of the target file. This is a tabulated file which contains the experimental condiction of each sample. 
 	The names of the samples defined in this file will be used to the plots.
@@ -118,21 +117,21 @@ sub DE_Analysis{
 	#Arguments provided by user are collected by %args. 
 	my %args=@_;
 	my $file=$args{"file"}; #Name of the tab file which contains the number of reads from the htseq analysis
-	my $dir=$args{"dir"}; #Path of the directory which contains the files. This directory will be configured as working directory for R
 	my $projectdir=$args{"projectdir"}; #Path of the directory where will be saved the results.
 	my $targetfile=$args{"targetfile"}; #Path of the target file with the experimental conditions of each sample
 	my $label=$args{"label"}; #Character string that will appear in the name the results file
 	my $filter=$args{"filter"}; #This value refers to filter processing in the reads (Should be "yes" or "no").
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
 	my $DEsoft=$args{"DEsoft"}; #Specific software to perform the Differential Expression Analysis
+  	my (undef,$dir) = fileparse($file);
+	$dir=abs_path($dir);
 	
 	#Checking mandatory parameters
-	if($DEsoft and $file and $dir and $projectdir and $targetfile and $label and $filter and $logfile){
+	if($DEsoft and $file and $projectdir and $targetfile and $label and $filter and $logfile){
 		use File::Basename;
 		#Obtaining the absolute path of the directory and the file to R execution
-	  	my $dir = abs_path($dir);
 	  	my $projectdir = abs_path($projectdir);
-	  	my $file = abs_path($file);
+	  	$file = abs_path($file);
 	  	my $targetfile = abs_path($targetfile);
 		
 		my $addtofile=fileparse($file);
