@@ -238,8 +238,8 @@ sub run_miARma{
 							miARmaPath=>$miARmaPath,
 							file=>$file,
 							projectdir=>$cfg->val("General","projectdir"),
-							threads=>$cfg->val("General","threads") || undef,
-							verbose=>$cfg->val("General","verbose") || undef,
+							threads=>$cfg->val("General","threads") || 1,
+							verbose=>$cfg->val("General","verbose") || 0,
 							logfile=>$log_file || $cfg->val("General","logfile"),
 							prefix=>"Pre",
 						);
@@ -248,13 +248,13 @@ sub run_miARma{
 					# # Calling FastQCStats sobroutine of Quality.pm package. 
 					FastQCStats(
 						dir=>$output_dir, 
-						verbose=>$cfg->val("General","verbose") || undef,
+						verbose=>$cfg->val("General","verbose") || 0,
 						statsfile=>$stat_file || $cfg->val("General","stats_file"),
 						logfile=>$log_file || $cfg->val("General","logfile"),
 					);
 				}
 				 else{
-				 	print "1 ERROR :: Please check that your reads are saved in: ($dir)\n";
+				 	print "ERROR :: Please check that your reads are saved in: ($dir)\n";
 				 	help_check_quality();
 				}
 			}
@@ -284,7 +284,7 @@ sub run_miARma{
 					adapter=>$cfg->val("Adapter","adapter")|| undef,,
 					logfile=>$log_file || $cfg->val("General","logfile"),
 					statsfile=>$stat_file || $cfg->val("General","stats_file"),
-					verbose=>$cfg->val("General","verbose")|| undef,,
+					verbose=>$cfg->val("General","verbose")|| 0,
 					projectdir=>$cfg->val("General","projectdir"),
 					min=>$cfg->val("Adapter","min")|| undef,,
 					max=>$cfg->val("Adapter","max")|| undef,,
@@ -316,8 +316,8 @@ sub run_miARma{
 						miARmaPath=>$miARmaPath,
 						file=>$processed_files,
 						projectdir=>$cfg->val("General","projectdir"),
-						threads=>$cfg->val("General","threads"),
-						verbose=>$cfg->val("General","verbose"),
+						threads=>$cfg->val("General","threads")|| 1,
+						verbose=>$cfg->val("General","verbose")|| 0,
 						logfile=>$log_file || $cfg->val("General","logfile"),
 						prefix=>"Post",
 					);
@@ -326,7 +326,7 @@ sub run_miARma{
 				# # Calling FastQCStats sobroutine of Quality.pm package. 
 				FastQCStats(
 					dir=>$output_dir_post, 
-					verbose=>$cfg->val("General","verbose"),
+					verbose=>$cfg->val("General","verbose") || 0,
 					statsfile=>$stat_file || $cfg->val("General","stats_file"),
 					logfile=>$log_file || $cfg->val("General","logfile"),
 				);
@@ -481,7 +481,7 @@ sub run_miARma{
 					    bowtie1index=>$cfg->val("Aligner","bowtie1index") || undef,
 						logfile=>$log_file||$cfg->val("General","logfile"),
 						statsfile=>$stat_file|| $cfg->val("General","stats_file"),
-						verbose=>$cfg->val("General","verbose") || undef,
+						verbose=>$cfg->val("General","verbose") || 0,
 					    bowtiemiss=>$cfg->val("Aligner","bowtiemiss") || undef,
 					    bowtieleng=>$cfg->val("Aligner","bowtieleng") || undef,
 						projectdir=>$cfg->val("General","projectdir")|| undef,
@@ -616,7 +616,7 @@ sub run_miARma{
 					threads=>$cfg->val("General","threads") || 1,
 				    bowtie1index=>$cfg->val("DeNovo","bowtie1index") || undef,
 					statsfile=>$stat_file || $cfg->val("General","stats_file"),
-					verbose=>$cfg->val("General","verbose")|| undef,,
+					verbose=>$cfg->val("General","verbose")|| 0,
 					projectdir=>$cfg->val("General","projectdir"),
 					logfile=>$log_file || $cfg->val("General","logfile"),
 					miARmaPath=>$miARmaPath,
@@ -646,7 +646,7 @@ sub run_miARma{
 					my $result=miRDeepCount(
 					  	file=>$file,
 						logfile=>$log_file || $cfg->val("General","logfile"),
-						verbose=>$cfg->val("General","verbose")|| undef,
+						verbose=>$cfg->val("General","verbose")|| 0,
 						projectdir=>$cfg->val("General","projectdir"),
 						miARmaPath=>$miARmaPath,
 					);

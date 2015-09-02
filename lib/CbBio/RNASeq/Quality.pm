@@ -99,8 +99,8 @@ sub FastQC{
 	#my $fastqc_bin="$miARmaPath/bin/common/fastqc/fastqc";
 	my $file=$args{"file"}; #Name of the file to perform the analysis
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
-	my $threads=$args{"threads"}; #Optional number of threads to perform the analysis faster
-	my $verbose=$args{"verbose"}; #Optional argument to show the execution data on screen
+	my $threads=$args{"threads"} || 1; #Optional number of threads to perform the analysis faster
+	my $verbose=$args{"verbose"} || 0; #Optional argument to show the execution data on screen
 	my $label=$args{"prefix"}; #Label to write in the directory results name
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	#Describing results directory 
