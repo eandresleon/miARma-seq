@@ -908,8 +908,8 @@ sub check_input_format{
 						}
 					}
 					else{
-						print STDERR "ERROR ". date() . " " . join(" The file ", @wrong_file) . " is not in in accordance with the fastq format\n";
-						exit;
+						print STDERR "Warn ". date() . " $file is not in in accordance with the fastq format\n";
+						next;
 					}
 				}
 			}
