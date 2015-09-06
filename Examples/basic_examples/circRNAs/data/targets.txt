@@ -1,0 +1,7 @@
+Name	Type
+untreated1	Untreated
+untreated2	Untreated
+untreated3	Untreated
+treated1	Treated
+treated2	Treated
+treated3	Treated
