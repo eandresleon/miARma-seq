@@ -18,7 +18,7 @@ my $output_dir;
 
 BEGIN { 
 	$miARmaPath="../../../../"; #Path to software: Full path is recommended
-	$dir="$miARmaPath/Examples/basic_examples/mRNAs/reads/"; #Path of the directory with the input files
+	$dir="$miARmaPath/Examples/basic_examples/circRNAs/reads/"; #Path of the directory with the input files
 	$projectdir="."; #Directory to save the results
 	$threads="4"; #Optional number of threads to perform the analysis faster
 	$verbose=""; #Optional argument to show the execution data on screen
