@@ -1,7 +1,7 @@
 Name	Type
-untreated1	Untreated
-untreated2	Untreated
-untreated3	Untreated
-treated1	Treated
-treated2	Treated
-treated3	Treated
+SRR1039508	Untreated
+SRR1039509	Untreated
+SRR1039512	Untreated
+SRR1039513	Treated
+SRR1039516	Treated
+SRR1039517	Treated
