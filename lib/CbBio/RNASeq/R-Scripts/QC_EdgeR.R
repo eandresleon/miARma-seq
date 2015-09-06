@@ -201,9 +201,9 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   labels<-colnames(targets)
   par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.8, cex.main=0.8)
   if(length(colnames(targets))==2){
-    plotMDS(dgenorm, labels=samplenames, col=boxcol, main=paste("MDS plot of ",label, " samples",sep=""), cex=0.75)
+    plotMDS.default(dgenorm, labels=samplenames, col=boxcol, main=paste("MDS plot of ",label, " samples",sep=""), cex=0.75)
   }else if(length(colnames(targets))==3){
-    plotMDS(dgenorm, labels=samplenames, col=boxcol, main=paste("MDS plot of ",label, " samples",sep=""), xlab=paste("logFC ",labels[2],sep=""), ylab=paste("logFC ",labels[3], sep=""), cex=0.75)
+    plotMDS.default(dgenorm, labels=samplenames, col=boxcol, main=paste("MDS plot of ",label, " samples",sep=""), xlab=paste("logFC ",labels[2],sep=""), ylab=paste("logFC ",labels[3], sep=""), cex=0.75)
   }
   
   
