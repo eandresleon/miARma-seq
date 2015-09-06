@@ -1500,7 +1500,7 @@ sub Minion{
 		}
 		else{
 			print STDERR "MINION ERROR :: None of the minion predictions (total : $number_possible_results) were valid\nClosing\n\n";
-			return;
+			return();
 		}
 		
 	}
@@ -1613,8 +1613,9 @@ sub BlatResults{
 								$data =~s/.* (YourSeq.*)/$1/g;
 								my (undef,$score,undef,undef,undef,$identity,$chr,$strand,$start,$end)=split(/\s+/,$data);
 								print STDOUT "Your sequence is mapped to the following genomic Coordinates : [$chr:$start-$end;$strand], identity:$identity, score:$score\n";
-								print STDOUT "So, returning :" . $results->{$pred +1}->{"fanout-score"} ."\n";								
-								return($results->{$pred +1}->{"fanout-score"});
+								#print STDOUT "So, returning :" . $results->{$pred +1}->{"fanout-score"} ."\n";								
+								#return($results->{$pred +1}->{"fanout-score"});
+								next;
 							}elsif(/Sorry/){
 								$ok=1;
 							}

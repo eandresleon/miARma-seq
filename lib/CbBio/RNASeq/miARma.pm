@@ -273,40 +273,50 @@ sub run_miARma{
 			# Reading the directory collecting the files and completing with the path
 					
 			my $dir=$cfg->val("General","read_dir");
-			my @files_adapter;		
-			if(opendir(DIR, $dir)){
-				print STDERR "miARma :: ".date()." Starting a adapter removal analysis\n";
-				my @files= readdir(DIR);
-				@files_adapter=AdapterRemoval(
-					adaptersoft=>$cfg->val("Adapter","adaptersoft"),
-					dir=>$dir,
-					files=>\@files,
-					adapter=>$cfg->val("Adapter","adapter")|| undef,,
-					logfile=>$log_file || $cfg->val("General","logfile"),
-					statsfile=>$stat_file || $cfg->val("General","stats_file"),
-					verbose=>$cfg->val("General","verbose")|| 0,
-					projectdir=>$cfg->val("General","projectdir"),
-					min=>$cfg->val("Adapter","min")|| undef,,
-					max=>$cfg->val("Adapter","max")|| undef,,
-					min_quality=>$cfg->val("Adapter","min_quality")|| undef,
-					miARmaPath=>$miARmaPath,
-					reaperparameters=>$cfg->val("Adapter","reaperparameters") || undef,
-					organism=>$cfg->val("Adapter","organism")|| undef,
-					trimmingnumber=>$cfg->val("Adapter","trimmingnumber")|| undef,
-					readposition=>$cfg->val("Adapter","readposition")|| undef,
-					adaptpredictionnumber=>$cfg->val("Adapter","adaptpredictionnumber")|| undef,
-					minionadaptersequence=>$cfg->val("Adapter","minionadaptersequence")|| undef,
-					cutadaptparameters=>$cfg->val("Adapter","cutadaptparameters")|| undef,
-					metafile=>$cfg->val("Adapter","metafile")|| undef,
-					reaperparameters=>$cfg->val("Adapter","metafile")|| undef,
-					geom=>$cfg->val("Adapter","geom")|| undef,
-					tabu=>$cfg->val("Adapter","tabu")|| undef,			
-				);
-			}	
+			my @files;
+			if(-e $dir){
+				opendir(DIR, $dir) || warn "Adapter:: Folder $dir is not found\n"; 
+				my @cut_files= readdir(DIR);
+				foreach my $f(sort @cut_files){
+					if (!-d "$dir/$f"){
+					 	push(@files,"$f");
+					 }
+				}
+			}
 			else{
 				print "ERROR :: Adapt:: Please check that your reads are saved in: ($dir)\n";
 			 	help_check_general();
 			}
+			check_input_format(-files=>\@files,-dir=>$dir);
+
+			print STDERR "miARma :: ".date()." Starting a adapter removal analysis\n";
+			my @files_adapter=AdapterRemoval(
+				adaptersoft=>$cfg->val("Adapter","adaptersoft"),
+				dir=>$dir,
+				files=>\@files,
+				adapter=>$cfg->val("Adapter","adapter")|| undef,,
+				logfile=>$log_file || $cfg->val("General","logfile"),
+				statsfile=>$stat_file || $cfg->val("General","stats_file"),
+				verbose=>$cfg->val("General","verbose")|| 0,
+				projectdir=>$cfg->val("General","projectdir"),
+				min=>$cfg->val("Adapter","min")|| undef,,
+				max=>$cfg->val("Adapter","max")|| undef,,
+				min_quality=>$cfg->val("Adapter","min_quality")|| undef,
+				miARmaPath=>$miARmaPath,
+				reaperparameters=>$cfg->val("Adapter","reaperparameters") || undef,
+				organism=>$cfg->val("Adapter","organism")|| undef,
+				trimmingnumber=>$cfg->val("Adapter","trimmingnumber")|| undef,
+				readposition=>$cfg->val("Adapter","readposition")|| undef,
+				adaptpredictionnumber=>$cfg->val("Adapter","adaptpredictionnumber")|| undef,
+				minionadaptersequence=>$cfg->val("Adapter","minionadaptersequence")|| undef,
+				cutadaptparameters=>$cfg->val("Adapter","cutadaptparameters")|| undef,
+				metafile=>$cfg->val("Adapter","metafile")|| undef,
+				reaperparameters=>$cfg->val("Adapter","metafile")|| undef,
+				geom=>$cfg->val("Adapter","geom")|| undef,
+				tabu=>$cfg->val("Adapter","tabu")|| undef,			
+			);
+				
+			
 			#Just in case the user wants to see the quality of the processed reads
 			if($post_qual==1){
 				print STDERR "miARma :: ".date()." Starting a Post Quality Analysis\n";
@@ -468,7 +478,7 @@ sub run_miARma{
 			if(lc($cfg->val("General","strand")) eq "reverse"){
 				$libray_type="fr-secondstrand";
 			}
-			check_input_format(-files=>\@files);
+			check_input_format(-files=>\@files,-dir=>"");
 			if(scalar(@files)>0){
 				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis\n";
 				# Reading the array with the names of the files
@@ -814,9 +824,8 @@ sub check_input_format{
 	if($args{"-files"}){
 		@files=@{$args{"-files"}};
 	}
-	my $dir_fastq;
+	my $dir_fastq = $args{"-dir"} || "";
 	if($cfg and scalar(@files)<0){
-		$dir_fastq=$cfg->val("General","read_dir");
 		if($dir_fastq){
 			if(opendir(FASTQF, $dir_fastq)){
 				my @files= readdir(FASTQF);
@@ -827,16 +836,22 @@ sub check_input_format{
 				exit;
 			}
 		}
+
 	}
 	#In case yo provide an array of files
 	if(scalar(@files)>0){
-		@fastq_files=@files;
+		if($dir_fastq){
+			@fastq_files=map("$dir_fastq/$_",@files);
+		}
+		else{
+			@fastq_files=@files;
+		}
 	}
 	my $exit=0;
 	if(scalar(@fastq_files)>0){
 		print STDERR "miARma :: " . date() . " Checking if files in \"$dir_fastq\" are in the correct fastq format\n" if($dir_fastq);
 		print STDERR "miARma :: " . date() . " Checking if files are in the correct fastq format\n" if(!$dir_fastq);
-		
+		my @wrong_file;
 		foreach my $file(@fastq_files){
 			if($file){
 				my ($real_file,$path)=fileparse($file);
@@ -853,7 +868,7 @@ sub check_input_format{
 						$file=$file_tmp;
 						$compressed_file=1;
 					}
-
+					#print STDERR "$file <> $real_file\n";
 					open IN,$file or die "Cannot open FASTQ file ($file)\n";
 					my $i=0;
 					my $mes="Please make sure your file ($real_file) is in accordance with the FASTQ format specifications";
@@ -862,19 +877,23 @@ sub check_input_format{
 				    	$i++;
 						if($i == 1){if(/^@\S+/){}else{
 							$error=1;
-							#print STDERR "miARmA ERROR :: ".date() . " First line of FASTQ reads file ($real_file) is not in accordance with the fastq format specifications\n$mes\n";}
+							#print STDERR "miARmA ERROR :: ".date() . " First line of FASTQ reads file ($real_file) is not in accordance with the fastq format specifications\n$mes\n";
+							push(@wrong_file,$real_file);
 						}}                 
 						if($i == 2){if(/^\S+$/){}else{
 							$error=1;
-							#print STDERR "miARmA ERROR :: ".date() . " Second line of FASTQ reads file ($real_file) contains whitespace in sequence\n$mes\n";}
+							push(@wrong_file,$real_file);
+							#print STDERR "miARmA ERROR :: ".date() . " Second line of FASTQ reads file ($real_file) contains whitespace in sequence\n$mes\n";
 						}}    
 						if($i == 3){if(/^\+/){}else{
 							$error=1;
-							#print STDERR "miARmA ERROR :: ".date() . " Third line of FASTQ reads file ($real_file) does not start with a '+' character.\n$mes\n";}
+							push(@wrong_file,$real_file);
+							#print STDERR "miARmA ERROR :: ".date() . " Third line of FASTQ reads file ($real_file) does not start with a '+' character.\n$mes\n";
 						}}   
 						if($i == 4){if(/^\S+$/){}else{
 							$error=1;
-							#print STDERR "miARmA ERROR :: ".date() . " Fourth line of FASTQ reads file ($real_file) contains whitespace\n$mes\n";}
+							push(@wrong_file,$real_file);
+							#print STDERR "miARmA ERROR :: ".date() . " Fourth line of FASTQ reads file ($real_file) contains whitespace\n$mes\n";
 						}}  
 					
 						last if($i == 4);
@@ -887,6 +906,10 @@ sub check_input_format{
 							print STDERR "$real_file is a fastq file, but due to cutadapt and other softwares, this file should include a fastq/fq extension. [Comppresed are also valid as .fq.gz]\n";
 							$exit=1;
 						}
+					}
+					else{
+						print STDERR "ERROR ". date() . " " . join(" The file ", @wrong_file) . " is not in in accordance with the fastq format\n";
+						exit;
 					}
 				}
 			}
