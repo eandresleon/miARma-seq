@@ -681,7 +681,7 @@ sub CIRIFormat{
 				my $originalname=$1;
 				my $suffix=$2;
 				if($name !~/^\./){
-					print "CIRI :: ". date() . " Reading $file\n";
+					print STDERR "CIRI :: ". date() . " Reading $file\n";
 					#Saving the Suffix with process information in a hash
 					$files->{$originalname}++;
 			
@@ -709,20 +709,20 @@ sub CIRIFormat{
 			else{
 				print LOG "WARM :: the file $file is not in the correct format\n";
 			}
-
 		}
 		#Printing the results of the process with each combination of software
 		my $fileresults= $projectdir.$output_dir."circRNAs.tab"; 
 		#Opening the output file to write the data
 		open(RESULTS,"> ".$fileresults) || die "SEQCOUNTFORMAT ERROR :: ".date()."Can't open '$fileresults': $!";
 		#The header of the file
-		print RESULTS join("\t",(sort keys %$data))."\n";
+		print RESULTS join("\t",(sort keys %$files))."\n";
+		
 		#gathering the number od reads for each circRNA
 		foreach my $circRNAs(sort keys %$hashref){
 			#PRint the circRNAs
 			print RESULTS $circRNAs ."\t";
 			my @reads;
-			foreach my $sample (sort keys %$data){
+			foreach my $sample (sort keys %$files){
 				#if the circRNAs has reads, print the all
 				if(exists $hashref->{$circRNAs}->{$sample}){
 					push (@reads,$hashref->{$circRNAs}->{$sample});
