@@ -549,7 +549,7 @@ sub run_miARma{
 			use CbBio::RNASeq::Readcount;
 			
 			my @files;
-			if(lc($cfg->val("General","type"))=="mirna"){
+			if(lc($cfg->val("General","type")) ne "circrna"){
 				#Reading CutAdapt results directory, collecting the files and completing with the path
 				my $bw1_dir=$cfg->val("General","projectdir")."/Bowtie1_results/";
 				if($bw1_dir){
@@ -567,8 +567,24 @@ sub run_miARma{
 					close BW2DIR;
 				}
 			}
+			elsif(lc($cfg->val("General","type")) eq "circrna"){
+				if($cfg->exists("ReadCount","bwaindex") eq "" or ($cfg->val("ReadCount","bwaindex") eq "")){
+					print STDERR "\nERROR " . date() . " bwaindex parameter in Section [Readcount] for circRNAs is missing/unfilled. Please check documentation\n";
+					$severe_error=1;			
+					help_check_count();
+				}
+				else{
+					my $bw2_dir=$cfg->val("General","projectdir")."/bwa_results/";
+					if($bw2_dir){
+						opendir(BW2DIR, $bw2_dir) || warn "Aligner:: Folder $bw2_dir is not found\n"; 
+						my @bw2_files= readdir(BW2DIR);
+						push(@files,map("$bw2_dir$_",@bw2_files));
+						close BW2DIR;
+					}
+				}
+			}
 			else{
-				print "ERROR :: You are requesting a miRNA readcount analysis, but no aligned files are found (Neither Bowtie1 nor Bowtie2)\n";
+				print "ERROR :: You are requesting a readcount analysis, but no aligned files are found (Neither Bowtie1 nor Bowtie2 ... )\n";
 			 	help_check_aligner();
 			}
 			if(scalar(@files)>0){
@@ -591,6 +607,7 @@ sub run_miARma{
 						threads=>$cfg->val("General","threads") || 1,
 						quality=>$cfg->val("ReadCount","quality") || undef,
 						Seqtype=>$cfg->val("ReadCount","Seqtype") || undef,
+						bwaindex=>$cfg->val("ReadCount","bwaindex") || undef,
 					);
 					push(@htseqfiles, $result);
 				}
@@ -1050,6 +1067,10 @@ Mandatory parameters:
 [ReadCount]
 database=miRNAs_miRBase20.gft
 
+for circRNAs:
+[ReadCount]
+database=HS_nbci_37.2.gft
+bwaindex=index/bwa
 };
 
 	print STDERR $usage;
