@@ -536,7 +536,6 @@ EOF
 			print LOG "QC_EdgeR :: ".date()." The file ".$a." has been generated \n";
 		}
 		close LOG;
-		
 	}
 	else
 	{
