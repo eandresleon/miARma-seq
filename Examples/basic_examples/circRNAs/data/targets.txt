@@ -1,7 +1,7 @@
 Name	Type
-SRR1039508	Untreated
-SRR1039509	Untreated
-SRR1039512	Untreated
-SRR1039513	Treated
-SRR1039516	Treated
-SRR1039517	Treated
+SRR1039508_1_sample	Untreated
+SRR1039509_1_sample	Untreated
+SRR1039512_1_sample	Untreated
+SRR1039513_1_sample	Treated
+SRR1039516_1_sample	Treated
+SRR1039517_1_sample	Treated
