@@ -438,7 +438,7 @@ sub run_miARma{
 					}
 				}
 			}
-			elsif(lc($cfg->val("General","type"))=="mrna"){
+			elsif(lc($cfg->val("General","type")) eq "mrna"){
 				#Mandatory for mRNA analysis
 				if($cfg->exists("Aligner","tophat_aligner") eq "" or ($cfg->val("Aligner","aligner") eq "")){
 					print STDERR "\nERROR " . date() . " aligner parameter in Section [Aligner] is missing/unfilled. Please check documentation\n";
@@ -470,7 +470,28 @@ sub run_miARma{
 				}
 				
 			}
-			
+			elsif(lc($cfg->val("General","type")) eq "circrna"){
+				#Mandatory for circRNA analysis
+				if($cfg->exists("Aligner","aligner") eq "" or ($cfg->val("Aligner","aligner") eq "")){
+					print STDERR "\nERROR " . date() . " aligner parameter in Section [Aligner] is missing/unfilled. Please check documentation\n";
+					help_check_aligner();
+				}
+				elsif( lc($cfg->val("Aligner","aligner")) eq "bwa" and ( $cfg->val("Aligner","bwaindex") eq "" and $cfg->val("Aligner","fasta") eq "")){
+					print STDERR "\nERROR " . date() . " Bowtie1 has been selected as aligner but bowtie1index/fasta is missing/unfilled. Please check documentation\n";
+					help_check_aligner();
+				}
+				#Reading read directory, collecting the files and completing with the path
+				my $dir=$cfg->val("General","read_dir");
+				if(-e $dir){
+					opendir(DIR, $dir) || warn "Aligner:: Folder $dir is not found\n"; 
+					my @cut_files= readdir(DIR);
+					push(@files,map("$dir/$_",@cut_files));
+				}
+				else{
+					print STDERR "Sorry but I couldn't find any read to align in : $dir in " . $cfg->val("General","read_dir") ."\n";
+					help_check_general();
+				}
+			}
 			my $libray_type="fr-firststrand";
 			if(lc($cfg->val("General","strand")) eq "no"){
 				$libray_type="fr-unstranded";
@@ -489,6 +510,7 @@ sub run_miARma{
 						threads=>$cfg->val("General","threads") || 1,
 					    bowtie2index=>$cfg->val("Aligner","bowtie2index") || undef,
 					    bowtie1index=>$cfg->val("Aligner","bowtie1index") || undef,
+					    bwaindex=>$cfg->val("Aligner","bwaindex") || undef,
 						logfile=>$log_file||$cfg->val("General","logfile"),
 						statsfile=>$stat_file|| $cfg->val("General","stats_file"),
 						verbose=>$cfg->val("General","verbose") || 0,
