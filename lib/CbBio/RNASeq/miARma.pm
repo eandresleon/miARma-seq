@@ -523,7 +523,7 @@ sub run_miARma{
 						organism=>$cfg->val("General","organism")|| undef,
 						adapter=>$cfg->val("Adapter","adaptersoft")|| undef,
 						GTF=>$cfg->val("Aligner","gtf") || undef,
-						Seqtype=>$cfg->val("Aligner","Seqtype") || undef,
+						Seqtype=>$cfg->val("General","Seqtype") || undef,
 						tophatParameters=>$cfg->val("Aligner","tophatParameters") || undef,
 						tophat_seg_mismatches=>$cfg->val("Aligner","tophat_seg_mismatches") || undef,
 						tophat_seg_length=>$cfg->val("Aligner","tophat_seg_length") || undef,
@@ -566,6 +566,41 @@ sub run_miARma{
 					push(@files,map("$bw2_dir$_",@bw2_files));
 					close BW2DIR;
 				}
+				if(scalar(@files)>0 and lc($cfg->val("General","type")) ne "circrna"){
+					print STDERR "miARma :: ".date()." Starting a Readcount Analysis\n";
+					my @htseqfiles;
+					# Reading the array with the names of the files
+					foreach my $file(@files){
+						#Selecting only the sam files for their processing
+						my $result=featureCount(
+							file=>$file,
+							database=>$cfg->val("ReadCount","database"),
+							seqid=>$cfg->val("ReadCount","seqid") || undef,
+							parameters=>$cfg->val("ReadCount","parameters") || undef, 
+							strand=>$cfg->val("General","strand") || "yes", 
+							featuretype=>$cfg->val("ReadCount","featuretype") || undef,
+							logfile=>$log_file || $cfg->val("General","logfile"),
+							verbose=>$cfg->val("General","verbose") || 0,
+							projectdir=>$cfg->val("General","projectdir")|| undef,
+							miARmaPath=>$miARmaPath,
+							threads=>$cfg->val("General","threads") || 1,
+							quality=>$cfg->val("ReadCount","quality") || undef,
+							Seqtype=>$cfg->val("General","Seqtype") || undef,
+						);
+						push(@htseqfiles, $result);
+					}
+				
+					#HTSEQFORMATEXECUTION
+					featureFormat( 
+					  	input=>\@htseqfiles, 
+					  	projectdir=>$cfg->val("General","projectdir")|| undef,
+						logfile=>$log_file || $cfg->val("General","logfile"),
+					  );
+				}
+				else{
+					print "ERROR :: You are requesting a miRNA readcount analysis, but no aligned files are found (Neither Bowtie1 nor Bowtie2)\n";
+					help_check_count();
+				}
 			}
 			elsif(lc($cfg->val("General","type")) eq "circrna"){
 				if($cfg->exists("ReadCount","bwaindex") eq "" or ($cfg->val("ReadCount","bwaindex") eq "")){
@@ -577,9 +612,33 @@ sub run_miARma{
 					my $bw2_dir=$cfg->val("General","projectdir")."/bwa_results/";
 					if($bw2_dir){
 						opendir(BW2DIR, $bw2_dir) || warn "Aligner:: Folder $bw2_dir is not found\n"; 
-						my @bw2_files= readdir(BW2DIR);
-						push(@files,map("$bw2_dir$_",@bw2_files));
+						my @bwa_files= readdir(BW2DIR);
+						push(@files,map("$bw2_dir$_",@bwa_files));
 						close BW2DIR;
+						
+						my @circRNAfiles;
+						foreach my $file(@files){
+							#Selecting only the sam files for their processing
+							my $result=CIRICount(
+							  	file=>$file,
+								database=>$cfg->val("ReadCount","database")|| undef,
+								logfile=>$log_file || $cfg->val("General","logfile"),
+								verbose=>$cfg->val("General","verbose") || 0,
+								projectdir=>$cfg->val("General","projectdir")|| undef,
+								threads=>$cfg->val("General","threads") || 1,
+								miARmaPath=>$miARmaPath,
+								Seqtype=>$cfg->val("General","Seqtype") || undef,
+								bwaindex=>$cfg->val("ReadCount","bwaindex") || undef,
+							);
+							push(@circRNAfiles, $result);
+						}
+
+						CIRIFormat( 
+						  	input=>\@circRNAfiles, 
+							projectdir=>$cfg->val("General","projectdir")|| undef,
+							logfile=>$log_file || $cfg->val("General","logfile"),
+						);
+						@files=undef;
 					}
 				}
 			}
@@ -587,42 +646,7 @@ sub run_miARma{
 				print "ERROR :: You are requesting a readcount analysis, but no aligned files are found (Neither Bowtie1 nor Bowtie2 ... )\n";
 			 	help_check_aligner();
 			}
-			if(scalar(@files)>0){
-				print STDERR "miARma :: ".date()." Starting a Readcount Analysis\n";
-				my @htseqfiles;
-				# Reading the array with the names of the files
-				foreach my $file(@files){
-					#Selecting only the sam files for their processing
-					my $result=featureCount(
-						file=>$file,
-						database=>$cfg->val("ReadCount","database"),
-						seqid=>$cfg->val("ReadCount","seqid") || undef,
-						parameters=>$cfg->val("ReadCount","parameters") || undef, 
-						strand=>$cfg->val("General","strand") || "yes", 
-						featuretype=>$cfg->val("ReadCount","featuretype") || undef,
-						logfile=>$log_file || $cfg->val("General","logfile"),
-						verbose=>$cfg->val("General","verbose") || 0,
-						projectdir=>$cfg->val("General","projectdir")|| undef,
-						miARmaPath=>$miARmaPath,
-						threads=>$cfg->val("General","threads") || 1,
-						quality=>$cfg->val("ReadCount","quality") || undef,
-						Seqtype=>$cfg->val("ReadCount","Seqtype") || undef,
-						bwaindex=>$cfg->val("ReadCount","bwaindex") || undef,
-					);
-					push(@htseqfiles, $result);
-				}
-				
-				#HTSEQFORMATEXECUTION
-				featureFormat( 
-				  	input=>\@htseqfiles, 
-				  	projectdir=>$cfg->val("General","projectdir")|| undef,
-					logfile=>$log_file || $cfg->val("General","logfile"),
-				  );
-			}
-			else{
-				print "ERROR :: You are requesting a miRNA readcount analysis, but no aligned files are found (Neither Bowtie1 nor Bowtie2)\n";
-				help_check_count();
-			}
+			
 		}
 	}
 	#Denovo
