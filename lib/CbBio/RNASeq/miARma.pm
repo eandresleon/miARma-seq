@@ -740,16 +740,16 @@ sub run_miARma{
 		#Mandatory parameters: read folder
 		if($cfg->exists("DEAnalysis","targetfile") eq "" or ($cfg->val("DEAnalysis","targetfile") eq "")){
 			print STDERR "\nERROR " . date() . " targetfile parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
-			help_check_aligner();
+			help_check_deanalysis();
 		}
 		elsif( lc($cfg->val("DEAnalysis","contrastfile")) eq "" and ($cfg->val("DEAnalysis","contrastfile") eq "")){
 			print STDERR "\nERROR " . date() . " contrastfile parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
-			help_check_aligner();
+			help_check_deanalysis();
 		}
-		elsif( lc($cfg->val("DEAnalysis","filter")) eq "" and ($cfg->val("DEAnalysis","filter") eq "")){
-			print STDERR "\nERROR " . date() . " filter parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
-			help_check_aligner();
-		}
+		# elsif( lc($cfg->val("DEAnalysis","filter")) eq "" and ($cfg->val("DEAnalysis","filter") eq "")){
+		# 	print STDERR "\nERROR " . date() . " filter parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
+		# 	help_check_aligner();
+		# }
 		elsif( lc($cfg->val("DEAnalysis","DEsoft")) eq "" and ($cfg->val("DEAnalysis","DEsoft") eq "")){
 			print STDERR "\nERROR " . date() . " DEsoft parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
 			help_check_deanalysis();
@@ -776,6 +776,14 @@ sub run_miARma{
 				push(@files,map("$denovo_dir/$_",@rea_files));
 			}
 
+			#if user did a circRNA analysis
+			my $circRNA_dir=$cfg->val("General","projectdir")."/circRNAs_results/"; 
+			if(-e $circRNA_dir){
+				opendir(READIR, $circRNA_dir) ||  warn "DEAnalysis:: Folder $circRNA_dir is not found\n"; 
+				my @rea_files= readdir(READIR);
+				push(@files,map("$circRNA_dir/$_",@rea_files));
+			}
+			
 			if(scalar(@files)>0){
 				foreach my $file(  sort @files){
 					DE_Analysis(
@@ -783,7 +791,7 @@ sub run_miARma{
 						file=>$file,
 						targetfile=>$cfg->val("DEAnalysis","targetfile"),
 						label=>$cfg->val("General","label"),
-						filter=>$cfg->val("DEAnalysis","filter")|| undef,
+						filter=>$cfg->val("DEAnalysis","filter")|| "yes",
 						edger_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
 						noiseq_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
 						DEsoft=>$cfg->val("DEAnalysis","DEsoft")|| undef,
@@ -1108,7 +1116,6 @@ bwaindex=index/bwa
 	[DEAnalysis]
 	targetfile=targets.txt
 	contrastfile=contrast.txt
-	filter=yes
 	DEsoft=EdgeR-Noiseq
 
 	};

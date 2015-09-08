@@ -48,7 +48,7 @@ Optional arguments:
   [repthreshold] Number of replicates that have to contains at least a defined number of reads per million to perform the filter (2 replicates by default)", stderr())
 }
   
-QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, repthreshold=2,ref1=2,ref2){
+QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, repthreshold=2,normethod="TMM", bcvvalue=0.4){
   
   #Checking the mandatory parameters
   if(missing(projectdir) | missing(dir) | missing(file) | missing(targetfile) | missing(label) | missing(filter)){
@@ -79,6 +79,16 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   require(gplots)
   require(genefilter)
   
+  check_parameter<-function(data){
+    cont<-0
+    for(a in 1:length(data)){
+      if(data[[a]]>0){
+        cont=cont+1
+      }
+    }
+    return(cont)
+  }
+  
   #Printing the date and information of the proccess
   time<-Sys.time()
   message<-paste(time, " Starting quality control analysis of ", label,"\n", sep="")
@@ -93,7 +103,7 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   #########################################################################
   #2-EDGER ANALYSIS-BOXPLOT, DENSITY PLOT AND CLUSTERING
   #########################################################################
-  
+
   #Importing targets
   targets<-readTargets(targetfile)
   options(warn=-1)
@@ -156,7 +166,7 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   #Boxplot of the samples
   boxplot(log2(data), main=paste("Boxplot of ",label," samples",sep=""),las=2, names=samplenames, ylab="log2(counts)", xlab="Samples")
   #Normalization of the samples
-  dgenorm<-calcNormFactors(dge)
+  dgenorm<-calcNormFactors(dge,method=normethod)
   #Boxplot of the normalized samples
   boxplot(log2(dgenorm$counts), col=boxcol, main=paste("Boxplot of ", label , " normalized samples",sep=""),las=2, names=samplenames, ylab="log2(counts)", xlab="Samples")
   
@@ -172,15 +182,22 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
       countb<-countb+1
     }
   }
+  number<-0
   for (a in 2:length(colnames(data))){
-    lines(density(log10(data[,a])),col=boxcol[a], lwd=1.5, lty=lineformat[a])
+    number<-check_parameter(data[,a])
+    if(number>1){
+  	  lines(density(log10(data[,a])),col=boxcol[a], lwd=1.5, lty=lineformat[a])
+    }
   }
   legend("topright", samplenames, col=boxcol, lty=lineformat, lwd=4, cex=0.8)
   
   #Density plot of normalized counts data
   plot(density(log10(dgenorm$counts[,1])),col=boxcol[1],ylim=c(0,0.5), main=paste("Density plot of normalized and filtered number of reads of ", label, sep=""), lwd=1.5, xlab="log10(counts)")
   for (a in 2:length(colnames(data))){
-    lines(density(log10(dgenorm$counts[,a])),col=boxcol[a], lwd=1.5, lty=lineformat[a])
+      number<-check_parameter(dgenorm$counts[,a])
+      if(number>1){
+	      lines(density(log10(dgenorm$counts[,a])),col=boxcol[a], lwd=1.5, lty=lineformat[a])
+	  }
   }
   legend("topright", samplenames, col=boxcol, lty=lineformat, lwd=4, cex=0.8)
   

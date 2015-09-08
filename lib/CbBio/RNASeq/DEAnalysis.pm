@@ -123,6 +123,7 @@ sub DE_Analysis{
 	my $filter=$args{"filter"}; #This value refers to filter processing in the reads (Should be "yes" or "no").
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
 	my $DEsoft=$args{"DEsoft"}; #Specific software to perform the Differential Expression Analysis
+	my $edger_normethod=$args{"edger_normethod"}; #Specific software to perform the Differential Expression Analysis
   	my (undef,$dir) = fileparse($file);
 	$dir=abs_path($dir);
 	
@@ -191,6 +192,7 @@ sub DE_Analysis{
 				verbose=>$verbose,
 				cpmvalue=>$cpmvalue,
 				repthreshold=>$repthreshold,
+				normethod=>$edger_normethod,
 			);
 			
 			#EdgeR analysis will be performed when user provides DEsoft with EdgeR value
@@ -489,6 +491,19 @@ sub QC_EdgeR{
 			my $repthreshold=$args{"repthreshold"}; #Number of replicates that have to contains at least a defined number of reads per million to perform the filter (2 replicates by default)
 			$Rcommand.=", repthreshold=".$repthreshold;
 		}
+		if(defined $args{"normethod"}){
+			my $normethod=$args{"normethod"}; #Normalization method used in the analysis.
+			$Rcommand.=", normethod=\"".$normethod."\"";
+		}
+		if(defined $args{"replicates"}){
+			my $replicates=$args{"replicates"}; #Value to indicate if replicates samples are present in the analysis. It can be "yes" (by default) or "no".
+			$Rcommand.=", replicates=\"".$replicates."\"";
+		}
+		if(defined $args{"bcvvalue"}){
+			my $bcvvalue=$args{"bcvvalue"}; #Value for the common BCV (square- root-dispersion) in experiments without replicates.(0.4 by default)
+			$Rcommand.=", bcvvalue=".$bcvvalue;
+		}
+
 
 		# Printing the date and command execution on screen
 		#print STDERR "QC_EdgeR :: ".date()." Starting Differential Expression Analysis of $file with EdgeR\n"; 
