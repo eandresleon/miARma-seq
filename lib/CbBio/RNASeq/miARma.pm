@@ -371,7 +371,10 @@ sub run_miARma{
 				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie1index are excluyent, discarding fasta parameter\n";
 				$do_index=undef;
 			}
-			
+			if($do_index and $cfg->val("Aligner","bwaindex") ne "" and lc($cfg->val("Aligner","aligner")) eq "bwa"){
+				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bwaiindex are excluyent, discarding fasta parameter\n";
+				$do_index=undef;
+			}
 			if($do_index){
 				if($cfg->exists("Aligner","indexname") ne ""){
 					print STDERR "miARma :: " . date() . " Indexing ".$cfg->val("Aligner","fasta") ." for a ".$cfg->val("Aligner","aligner")." analysis\n";
@@ -392,6 +395,10 @@ sub run_miARma{
 					}
 					if(lc($cfg->val("Aligner","aligner")) eq "bowtie2" and $cfg->val("Aligner","bowtie2index") eq ""){
 			 			$cfg->newval("Aligner", "bowtie2index", $index_value[0]);
+			 			$cfg->RewriteConfig;
+					}
+					if(lc($cfg->val("Aligner","aligner")) eq "bwa" and $cfg->val("Aligner","bwaindex") eq ""){
+			 			$cfg->newval("Aligner", "bwaindex", $index_value[0]);
 			 			$cfg->RewriteConfig;
 					}
 				 }

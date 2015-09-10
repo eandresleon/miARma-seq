@@ -80,6 +80,7 @@ sub IndexGeneration{
 	#Declaring the variables to collect the path of the new index
 	my $bowtie1index;
 	my $bowtie2index;
+	my $bwaindex;
 	my @index;
 
 	if ($fasta and $dir and $indexname and $logfile and $aligner){
@@ -134,6 +135,19 @@ sub IndexGeneration{
 	  		);
 	  		#Saving the path of the Bowtie2 index in an array
 	  		push(@index, $bowtie2index);	
+		}
+		elsif(lc($aligner) eq "bwa"){
+			#Calling bowtie2_index function
+			$bwaindex=bwa_index(
+	  			fasta=>$fasta,
+	  			dir=>$dir,
+	  			logfile=>$logfile,
+	  			indexname=>$indexname,
+				miARmaPath=>$miARmaPath
+				
+	  		);
+	  		#Saving the path of the new bowtie2 index
+	  		push(@index, $bowtie2index);
 		}
 		else{
 			die("INDEX_GENERATION ERROR:: ".date()."Provided aligner argument ($aligner) has an invalid value. Allowed values for this parameters: Bowtie1, Bowtie2 and Bowtie1-Bowtie2/Bowtie2-Bowtie1");
@@ -1657,6 +1671,121 @@ sub TopHat{
 	exit(); 
 	}	
 }
+
+=head2 bwa_index
+
+  Example    : 
+  bwa_index(
+  	fasta=>"genome.fasta",
+  	dir=>".",
+  	logfile=>"run.log",
+  	indexname=>"hg19"
+  );
+  Description: This function collects the directory and the path of genome sequence in fasta
+  format to build a new index. This index can be used to perform a bwa analysis. The 
+  execution data will be printed on run.log file. This fuction returns the path of the new 
+  bwa index and saves the new index on the directory named Bowtie1_index at directory 
+  provided by the user.
+  Input parameters: 
+	Mandatory parameters:
+  	 [dir] Input directory where new index will be saved
+  	 [fasta] Path of the genomic fasta sequence to build the index
+  	 [logfile] Path of run.log file where execution data will be saved
+  	 [indexname] Name to write in the index files
+  Returntype : Directory named Bowtie1_index with index genome. bwa_index also returns the path of the new bwa index 
+  Requeriments: bwa_index function requires for a correct analysis:
+  	- Perl v5.10.0 or higher software correctly installed
+  	- Bowtie v1.0.0 or higher software correctly installed
+  	- Input genomic sequence on fasta format  
+  Exceptions : none
+  Caller     : web drawing code
+  Status     : Stable
+
+=cut
+
+sub bwa_index{
+
+	#Arguments provided by user are collected by %args. Dir, path of fasta file, indexname and logfile
+	# are mandatory arguments.
+	my %args=@_;
+	my $miARmaPath=$args{"miARmaPath"};
+	my $arch=`uname`;
+	chomp($arch);
+	
+	if ($ENV{PATH}) {
+		$ENV{PATH} .= ":$miARmaPath/bin/".$arch."/bwa/";
+	}
+	else {
+		$ENV{PATH} = "$miARmaPath/bin/".$arch."/bwa/";
+	}
+	#First, check that bwa is in path:
+	my @bwa_bin=`which bwa`;
+	#Executing the command
+	if(scalar(@bwa_bin)<1){
+		die "BWA_INDEX ERROR :: system args failed: $? : Is bwa installed and exported to \$PATH ?";
+	}
+	my $fasta=$args{"fasta"}; #the path of genome sequence in fasta format
+	my $dir=$args{"dir"}; #directory to create the genomeindex directory where new index will be saved
+	my $logfile=$args{"logfile"}; #path of the logfile to write the execution data
+	my $indexname=$args{"indexname"}; #name to write in the index files
+	
+	#Variable declaration
+	my $index_output;
+	my $command;
+	my $commanddef;
+	
+	#Checking the mandatory arguments
+	if ($fasta and $dir and $indexname and $logfile){
+		print STDERR "BWA_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
+		#bowtie-build execution command from a fasta file. The output index will be saved
+		#in the genomeindex1 directory with the name index 
+		my $command="bwa index -a bwtsw -p ".$dir."/BWA_index/$indexname ".$fasta;
+		#commandef is the command that will be executed by system composed of the index
+		#directory creation, the module loading, and the bowtie-build execution. The error 
+		#data will be redirected to the run.log file
+		$commanddef="mkdir -p ".$dir."/BWA_index ; ".$command ." >> ".$logfile." 2>&1";
+		#Printing the date and command execution on the run.log file
+		open (LOG,">> ".$logfile) || die "BWA_INDEX ERROR :: Can't open $logfile: $!";
+		print LOG "BWA_INDEX :: ".date()." Executing $commanddef\n";
+		#Executing the command or if system can't be executed die showing the error.
+		system($commanddef) == 0
+		or die "BWA_INDEX ERROR :: system args failed: $? ($commanddef)";
+		close LOG;
+		#Returning the path of the new bwa index 
+		return($dir."/BWA_index/".$indexname);
+	}
+	else
+	{
+		#Registering the error
+   		open(LOG,">> ".$logfile) || die "BWA_INDEX ERROR :: Can't open $logfile: $!";
+    	print LOG "BWA_INDEX ERROR :: ".date()." Directory ($dir), indexname ($indexname), logfile($logfile) and/or fasta file($fasta) have not been provided";
+    	close LOG;
+
+		#If mandatory parameters have not been provided program will die and show error message
+		warn ("BWA_INDEX ERROR:: ".date()." Directory ($dir), indexname ($indexname), logfile($logfile) and/or fasta file($fasta) have not been provided");
+		help_bwa_index();
+	}	
+
+	sub help_bwa_index{
+	    my $usage = qq{
+		  	$0 
+
+			Needed parameters:
+			[dir] Input directory where new index will be saved
+  	 		[fasta] Path of the genomic fasta sequence to build the index
+  	 		[logfile] Path of run.log file where execution data will be saved
+  	 		[indexname] Name to write in the index files
+						             
+			Examples:
+			bwa_index(fasta=>"genome.fasta", dir=>".", logfile=>"run.log", indexname=>"hg19");
+
+	};
+
+	print STDERR $usage;
+	exit(); 
+	}
+}
+
 sub bwa{
 
 	#Arguments provided by user are collected by %args. Dir, path of fasta file, indexname and logfile
