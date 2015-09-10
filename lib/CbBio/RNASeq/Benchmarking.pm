@@ -150,8 +150,11 @@ sub mergehtseqcount{
 	return($fileresults);
 }
 sub date{
-	my $dt = DateTime->now;
-	return($dt->hms . " [" . $dt->dmy ."]");
+	#my $dt = DateTime->now(time_zone=>'local');
+	#return($dt->hms . " [" . $dt->dmy ."]");
+	use Time::localtime;
+	my $now = ctime();
+	return("[$now]");
 }	
 
 1;

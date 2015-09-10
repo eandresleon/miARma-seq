@@ -1166,8 +1166,9 @@ Mandatory parameters:
 sub print_header{
 	system("clear");
 	print "#########################################################################	
-#   miARma, miRNA and RNASeq Multiprocess Analysis v1.0 (2015)          #
-#                                                                       #
+#   miARma, miRNA and RNASeq Multiprocess Analysis			#
+#                miARma v 1.0.0 (Sep-2015)                              #
+#               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
 #   Copyright (c) 2015 IBIS. All rights reserved.                       #
@@ -1175,7 +1176,10 @@ sub print_header{
 #########################################################################\n\n";
 }
 sub date{
-	my $dt = DateTime->now;
-	return($dt->hms . " [" . $dt->dmy ."]");
+	#my $dt = DateTime->now(time_zone=>'local');
+	#return($dt->hms . " [" . $dt->dmy ."]");
+	use Time::localtime;
+	my $now = ctime();
+	return("[$now]");
 }
 1;
