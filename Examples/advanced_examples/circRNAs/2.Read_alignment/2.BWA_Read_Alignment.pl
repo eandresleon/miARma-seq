@@ -18,7 +18,7 @@ my $statsfile; #Stats.log file where stats data will be saved
 my $Seqtype;
 BEGIN{
 	$miARmaPath="../../../../"; #Path to software: Full path is recommended
-	$reads_dir="$miARmaPath/Examples/basic_examples/mRNAs/reads/"; #Path of the directory with the input files
+	$reads_dir="$miARmaPath/Examples/basic_examples/circRNAs/reads/"; #Path of the directory with the input files
 	$projectdir="."; #Directory to save the results
 	$threads=4; #Optional number of threads to perform the analysis
 	$bwaindex="../../../../Genomes/Indexes/BWA/human/hg19.fa"; #Indexed genome to align your reads (Mandatory for analysis with bwa)
