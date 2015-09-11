@@ -559,7 +559,7 @@ sub CIRICount{
 			else{
 				#CIRI execution command
 				print STDERR "CIRI :: ".date()." Checking $file for a circRNA analysis (Single End)\n";
-				$command="perl CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $bwaindex  . " -G " . $logfile;
+				$command="CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $bwaindex  . " -G " . $logfile;
 				#commandef is the command will be executed by system composed of the results directory creation 
 				#and the htseq_count execution. The error data will be printed on the run.log file
 				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." >".$logfile ."2>&1";

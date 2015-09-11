@@ -1058,7 +1058,7 @@ aligner=tophat
 tophat_aligner=Bowtie2
 bowtie2index=Genomes/Indexes/bowtie2/human/hg19
 gtf=../../../../data/Homo_sapiens_CHR_.GRCh37.74.gtf
-library_type=fr-firststrand
+strand=no
 
 };
 
