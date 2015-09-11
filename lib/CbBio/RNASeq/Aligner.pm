@@ -147,7 +147,7 @@ sub IndexGeneration{
 				
 	  		);
 	  		#Saving the path of the new bowtie2 index
-	  		push(@index, $bowtie2index);
+	  		push(@index, $bwaindex);
 		}
 		else{
 			die("INDEX_GENERATION ERROR:: ".date()."Provided aligner argument ($aligner) has an invalid value. Allowed values for this parameters: Bowtie1, Bowtie2 and Bowtie1-Bowtie2/Bowtie2-Bowtie1");
