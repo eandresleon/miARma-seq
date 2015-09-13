@@ -1564,7 +1564,7 @@ sub TopHat{
 				if(-e $mate_file){
 					if($file ne $mate_file){
 						print STDERR "TOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n";
-						$command="tophat ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file ." ". $mate_file;
+						$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file ." ". $mate_file;
 					}
 				}
 				else{
@@ -1578,7 +1578,7 @@ sub TopHat{
 		}
 		else{
 			print STDERR "TOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n";
-			$command="tophat ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file;
+			$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file;
 		}
 		#tophat execution command
 		#tophat execution with verbose option
