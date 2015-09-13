@@ -1549,10 +1549,8 @@ sub TopHat{
 
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $bowtieindex and $logfile and $statsfile and $GTF and $bowtieindex){ 
-		print STDERR "TOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n";
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
-
 		my $command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			#Check if the file is a paired-end file
@@ -1562,6 +1560,7 @@ sub TopHat{
 				$mate_file=~s/_1/_2/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
+						print STDERR "TOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n";
 						$command="tophat --fusion-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file ." ". $mate_file;
 					}
 				}
@@ -1575,6 +1574,7 @@ sub TopHat{
 			}
 		}
 		else{
+			print STDERR "TOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n";
 			$command="tophat --fusion-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file;
 		}
 		#tophat execution command
