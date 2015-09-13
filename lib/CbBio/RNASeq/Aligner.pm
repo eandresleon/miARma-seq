@@ -1546,6 +1546,9 @@ sub TopHat{
 		my $tophat_aligner=lc($args{"tophat_aligner"});
 		$bowtiepardef.=" --$tophat_aligner";
 	}
+	if(lc($args{"tophat_aligner"}) eq "bowtie2"){
+		$bowtiepardef.=" --b2-very-fast";
+	}
 
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $bowtieindex and $logfile and $statsfile and $GTF and $bowtieindex){ 
