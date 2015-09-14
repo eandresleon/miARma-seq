@@ -163,7 +163,7 @@ DE_noiseq<-function(projectdir,dir,file,targetsfile,label,filter,contrastfile,le
     mynoiseq.deg = degenes(mynoiseq, q = qvalue, M = NULL)
     mynoiseq.degname<-file.path(projectdir,paste(label,"_Noiseq_DE_of_",contrastsname[1],"_with_q_", qvalue,".xls", sep=""))
     filepaths[counta+2]<-mynoiseq.degname
-    write.table(mynoiseq.deg, file=mynoiseq.degname, sep = "\t", col.names = NA , row.names = TRUE, qmethod = "double")
+    #write.table(mynoiseq.deg, file=mynoiseq.degname, sep = "\t", col.names = NA , row.names = TRUE, qmethod = "double")
     #Generating the DE plots for the condition analyzed
     plotsname<-file.path(projectdir,paste(label, "_Noiseq_DE_plots_",contrastsname[1],".pdf", sep=""))
     filepaths[counta+3]<-plotsname  

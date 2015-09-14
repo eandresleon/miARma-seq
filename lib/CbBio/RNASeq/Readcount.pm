@@ -349,9 +349,9 @@ sub featureFormat{
 			foreach my $miRNAs(sort keys %{$data->{$suffix}}){
 				#At the end of the input files appeared some useless information to our fileresults  
 				if (($miRNAs =~ "ambiguous") or ($miRNAs =~ "no_feature") or ($miRNAs =~ "alignment_not_unique")  or ($miRNAs =~ "not_aligned") or ($miRNAs =~ "too_low_aQual")){
-					print LOG "HTSEQ SUMMARY :: $miRNAs\n";
+					print LOG "SEQCOUNTFORMAT SUMMARY :: $miRNAs\n";
 					foreach my $name(sort keys %{$data->{$suffix}->{$miRNAs}}){
-			 			print LOG "HTSEQ SUMMARY :: ". $data->{$suffix}->{$miRNAs}->{$name} ."\n";
+			 			print LOG "SEQCOUNTFORMAT SUMMARY :: ". $data->{$suffix}->{$miRNAs}->{$name} ."\n";
 					}
 				}
 				else{
@@ -378,11 +378,11 @@ sub featureFormat{
 	}else{
 		#Registering the error
 		open(LOG,">> ".$logfile) || die "SEQCOUNTFORMAT ERROR :: ".date()."Can't open '$logfile': $!";
-		print LOG "HTSEQFORMAT ERROR :: ".date()." Projectdir ($projectdir), input paths($input) and/or logfile($logfile) have not been provided";
+		print LOG "SEQCOUNTFORMAT ERROR :: ".date()." Projectdir ($projectdir), input paths($input) and/or logfile($logfile) have not been provided";
 		close LOG;
 
 		#If mandatory parameters have not been provided program dies and shows error message
-		warn("HTSEQFORMAT ERROR :: ".date()." Projectdir ($projectdir), input paths($input) and/or logfile($logfile) have not been provided");
+		warn("SEQCOUNTFORMAT ERROR :: ".date()." Projectdir ($projectdir), input paths($input) and/or logfile($logfile) have not been provided");
 		help_featureFormat();
 	}
 	sub help_featureFormat{
