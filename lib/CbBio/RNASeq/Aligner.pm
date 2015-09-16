@@ -1844,7 +1844,7 @@ sub bwa{
 			if($file =~ /.*_1.*/){
 				#it contains the _1 label
 				my $mate_file=$file;
-				$mate_file=~s/_1/_2/g;
+				$mate_file=~s/_1\./_2\./g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
 						my $real_name=$projectdir.$output_dir.$name."_bwa.sam";;
