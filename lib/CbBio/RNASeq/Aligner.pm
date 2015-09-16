@@ -1866,7 +1866,12 @@ sub bwa{
 					if($file ne $mate_file){
 						my $real_name=$projectdir.$output_dir.$name."_bwa.sam";;
 						$real_name=~s/_\d_bwa/_bwa/g;
-						$command="bwa mem ".$bwapardef." ".$bwaindex." ".$file." $mate_file >".$real_name;
+						if($file =~ /\.bz2$/){
+							$command="bwa mem ".$bwapardef." ".$bwaindex."  <(bunzip2 -c $file) <(bunzip2 -c $mate_file)>".$real_name;
+						}
+						else{
+							$command="bwa mem ".$bwapardef." ".$bwaindex." ".$file." $mate_file >".$real_name;
+						}
 					}
 				}
 				else{
@@ -1911,7 +1916,7 @@ sub bwa{
 		close LOG;
 			
 		#Executing the command or if system can't be executed die showing the error.
-		system($commanddef) == 0
+		system_bash($commanddef) == 0
 		or die "BWA ERROR :: system args failed: $? ($commanddef)";
 		close STATS;
 		#The path of the output file is returned to the main program
@@ -2200,6 +2205,10 @@ sub miRDeep{
 	}	
 }
 
+sub system_bash {
+  my @args = ( "bash", "-c", shift );
+  system(@args);
+}
 
 sub date{
 	#my $dt = DateTime->now(time_zone=>'local');
