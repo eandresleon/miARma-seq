@@ -268,7 +268,7 @@ sub ReadAligment{
 				my $bowtieleng=undef;
 				my $threads=undef;
 				my $bowtie1parameters=undef;
-
+				my $Seqtype;
 				#If any optional parameter is provided by the user will be collected
 				if(defined($args{"bowtiemiss"})){
 					$bowtiemiss=$args{"bowtiemiss"};
@@ -282,6 +282,12 @@ sub ReadAligment{
 				if(defined($args{"bowtie1parameters"})){
 					$bowtie1parameters=$args{"bowtie1parameters"};
 				}
+				if(defined($args{"Seqtype"})){
+					$Seqtype=$args{"Seqtype"};
+				}else{
+					$Seqtype="SingleEnd";
+				}
+				
 				if($bowtie1index){
 					#Calling Bowtie1 function
 					$output_file1=bowtie1( 
@@ -297,6 +303,7 @@ sub ReadAligment{
 						projectdir=>$projectdir,
 						miARmaPath=>$miARmaPath,
 						aligner=>$aligner,
+						Seqtype=>$Seqtype
 			  		);
 			  		return($output_file1);
 			  	}
@@ -313,7 +320,7 @@ sub ReadAligment{
 				my $bowtieleng=undef;
 				my $threads=undef;
 				my $bowtie2parameters=undef;
-
+				my $Seqtype;
 				#If any optional parameter is provided by the user will be collected
 				if(defined($args{"bowtiemiss"})){
 					$bowtiemiss=$args{"bowtiemiss"};
@@ -327,7 +334,11 @@ sub ReadAligment{
 				if(defined($args{"bowtie2parameters"})){
 					$bowtie2parameters=$args{"bowtie2parameters"};
 				}
-
+				if(defined($args{"Seqtype"})){
+					$Seqtype=$args{"Seqtype"};
+				}else{
+					$Seqtype="SingleEnd";
+				}
 				#Calling Bowtie2 function
 				$output_file2=bowtie2( 
 					file=>$file,
@@ -341,9 +352,9 @@ sub ReadAligment{
 					bowtieparameters=>$bowtie2parameters,
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
-					adapter=>$adapter,
-					
-				
+					adapter=>$adapter,	
+					Seqtype=>$Seqtype
+								
 		  		);
 		  		return($output_file2);
 
@@ -360,7 +371,7 @@ sub ReadAligment{
 				my $threads=undef;
 				my $bowtie1parameters=undef;
 				my $bowtie2parameters=undef;
-
+				my $Seqtype;
 				#If any optional parameter is provided by the user will be collected
 				if(defined($args{"bowtiemiss"})){
 					$bowtiemiss=$args{"bowtiemiss"};
@@ -377,7 +388,12 @@ sub ReadAligment{
 				if(defined($args{"bowtie2parameters"})){
 					$bowtie2parameters=$args{"bowtie2parameters"};
 				}
-
+				if(defined($args{"Seqtype"})){
+					$Seqtype=$args{"Seqtype"};
+				}else{
+					$Seqtype="SingleEnd";
+				}
+				
 				#Calling Bowtie1 function
 				$output_file1=bowtie1(
 					file=>$file,
@@ -392,7 +408,7 @@ sub ReadAligment{
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
 					adapter=>$adapter,
-					
+					Seqtype=>$Seqtype,
 				
 			  	);
 			  	push(@results, $output_file1);
@@ -411,7 +427,7 @@ sub ReadAligment{
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
 					adapter=>$adapter,
-					
+					Seqtype=>$Seqtype,
 				
 		  		);
 		  		push(@results, $output_file2);
@@ -975,7 +991,8 @@ sub bowtie1{
 							$file=~s/\.bz2$//g;
 							$mate_file=~s/\.bz2$//g;
 							
-							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 - ".`< bunzip2 -d -c -k $file`." -2 - ". `< bunzip2 -d -c -k $mate_file` ." " . $output_file_bw;
+							#$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 - ".`< bunzip2 -d -c -k $file`." -2 - ". `< bunzip2 -d -c -k $mate_file` ." " . $output_file_bw;
+							$command="bowtie ".$bowtiepardef." ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." " . $output_file_bw;
 							$compressed_file=1;
 						}
 						else{
