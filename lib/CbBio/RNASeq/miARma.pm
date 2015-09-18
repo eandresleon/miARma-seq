@@ -506,7 +506,7 @@ sub run_miARma{
 			if(lc($cfg->val("General","strand")) eq "reverse"){
 				$libray_type="fr-secondstrand";
 			}
-			check_input_format(-files=>\@files,-dir=>"");
+			check_input_format(-files=>\@files,-dir=>"",-log=>$log_file);
 			if(scalar(@files)>0){
 				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis\n";
 				# Reading the array with the names of the files
@@ -898,11 +898,16 @@ sub check_input_format{
 	#In case you provide a config file
 	my @fastq_files;
 	my $cfg=$args{"-config"};#configuration file
+	my $logfile=$args{"-log"} || "/dev/null";#log file
+	
+	open(LOG,">> ".$logfile) || die $!;
+
 	my @files;
 	if($args{"-files"}){
 		@files=@{$args{"-files"}};
 	}
 	my $dir_fastq = $args{"-dir"} || "";
+	
 	if($cfg and scalar(@files)<0){
 		if($dir_fastq){
 			if(opendir(FASTQF, $dir_fastq)){
@@ -986,7 +991,7 @@ sub check_input_format{
 						}
 					}
 					else{
-						print STDERR "Warn ". date() . " $file is not in in accordance with the fastq format\n";
+						print LOG "Warn ". date() . " $file is not in in accordance with the fastq format\n";
 						next;
 					}
 				}
@@ -1002,6 +1007,7 @@ sub check_input_format{
 		print STDERR "Please fix the names of your files\nQuitting\n\n";
 		exit;
 	}
+	close LOG;
 }	
 	
 	sub help_check_general{
