@@ -701,6 +701,7 @@ sub run_miARma{
 					logfile=>$log_file || $cfg->val("General","logfile"),
 					miARmaPath=>$miARmaPath,
 					adapter=>$cfg->val("DeNovo","adapter") || undef,
+					adapter_file=>$cfg->val("DeNovo","adapter_file") || undef,
 					precursors=>$cfg->val("DeNovo","precursor_miRNA_file"),
 					mature=>$cfg->val("DeNovo","mature_miRNA_file"),
 					genome=>$cfg->val("DeNovo","genome"),

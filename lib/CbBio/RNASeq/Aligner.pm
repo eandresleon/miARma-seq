@@ -252,6 +252,7 @@ sub ReadAligment{
 	my $miARmaPath=$args{"miARmaPath"};
 	my $organism=$args{"organism"}; #Organism to align
 	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
+	my $adapter_file=$args{"adapter_file"}; #are this reads processed by miArma 
 	#Declaring the variables to collect the path of the new files
 	my $output_file1;
 	my $output_file2;
@@ -633,6 +634,8 @@ sub ReadAligment{
 				#Optional parameters are predefined as undef
 				my $threads=undef;
 				my $adapter=undef;
+				my $adapter_file=$args{"adapter_file"};
+				
 				my $mature;
 				my $precursors;
 				my $genome;
@@ -651,6 +654,21 @@ sub ReadAligment{
 				if(defined($args{"genome"})){
 					$genome=$args{"genome"}; 
 				}
+				#if we have defined a different adapter for each read-file
+				my $file_name=fileparse($file);
+				
+				if($adapter_file){
+					open(ADAPT_FILE,$adapter_file) || die "miRDeeP ERROR :: Can't file adapt_file at $adapter_file ($!)\n";
+					while(<ADAPT_FILE>){
+						chomp;
+						my ($current_file,$current_adapter)=split(/\t/);
+						if($current_file eq $file_name){
+							$adapter=$current_adapter;
+						}
+					}
+					close ADAPT_FILE;
+				}
+				
 				if($bowtie1index and $adapter and $mature and $precursors and $genome and $organism){
 					#Calling Bowtie1 function
 					$output_file1=miRDeep( 
@@ -2033,6 +2051,7 @@ sub miRDeep{
 	my $statsfile=$args{"statsfile"}; #path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $adapter=$args{"adapter"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
+	my $adapter_file=$args{"adapter_file"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
 	my $mature_miRNA_file=$args{"mature"}; #a fasta file with all mature sequence from your organism
 	my $precursor_miRNA_file=$args{"precursors"}; #a fasta file with all known pre-miRNa sequence 
 	my $genome=$args{"genome"}; # fasta file for the complete genome of our organism
@@ -2096,7 +2115,7 @@ sub miRDeep{
 				logfile=>$logfile,
 				statsfile=>$statsfile,
 				adaptpredictionnumber=>4,
-				org=>"human",
+				org=>$organism,
 				verbose=>$verbose,
 				miARmaPath=>$miARmaPath,
 			);				
