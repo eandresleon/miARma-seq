@@ -1,2 +1,0 @@
-Name
-Comp=Untreated-Treated
