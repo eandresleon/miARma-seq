@@ -294,7 +294,8 @@ sub run_miARma{
 				adaptersoft=>$cfg->val("Adapter","adaptersoft"),
 				dir=>$dir,
 				files=>\@files,
-				adapter=>$cfg->val("Adapter","adapter")|| undef,,
+				adapter=>$cfg->val("Adapter","adapter")|| undef,
+				adapter_file=>$cfg->val("Adapter","adapter_file")|| undef,
 				logfile=>$log_file || $cfg->val("General","logfile"),
 				statsfile=>$stat_file || $cfg->val("General","stats_file"),
 				verbose=>$cfg->val("General","verbose")|| 0,
@@ -316,7 +317,6 @@ sub run_miARma{
 				tabu=>$cfg->val("Adapter","tabu")|| undef,			
 			);
 				
-			
 			#Just in case the user wants to see the quality of the processed reads
 			if($post_qual==1){
 				print STDERR "miARma :: ".date()." Starting a Post Quality Analysis\n";

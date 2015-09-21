@@ -117,6 +117,7 @@ sub AdapterRemoval{
 	my $verbose=$args{"verbose"} || 0; #Optional arguments to show the execution data on screen
 	my $statsfile=$args{"statsfile"}; #Path of stats.log file where stats data will be saved
 	my $miARmaPath=$args{"miARmaPath"};
+	my $adapter_file=$args{"adapter_file"};
 	#Declaring the variables to collect the path of the new files and the variables to control the function
 	my $cutadapt_result;
 	my $reaper_result;
@@ -191,11 +192,8 @@ sub AdapterRemoval{
 		if($adaptersoft and $file and $dir and $logfile and $projectdir and $statsfile){
 			#Checking hidden files
 			if($file !~ /^\./){
-				#}
-			#Checking the file extension
-			#elsif($file =~ /.*\.fastq$/ or $file=~ /.*\.fq$/ or $file=~ /.*\.fastq\.gz$/ or $file=~ /.*\.fq\.gz$/ or $file=~ /.*\.fastq\.bz2$/ or $file=~ /.*\.fq\.bz2$/){
 				#If the user has not defined the adapter, it will be predicted by Minion function
-				if(! defined $adapter and ! defined $metafile and lc($adaptersoft) ne "adapttrimming"){
+				if(! defined $adapter and ! defined $adapter_file and ! defined $metafile and lc($adaptersoft) ne "adapttrimming"){
 
 					#Obtaining mandatory parameters for Minion analysis
 					my $organism=$args{"organism"}; #Arguments to know which genome to blat against
@@ -225,7 +223,6 @@ sub AdapterRemoval{
 			
 				#CutAdapt analysis will be performed when user provides adaptersoft with cutadapt value
 				if($cutadapt_exec == 1){
-				
 					#Optional parameters to perform the analysis are predefined as undef variables
 					my $max=undef;
 					my $min_quality=undef;
@@ -254,7 +251,8 @@ sub AdapterRemoval{
 		  				verbose=>$verbose,
 		  				logfile=>$logfile,
 		  				statsfile=>$statsfile,
-		  				adapter=>$adapter, 
+		  				adapter=>$adapter,
+						adapter_file=>$adapter_file,
 		  				min=>$min, 
 		  				max=>$max,
 		  				min_quality=>$min_quality, 
@@ -685,6 +683,7 @@ sub CutAdapt{
 
 	my $file=$args{"file"}; #File which is going to be processing
 	my $adapter=$args{"adapter"}; #Adapter sequence which is going to be removed from the reads
+	my $adapter_file=$args{"adapter_file"}; #Adapter sequence which is going to be removed from the reads
 	my $dir= $args{"dir"} ."/"; #Input directory where the files are
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
 	my $projectdir=$args{"projectdir"}."/"; #Input directory where results directory will be created
@@ -719,15 +718,12 @@ sub CutAdapt{
 	}
 
 	#Checking the mandatory parameters
-	if ($file and $dir and $adapter and $projectdir and $statsfile){
+	if ($file and $dir and $adapter and $projectdir and $statsfile and ! $adapter_file){
 		#Checking hidden files
 		if($file !~ /^\./){
-			#}
-		#Checking the file extension
-		#elsif($file =~ /.*\.fastq$/ or $file=~ /.*\.fq$/ or $file=~ /.*\.fastq\.gz$/ or $file=~ /.*\.fq\.gz$/){
+
 			#Printing process data on screen
 			print STDERR "CUTADAPT :: ".date()." Checking $file for CutAdapt analysis\n";
-
 			#Cutadapt execution command 
 			my $command="cut_adapt -b ".$adapter." ".$cutadaptpardef.$dir."/".$file;
 			#Extracting the name of the file
@@ -759,17 +755,67 @@ sub CutAdapt{
 		else{
 			die ("CUTADAPT ERROR :: ".date()."File($file) has an invalid format. Cutadapt only accepts .fastq, .fq, fastq.gz or .fq.gz files ");
 		}
-	}	
+	}
+	elsif ($file and $dir and ! $adapter and $projectdir and $statsfile and $adapter_file){
+		
+		#Read the file where each adapter is specified per read file
+		my $current_adapter=undef;
+		open(ADAPT_FILE,$adapter_file) || die "Can't file adapt_file at $adapter_file ($!)\n";
+		while(<ADAPT_FILE>){
+			chomp;
+			my ($current_file,$adapter)=split(/\t/);
+			if($current_file eq $file){
+				$current_adapter=$adapter;
+			}
+		}
+		close ADAPT_FILE;
+		#checking that we have found the adapter for the specified file;
+		
+		if(defined $current_adapter){
+			print STDERR "CUTADAPT :: ".date()." Checking $file for CutAdapt analysis\n";
+			my $command="cut_adapt -b ".$current_adapter." ".$cutadaptpardef.$dir."/".$file;
+			#Extracting the name of the file
+			my $name=fileparse($file, qr{\.f.*});
+
+			#commandef is the command that will be executed by system composed of the results
+			#directory creation and the cutadapt execution. The output data 
+			#will be saved on a .fastq file in the output directory. We use this extension to avoid 
+			#problems reading gz files in the subsequent analysis. The error data will be 
+			#redirected to the stats.log file
+			my $commanddef="mkdir -p ".$projectdir.$output_dir." ; ".$command. " > ".$projectdir.$output_dir.$name."_cut.fastq 2>> ".$statsfile;
+			
+			#Execution data will be register on the run.log file. Opening the run.log file 
+			open (LOG,">> ".$logfile) || die "CUTADAPT ERROR :: ".date()."Can't open '$logfile': $!";
+			#Printing the date and command execution on the run.log file
+			print LOG "CUTADAPT :: ".date()." Executing $commanddef\n";
+			close(LOG);
+			#If verbose option has been provided by user print the data on screen
+			if($verbose){
+				print STDOUT "CUTADAPT :: ".date()." Executing $commanddef\n";
+			}
+			#Executing the command or if system can't be executed die showing the error.
+			system($commanddef) == 0
+			or die "CUTADAPT ERROR :: system args failed: $? ($commanddef)";
+			
+			#The name of the output file is returned to main program
+			return($projectdir.$output_dir.$name."_cut.fastq");
+		}
+		else{
+			warn("CUTADAPT ERROR :: ".date()." For the file $file, we have not found any correct adapter in $adapter_file. Please check read_file names\n");
+			next;
+		}
+	}
+	
 	else 
 	{
 		#Registering error
    		open(LOG,">> ".$logfile) || die "CUTADAPT ERROR :: ".date()."Can't open '$logfile': $!";
-    	print LOG "CUTADAPT ERROR :: ".date()." Directory($dir), projectdir($projectdir), file($file), statsfile($statsfile) and/or logfile($logfile) have not been provided";
+    	print LOG "CUTADAPT ERROR :: ".date()." Directory($dir), projectdir($projectdir), file($file), adapter_file ($adapter_file), adapter ($adapter), statsfile($statsfile) and/or logfile($logfile) have not been provided";
     	close(LOG);
 
 
 		#If mandatory parameters have not been provided program will die and show error message
-		warn("CUTADAPT ERROR :: ".date()." Directory($dir), projectdir($projectdir), file($file), statsfile($statsfile) and/or logfile($logfile) have not been provided");
+		warn("CUTADAPT ERROR :: ".date()." Directory($dir), projectdir($projectdir), file($file), adapter_file ($adapter_file), adapter ($adapter), statsfile($statsfile) and/or logfile($logfile) have not been provided");
 		help_CutAdapt();
 
 	}
