@@ -142,7 +142,7 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   filepath<-file.path(projectdir,filename)
   plotpaths[1]<- filepath
   pdf(file=filepath, paper="a4")
-  
+  filepaths<-NA
   #Analysis with replicates
   if(tolower(replicates)=="yes"){
     #Dispersion estimation and DE analysis differs according to to the number of factors. 
