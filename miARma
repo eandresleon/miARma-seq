@@ -12,6 +12,7 @@
 use strict;
 my $configuration_file;
 my $miARmaPath;
+my $check_input;
 BEGIN {
 	
 	#checking input parameter
@@ -23,7 +24,9 @@ BEGIN {
 	}
 	# configuration file
 	$configuration_file=$ARGV[0];
+	$check_input=$ARGV[1];
 	my $check=0;
+	
 	# Searching for needed parameters before start
 	open(FILE,$configuration_file) || die "Cant read config file ($configuration_file)\n";
 	while(<FILE>){
@@ -45,9 +48,9 @@ BEGIN {
 use lib "$miARmaPath/lib/";
 use lib "$miARmaPath/lib/Perl";
 use CbBio::RNASeq::miARma;
-
 run_miARma(
 	config=>$configuration_file,
-	miARmaPath=>$miARmaPath
+	miARmaPath=>$miARmaPath,
+	check=>$check_input,
 )
 
