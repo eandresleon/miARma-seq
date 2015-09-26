@@ -91,6 +91,7 @@ sub TargetPrediction{
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $verbose=$args{"verbose"}; #Optional arguments to show the execution data on screen
 	my $organism=$args{"organism"};
+	my $fc_threshold=$args{"fc_threshold"};
 	
 	my $miARmaPath=$args{"miARmaPath"};
 	use lib "$miARmaPath/lib/Perl";
@@ -114,7 +115,7 @@ sub TargetPrediction{
 	
 	#miRNA target prediction
 	if(defined($args{"miRNAs_folder"}) and !defined($args{"genes_folder"})){
-		print STDERR "LOG :: " . date() . " Starting a miRNA target prediction from ".$args{"miRNAs_folder"}."\n";
+		print STDOUT "LOG :: " . date() . " Starting a miRNA target prediction from ".$args{"miRNAs_folder"}."\n" if($verbose);
 		opendir(DIR, $args{"miRNAs_folder"}) || die $!;
 		my @files= readdir(DIR);
 		system("mkdir -p $projectdir/miRGate_results/");
@@ -133,8 +134,10 @@ sub TargetPrediction{
 							    file=>$edger_files,
 							    edger_cutoff=>$edgeR_cutoff,
 							    verbose=>$verbose,
+								fc_threshold=>$fc_threshold,
+								
 							);
-							print STDERR "LOG :: " . date() . " Searching targets from edgeR file [$edger_files] for " . scalar(keys %$data) ." miRNAs using miRGate\n";
+							print STDOUT "LOG :: " . date() . " Searching targets from edgeR file [$edger_files] for " . scalar(keys %$data) ." miRNAs using miRGate\n" if($verbose);
 							 miRGate(
 							 	miRNAs=>$data,
 							 	organism=>$organism,
@@ -157,8 +160,9 @@ sub TargetPrediction{
 					            file=>$noise_files,
 					            NoiSeq_cutoff=>$NoiSeq_cutoff,
 					            verbose=>$verbose,
+								fc_threshold=>$fc_threshold,
 							);
-						print STDERR "LOG :: " . date() . " Searching targets from NoiSeq file [$noise_files] for " . scalar(keys %$data) ." miRNAs using miRGate\n";
+						print STDOUT "LOG :: " . date() . " Searching targets from NoiSeq file [$noise_files] for " . scalar(keys %$data) ." miRNAs using miRGate\n" if($verbose);
 							 miRGate(
 								miRNAs=>$data,
 								organism=>$organism,
@@ -194,7 +198,7 @@ sub TargetPrediction{
 							    edger_cutoff=>$edgeR_cutoff,
 							    verbose=>$verbose,
 							);
-							print STDERR "LOG :: " . date() . " Searching targets from edgeR file [$edger_files] for " . scalar(keys %$data) ." genes using miRGate\n";
+							print STDOUT "LOG :: " . date() . " Searching targets from edgeR file [$edger_files] for " . scalar(keys %$data) ." genes using miRGate\n" if($verbose);
 							 miRGate(
 							 	UTRs=>$data,
 							 	organism=>$organism,
@@ -217,7 +221,7 @@ sub TargetPrediction{
 					            NoiSeq_cutoff=>$NoiSeq_cutoff,
 					            verbose=>$verbose,
 							);
-						print STDERR "LOG :: " . date() . " Searching targets from NoiSeq file [$noise_files] for " . scalar(keys %$data) ." genes using miRGate\n";
+						print STDOUT "LOG :: " . date() . " Searching targets from NoiSeq file [$noise_files] for " . scalar(keys %$data) ." genes using miRGate\n" if($verbose);
 							 miRGate(
 								UTRs=>$data,
 								organism=>$organism,
@@ -240,7 +244,7 @@ sub TargetPrediction{
 		
 		####### miRNAs ########
 		
-		print STDERR "LOG :: " . date() . " Starting a miRNA-gene target prediction\n";
+		print STDOUT "LOG :: " . date() . " Starting a miRNA-gene target prediction\n" if($verbose);
 		opendir(DIR, $args{"miRNAs_folder"}) || die $!;
 		my @files= readdir(DIR);
 		system("mkdir -p $projectdir/miRGate_results/");
@@ -328,7 +332,7 @@ sub TargetPrediction{
 			foreach my $miRNA_files (sort keys %$miRNA_edgeR_results){
 				my $m_o_edger=fileparse($miRNA_files);
 				$m_o_edger=~s/\.xls$/_miRNAs/;
-				print STDERR "LOG :: ".date()." Gathering Prediction from ".scalar(keys %{$miRNA_edgeR_results->{$miRNA_files}})." miRNAs in " . fileparse($miRNA_files) ." and ".scalar(keys %{$genes_edgeR_results->{$gene_edger_data}})." genes from " . fileparse($gene_edger_data) . " using miRGate\n";
+				print STDOUT "LOG :: ".date()." Gathering Prediction from ".scalar(keys %{$miRNA_edgeR_results->{$miRNA_files}})." miRNAs in " . fileparse($miRNA_files) ." and ".scalar(keys %{$genes_edgeR_results->{$gene_edger_data}})." genes from " . fileparse($gene_edger_data) . " using miRGate\n" if($verbose);
 				
 				 miRGate(
 				 	UTRs=>$genes_edgeR_results->{$gene_edger_data},
@@ -346,7 +350,7 @@ sub TargetPrediction{
 			foreach my $miRNA_files (sort keys %$miRNA_noiseq_results){
 				my $m_o_noiseq=fileparse($miRNA_files);
 				$m_o_noiseq=~s/\.xls$/_miRNAs/;
-				print STDERR "LOG :: ".date()." Gathering Prediction from ".scalar(keys %{$miRNA_noiseq_results->{$miRNA_files}})." miRNAs in " . fileparse($miRNA_files) ." and ".scalar(keys %{$genes_noiseq_results->{$gene_noiseq_data}})." genes from " . fileparse($gene_noiseq_data) . " using miRGate\n";
+				print STDOUT "LOG :: ".date()." Gathering Prediction from ".scalar(keys %{$miRNA_noiseq_results->{$miRNA_files}})." miRNAs in " . fileparse($miRNA_files) ." and ".scalar(keys %{$genes_noiseq_results->{$gene_noiseq_data}})." genes from " . fileparse($gene_noiseq_data) . " using miRGate\n" if($verbose);
 				 miRGate(
 				 	UTRs=>$genes_noiseq_results->{$gene_noiseq_data},
 				 	miRNAs=>$miRNA_noiseq_results->{$miRNA_files},
@@ -383,6 +387,7 @@ sub get_edgeR_data{
 	my $edger_cutoff=$args{"edger_cutoff"};
 	my $verbose=$args{"verbose"};
 	my $organism=$args{"organism"};
+	my $fc_threshold=$args{"fc_threshold"};
 
 	my $data;
 	#Read edgeR data
@@ -393,11 +398,11 @@ sub get_edgeR_data{
 			$_=~s/\"//g;
 			my($feature,$fc,$cpm,$pvalue,$fdr)=split(/\t/);
 			#filtering over-expressed
-			if($fdr<=$edger_cutoff and $fc>0){
+			if($fdr<=$edger_cutoff and $fc>$fc_threshold){
 				$data->{$feature}->{UP}="$fc\t$fdr";
 			}
 			#filtering down-expressed
-			if($fdr<=$edger_cutoff and $fc<0){
+			if($fdr<=$edger_cutoff and $fc<$fc_threshold){
 				$data->{$feature}->{DOWN}="$fc\t$fdr";
 			}
 		}
@@ -410,7 +415,7 @@ sub get_NoiSeq_data{
 	my $file= $args{"file"}; #Input directory where the files are
 	my $noiseq_cutoff=$args{"NoiSeq_cutoff"};
 	my $verbose=$args{"verbose"};
-
+	my $fc_threshold=$args{"fc_threshold"};
 	my $data;
 	#print STDERR "LOG :: " . date() . " Reading $file (cut_off $noiseq_cutoff)\n" if($verbose);
 	#Read edgeR data
@@ -421,11 +426,11 @@ sub get_NoiSeq_data{
 			$_=~s/\"//g;
 			my($feature,undef,undef,$fc,undef,$fdr)=split(/\t/);
 			#filtering over-expressed
-			if($fdr>=$noiseq_cutoff and $fc>0){
+			if($fdr>=$noiseq_cutoff and $fc>$fc_threshold){
 				$data->{$feature}->{UP}="$fc\t$fdr";
 			}
 			#filtering down-expressed
-			if($fdr>=$noiseq_cutoff and $fc<0){
+			if($fdr>=$noiseq_cutoff and $fc<$fc_threshold){
 				$data->{$feature}->{DOWN}="$fc\t$fdr";
 			}
 		}
@@ -440,6 +445,7 @@ sub miRGate{
 	my $UTRs= $args{"UTRs"};
 	my $organism=$args{"organism"};
 	my $output_file=$args{"output"} . ".xls";
+	my $verbose=$args{"verbose"};
 
 	my $miARmaPath=$args{"miARmaPath"};
 	use lib "$miARmaPath/lib/Perl";
@@ -570,7 +576,7 @@ sub miRGate{
 	
 	close OUT;
 	if($correct == 0){
-		warn "No data for miRGate found\n";
+		print STDOUT "\t". date(). " miRGate:: No data for miRGate found in [ $miRNAs $UTRs ]\n" if($verbose);
 		return();
 	}
 	return();
