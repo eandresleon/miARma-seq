@@ -261,7 +261,6 @@ sub ReadAligment{
 		if($file and $aligner and $logfile and $statsfile and $projectdir){
 			#Checking the selected aligner for the analysis
 			if (lc($aligner) eq "bowtie1"){
-			
 				#Collecting specific bowtie1 index
 				my $bowtie1index=$args{"bowtie1index"}; #Genome index to align your reads in .ebwt format
 				#Optional parameters are predefined as undef
@@ -313,7 +312,6 @@ sub ReadAligment{
 			  	}
 			}
 			elsif (lc($aligner) eq "bowtie2"){
-
 				#Collecting specific bowtie2 index
 				my $bowtie2index=$args{"bowtie2index"}; #Genome index to align your reads in .bt2 format
 				#Optional parameters are predefined as undef
@@ -361,7 +359,6 @@ sub ReadAligment{
 
 			}
 			elsif (lc($aligner) eq "bowtie1-bowtie2" or lc($aligner) eq "bowtie2-bowtie1"){
-			
 				#Collecting specific bowtie index
 				my $bowtie1index=$args{"bowtie1index"}; #Genome index to align your reads in .ebwt format
 				my $bowtie2index=$args{"bowtie2index"}; #Genome index to align your reads in .bt2 format
@@ -454,7 +451,7 @@ sub ReadAligment{
 					}else{
 						$Seqtype="SingleEnd";
 					}
-					print STDERR "TOPHAT :: ".date()." Starting a $Seqtype analysis with $tophat_aligner\n";
+					print STDOUT "\t". date()." Starting a $Seqtype analysis with $tophat_aligner\n" if($verbose);
 					
 					#If any optional parameter is provided by the user will be collected
 					if(defined($args{"library_type"})){
@@ -482,6 +479,7 @@ sub ReadAligment{
 					my $bowtieindex;
 					my $output_file2;
 				
+					
 					if(lc($tophat_aligner) eq "bowtie2"){
 						#Collecting specific bowtie2 index
 						$bowtieindex=$args{"bowtie2index"}; #Genome index to align your reads in .bt2 format
@@ -594,7 +592,6 @@ sub ReadAligment{
 				}
 			}
 			elsif(lc($aligner) eq "bwa"){
-				
 				#Collecting specific bowtie1 index
 				my $bwaindex=$args{"bwaindex"}; #Genome index to align your reads in .ebwt format
 				#Optional parameters are predefined as undef
@@ -1032,9 +1029,9 @@ sub bowtie1{
 			}
 		}
 		else{
-			print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (single-end) analysis\n";			
+			print STDOUT "\tBOWTIE 1 :: ".date()." Checking $file for bowtie1 (single-end) analysis\n" if($verbose);			
 			if($file =~ /\.gz$/){
-				print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
+				print STDOUT "\tBOWTIE 1 :: ".date()." Uncompressing $file\n" if($verbose);
 				#In case gzip
 				$command="gunzip -f -d -k -c $file | bowtie ".$bowtiepardef." ".$bowtieindex." - ". $output_file_bw;
 				$file=~s/\.gz$//g;
@@ -1057,7 +1054,7 @@ sub bowtie1{
 			#and the bowtie execution. The stats data will be printed on the screen
 			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command;
 			#Printing on the screen the date and the execution data
-			print STDOUT "BOWTIE 1 :: ".date()." Executing $commanddef\n";
+			print STDOUT "\tBOWTIE 1 :: ".date()." Executing $commanddef\n";
 		}   	
 		else
 		{
@@ -1359,7 +1356,7 @@ sub bowtie2{
 		#Bowtie2 execution command
 		my $command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
-			print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 (paired-end) analysis\n";
+			print STDOUT "\tBOWTIE 2 :: ".date()." Checking $file for bowtie2 (paired-end) analysis\n" if($verbose);
 			
 			#Check if the file is a paired-end file
 			if($file =~ /.*_1.*/){
@@ -1381,7 +1378,7 @@ sub bowtie2{
 			}
 		}
 		else{
-			print STDERR "BOWTIE 2 :: ".date()." Checking $file for bowtie2 (single-end) analysis\n";
+			print STDOUT "\tBOWTIE 2 :: ".date()." Checking $file for bowtie2 (single-end) analysis\n" if($verbose);
 			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
 		}
 		
@@ -1391,7 +1388,7 @@ sub bowtie2{
 			#creation and the bowtie2 execution. The stats data will be printed on the screen
 			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command;
 			#Printing on the screen the date and the execution data
-			print STDOUT "BOWTIE2 :: ".date()." Executing $commanddef\n";
+			print STDOUT "\tBOWTIE2 :: ".date()." Executing $commanddef\n";
 		}   
 		#Bowtie execution printing stats on stats file	
 		else{
@@ -1532,7 +1529,7 @@ sub TopHat{
 	my $bowtieindex=$args{"bowtieindex"}; #Genome index in format .bt2
 	my $threads=$args{"threads"}; #Optional number of threads to perform the analysis faster
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
-	my $verbose="";#$args{"verbose"}; #Optional arguments to show the execution data on screen
+	my $verbose=$args{"verbose"}; #Optional arguments to show the execution data on screen
 	my $statsfile=$args{"statsfile"}; #path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $GTF=$args{"GTF"};
@@ -1598,8 +1595,8 @@ sub TopHat{
 				$mate_file=~s/_1/_2/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
-						print STDERR "TOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n";
-						$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file ." ". $mate_file;
+						print STDOUT "\tTOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n" if($verbose);
+						$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " --transcriptome-index=$projectdir/$output_dir/transcriptome/ -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file ." ". $mate_file;
 					}
 				}
 				else{
@@ -1612,8 +1609,8 @@ sub TopHat{
 			}
 		}
 		else{
-			print STDERR "TOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n";
-			$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file;
+			print STDOUT "\tTOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n" if($verbose);
+			$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " --transcriptome-index=$projectdir/$output_dir/transcriptome/ -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file;
 		}
 		#tophat execution command
 		#tophat execution with verbose option
@@ -1622,7 +1619,7 @@ sub TopHat{
 			#creation and the bowtie2 execution. The stats data will be printed on the screen
 			$commanddef= "mkdir -p ".$projectdir."/".$output_dir." ;".$command;
 			#Printing on the screen the date and the execution data
-			print STDOUT "TOPHAT :: ".date()." Executing $commanddef\n" ;
+			print STDOUT "\tTOPHAT :: ".date()." Executing $commanddef\n" ;
 		}   
 		#tophat execution printing stats on stats file	
 		else{
@@ -1855,7 +1852,6 @@ sub bwa{
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Singe-End]
 	
 	# Variable declaration and describing results directory 
-	my $commanddef;
 	my $output_dir="/bwa_results/";
 
 	#Variable to collect the optional parameters 
@@ -1868,23 +1864,26 @@ sub bwa{
 	}
 	#Any other bowtie parameter can be provided by the user using the correct sintaxis
 	#Checking the mandatory parameters
+	open (LOG,">> ".$logfile) || die "BWA ERROR :: Can't open $logfile: $!";
+	
 	if ($file and $projectdir and $bwaindex and $logfile and $statsfile){ 
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
 		my $command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
-			print STDERR "BWA :: ".date()." Checking $file for bwa analysis (Paired End)\n";
+			print STDOUT "\tBWA :: ".date()." Checking $file for bwa analysis (Paired End)\n" if($verbose);
+			print LOG "BWA :: ".date()." Checking $file for bwa analysis (Paired End)\n";
 			
 			#Check if the file is a paired-end file
 			if($file =~ /.*_1.*/){
 				#it contains the _1 label
 				my $mate_file=$file;
-				$mate_file=~s/_1\./_2\./g;
+				$mate_file=~s/_1(.+)/_2$1/g;
 				if(-e $mate_file){
-					if($file ne $mate_file){
+					if($file ne $mate_file){						
 						my $real_name=$projectdir.$output_dir.$name."_bwa.sam";;
-						$real_name=~s/_\d_bwa/_bwa/g;
-						if($file =~ /\.bz2$/){
+						$real_name=~s/_\d.+bwa/_bwa/g;
+						if($file =~ /\.bz2$/){							
 							$command="bwa mem ".$bwapardef." ".$bwaindex."  <(bunzip2 -c $file) <(bunzip2 -c $mate_file)>".$real_name;
 						}
 						else{
@@ -1902,18 +1901,20 @@ sub bwa{
 			}
 		}
 		else{
-			print STDERR "BWA :: ".date()." Checking $file for bwa analysis (Single End)\n";
+			print STDOUT "\tBWA :: ".date()." Checking $file for bwa analysis (Single End)\n" if($verbose);
+			print LOG "BWA :: ".date()." Checking $file for bwa analysis (Single End)\n";
 			#bwa execution command
 			$command="bwa mem ".$bwapardef." ".$bwaindex." ".$file." >".$projectdir.$output_dir.$name."_bwa.sam";
 		}
 
+		my $commanddef;
 		#bwa execution with verbose option
 		if($verbose){
 			#commandef is the command will be executed by system composed of the results directory creation 
 			#and the bowtie execution. The stats data will be printed on the screen
 			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command;
 			#Printing on the screen the date and the execution data
-			print STDOUT "BWA :: ".date()." Executing $commanddef\n";
+			print STDOUT "\tBWA :: ".date()." Executing $commanddef\n";
 		}   	
 		else
 		{
@@ -1921,7 +1922,7 @@ sub bwa{
 			#and execution data on run.log file.
 			#Opening stats file
 			open (STATS,">> ".$statsfile) || die "BWA ERROR :: Can't open $statsfile: $!";
-			print STATS "BWA :: File:".$file."\n";
+			print STATS "\tBWA :: ".date()." Executing $commanddef\n";
 			#commandef is the command will be executed by system composed of the results directory creation 
 			#and the bowtie execution. The stats data will be redirected to the stats.log file
 			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command." 2>> ".$statsfile;
@@ -1929,7 +1930,6 @@ sub bwa{
 		}
 
 		#Opening the run.log and printing the execution data
-		open (LOG,">> ".$logfile) || die "BWA ERROR :: Can't open $logfile: $!";
 		print LOG "BWA :: ".date()." Executing $commanddef\n File:".$file."\n";
 		close LOG;
 			
@@ -2088,7 +2088,7 @@ sub miRDeep{
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $bowtieindex and $logfile and $statsfile and $adapter and $genome and $mature_miRNA_file and $precursor_miRNA_file){
 		if($file =~ /\.gz$/){
-			print STDERR "miRDeep :: ".date()." Uncompressing $file\n";
+			print STDOUT "\tmiRDeep :: ".date()." Uncompressing $file\n" if($verbose);
 			#In case gzip
 			system("gunzip -f $file");
 			#Changing new extension
@@ -2096,13 +2096,13 @@ sub miRDeep{
 		}
 		elsif($file =~ /\.bz2$/){
 			#in case bzip2
-			print STDERR "miRDeep :: ".date()." Uncompressing $file\n";
+			print STDOUT "\tmiRDeep :: ".date()." Uncompressing $file\n" if($verbose);
 			system("bunzip2 -f -d $file");
 			#New extension
 			$file=~s/\.bz2$//g;			
 		}
 		 
-		print STDERR "miRDeep :: ".date()." Checking $file for miRDeep analysis\n";
+		print STDOUT "\tmiRDeep :: ".date()." Checking $file for miRDeep analysis\n" if($verbose);
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
 		
@@ -2139,7 +2139,7 @@ sub miRDeep{
 			$commanddef_mapper= "mkdir -p ".$projectdir.$output_dir." ;".$command_mapper;
 			$commanddef_novo= "mkdir -p ".$projectdir.$output_dir." ;".$command_novo;
 			#Printing on the screen the date and the execution data
-			print STDOUT "miRDeep :: ".date()." Executing $command_mapper\n$command_novo";
+			print STDOUT "\tmiRDeep :: ".date()." Executing $command_mapper\n$command_novo";
 		}   
 		#Bowtie execution printing stats on stats file	
 		else{
@@ -2158,12 +2158,12 @@ sub miRDeep{
 		print LOG "miRDeep :: ".date()." Executing $commanddef_mapper\n";
 		print LOG "miRDeep :: ".date()." Executing $commanddef_novo\n";
 
-		print STDERR "miRDeep :: ".date()." Mapping $file with miRDeep mapper module\n";
+		print STDOUT "\tmiRDeep :: ".date()." Mapping $file with miRDeep mapper module\n" if($verbose);
 		#Executing the command or if system can't be executed die showing the error.
 		system($commanddef_mapper) == 0
 		 or die "miRDeep ERROR :: system args failed: $? ($commanddef_mapper)";
 
-		print STDERR "miRDeep :: ".date()." Identifying miRNAs (including novel) in $file with miRDeep module\n";
+		print STDOUT "\tmiRDeep :: ".date()." Identifying miRNAs (including novel) in $file with miRDeep module\n" if($verbose);
 		#Executing the command or if system can't be executed die showing the error.
 		system($commanddef_novo) == 0
 		 or die "miRDeep ERROR :: system args failed: $? ($commanddef_novo)";

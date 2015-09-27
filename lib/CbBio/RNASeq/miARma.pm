@@ -104,6 +104,8 @@ sub run_miARma{
 	my %args=@_;
 	my $miARmaPath=$args{"miARmaPath"};
 	my $configuration_file=$args{"config"};
+	my $check_input=$args{"check"};
+	
 	use lib "$miARmaPath/lib/Perl";
 	use Config::IniFiles;
 	use DateTime;
@@ -113,6 +115,8 @@ sub run_miARma{
 	my $stat_file=undef;
 	my $severe_error=0;
 	my $post_qual=0;
+	
+	my $start_run = time();
 	
 	#Check for general parameters
 	if($cfg->SectionExists("General")==1){
@@ -157,6 +161,10 @@ sub run_miARma{
 			#First, we are going to check if input files are real fastq files if no error is found
 			#check_input_format(-config => $cfg);
 			
+			#Time to check that all included files exist
+			
+			check_input_data(config=>$cfg,check=>$check_input,type=>$cfg->val("General","type"));
+			
 			system ("mkdir -p " . $cfg->val("General","projectdir"));
 			#optional parameters: stats folder
 			if($cfg->exists("General","stats_file") ne "" or defined($stat_file)){
@@ -199,30 +207,27 @@ sub run_miARma{
 			
 			my $dir=undef;
 			if(lc($cfg->val("Quality","prefix")) eq "pre"){
-				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Quality","prefix")."\" Quality Analysis\n";
-				$dir=$cfg->val("Quality","read_dir");
+				$dir=$cfg->val("General","read_dir");
 			}
 			elsif(lc($cfg->val("Quality","prefix")) eq "post"){
 				$post_qual=1;
 			}
 			elsif(lc($cfg->val("Quality","prefix")) eq "both"){
-				print STDERR "miARma :: ".date()." Starting a Pre Quality Analysis\n";
-				$dir=$cfg->val("Quality","read_dir");
+				$dir=$cfg->val("General","read_dir");
 				$post_qual=1;
 			}
 			else{
 				print STDERR "\nERROR " . date() . " prefix parameter in Section [Quality] doesn't accept ".$cfg->val("Quality","prefix")." as a value. Only pre, post or both are accepted as correct values\n";
 				help_check_quality();
-			}
+		 	}
 			
 			if($cfg->SectionExists("DeNovo")==1 and $post_qual==1){
-				print STDERR "\nWARN " . date() . " For DeNovo studies, Post quality analyses is not available\n";
+				print date() . "\tWARN:: For DeNovo studies, Post quality analyses is not available\n";
 				$post_qual=0;					
 			}
 			
 			#run quality;
 			use CbBio::RNASeq::Quality;
-			
 			if($dir){
 				# Reading the directory collecting the files and completing with the path
 				if(opendir(DIR, $dir)){
@@ -232,6 +237,7 @@ sub run_miARma{
 				
 					# # FASTQC EXECUTION
 					# # Reading the array with the names of the files
+					print date()." Starting Quality Analysis.\n";
 					foreach my $file(@files){
 						#Calling FastQC subroutine of Quality.pm package.
 						$output_dir=FastQC(
@@ -244,6 +250,7 @@ sub run_miARma{
 							prefix=>"Pre",
 						);
 					}
+					
 					# # FASTQCSTATS EXECUTION
 					# # Calling FastQCStats sobroutine of Quality.pm package. 
 					FastQCStats(
@@ -252,6 +259,7 @@ sub run_miARma{
 						statsfile=>$stat_file || $cfg->val("General","stats_file"),
 						logfile=>$log_file || $cfg->val("General","logfile"),
 					);
+					print date()." Quality Analysis finished.\n";
 				}
 				 else{
 				 	print "ERROR :: Please check that your reads are saved in: ($dir)\n";
@@ -289,7 +297,7 @@ sub run_miARma{
 			}
 			check_input_format(-files=>\@files,-dir=>$dir);
 
-			print STDERR "miARma :: ".date()." Starting a adapter removal analysis\n";
+			print date()." Starting a Adapter removal analysis\n";
 			my @files_adapter=AdapterRemoval(
 				adaptersoft=>$cfg->val("Adapter","adaptersoft"),
 				dir=>$dir,
@@ -305,7 +313,7 @@ sub run_miARma{
 				min_quality=>$cfg->val("Adapter","min_quality")|| undef,
 				miARmaPath=>$miARmaPath,
 				reaperparameters=>$cfg->val("Adapter","reaperparameters") || undef,
-				organism=>$cfg->val("Adapter","organism")|| undef,
+				organism=>$cfg->val("General","organism")|| undef,
 				trimmingnumber=>$cfg->val("Adapter","trimmingnumber")|| undef,
 				readposition=>$cfg->val("Adapter","readposition")|| undef,
 				adaptpredictionnumber=>$cfg->val("Adapter","adaptpredictionnumber")|| undef,
@@ -316,10 +324,11 @@ sub run_miARma{
 				geom=>$cfg->val("Adapter","geom")|| undef,
 				tabu=>$cfg->val("Adapter","tabu")|| undef,			
 			);
+			print date()." Adapter Analysis finished.\n";
 				
 			#Just in case the user wants to see the quality of the processed reads
 			if($post_qual==1){
-				print STDERR "miARma :: ".date()." Starting a Post Quality Analysis\n";
+				print date()." Starting a Post Quality Analysis\n";
 				my $output_dir_post;
 				foreach my $processed_files(@files_adapter){
 					$output_dir_post=FastQC(
@@ -340,6 +349,7 @@ sub run_miARma{
 					statsfile=>$stat_file || $cfg->val("General","stats_file"),
 					logfile=>$log_file || $cfg->val("General","logfile"),
 				);
+				print date()." Post Quality Analysis finished.\n";
 			}
 		}
 	}
@@ -467,7 +477,7 @@ sub run_miARma{
 				#Reading read directory, collecting the files and completing with the path
 				my $dir=$cfg->val("General","read_dir");
 				if(-e $dir){
-					opendir(DIR, $dir) || warn "Aligner:: Folder $dir is not found\n"; 
+					opendir(DIR, $dir) || warn "1) Aligner:: Folder $dir is not found\n"; 
 					my @cut_files= readdir(DIR);
 					push(@files,map("$dir/$_",@cut_files));
 				}
@@ -490,7 +500,7 @@ sub run_miARma{
 				#Reading read directory, collecting the files and completing with the path
 				my $dir=$cfg->val("General","read_dir");
 				if(-e $dir){
-					opendir(DIR, $dir) || warn "Aligner:: Folder $dir is not found\n"; 
+					opendir(DIR, $dir) || warn "2) Aligner:: Folder $dir is not found\n"; 
 					my @cut_files= readdir(DIR);
 					push(@files,map("$dir/$_",@cut_files));
 				}
@@ -506,9 +516,10 @@ sub run_miARma{
 			if(lc($cfg->val("General","strand")) eq "reverse"){
 				$libray_type="fr-secondstrand";
 			}
-			check_input_format(-files=>\@files,-dir=>"",-log=>$log_file);
+			check_input_format(-files=>\@files,-dir=>"",-log=>$log_file,config=>$cfg);
+			
 			if(scalar(@files)>0){
-				print STDERR "miARma :: ".date()." Starting a \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis\n";
+				print STDERR date()." Starting a \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis\n";
 				# Reading the array with the names of the files
 				foreach my $file( sort @files){
 					ReadAligment(
@@ -524,8 +535,8 @@ sub run_miARma{
 					    bowtiemiss=>$cfg->val("Aligner","bowtiemiss") || undef,
 					    bowtieleng=>$cfg->val("Aligner","bowtieleng") || undef,
 						projectdir=>$cfg->val("General","projectdir")|| undef,
-					    bowtie1parameters=>$cfg->val("General","bowtie1parameters")|| undef,
-					    bowtie2parameters=>$cfg->val("General","bowtie2parameters")|| undef,
+					    bowtie1parameters=>$cfg->val("Aligner","bowtie1parameters")|| undef,
+					    bowtie2parameters=>$cfg->val("Aligner","bowtie2parameters")|| undef,
 					    miARmaPath=>$miARmaPath,
 						organism=>$cfg->val("General","organism")|| undef,
 						adapter=>$cfg->val("Adapter","adaptersoft")|| undef,
@@ -538,9 +549,10 @@ sub run_miARma{
 						tophat_multihits=>$cfg->val("Aligner","tophat_multihits") || undef,
 						read_mismatches=>$cfg->val("Aligner","read_mismatches") || undef,
 						tophat_aligner=>$cfg->val("Aligner","tophat_aligner") || undef,
-						
 					);
 				}
+				print STDERR date()." \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis finished\n";
+				
 			}
 		}
 	}
@@ -559,22 +571,22 @@ sub run_miARma{
 			if(lc($cfg->val("General","type")) ne "circrna"){
 				#Reading CutAdapt results directory, collecting the files and completing with the path
 				my $bw1_dir=$cfg->val("General","projectdir")."/Bowtie1_results/";
-				if($bw1_dir){
-					opendir(BW1DIR, $bw1_dir) || warn "Aligner:: Folder $bw1_dir is not found\n"; 
+				if(-e $bw1_dir){
+					opendir(BW1DIR, $bw1_dir) || warn "3 Aligner:: Folder $bw1_dir is not found\n"; 
 					my @bw1_files= readdir(BW1DIR);
 					push(@files,map("$bw1_dir$_",@bw1_files));
 					close BW1DIR;
 				}
 				#Reading Reaper results directory, collecting the files and completing with the path
 				my $bw2_dir=$cfg->val("General","projectdir")."/Bowtie2_results/";
-				if($bw2_dir){
-					opendir(BW2DIR, $bw2_dir) || warn "Aligner:: Folder $bw2_dir is not found\n"; 
+				if(-e $bw2_dir){
+					opendir(BW2DIR, $bw2_dir) || warn "4 Aligner:: Folder $bw2_dir is not found\n"; 
 					my @bw2_files= readdir(BW2DIR);
 					push(@files,map("$bw2_dir$_",@bw2_files));
 					close BW2DIR;
 				}
 				if(scalar(@files)>0 and lc($cfg->val("General","type")) ne "circrna"){
-					print STDERR "miARma :: ".date()." Starting a Readcount Analysis\n";
+					print STDERR date()." Starting a Readcount Analysis\n";
 					my @htseqfiles;
 					# Reading the array with the names of the files
 					foreach my $file(@files){
@@ -602,7 +614,10 @@ sub run_miARma{
 					  	input=>\@htseqfiles, 
 					  	projectdir=>$cfg->val("General","projectdir")|| undef,
 						logfile=>$log_file || $cfg->val("General","logfile"),
+						verbose=>$cfg->val("General","verbose") || 0,
 					  );
+					  
+  					print STDERR date()." Readcount Analysis finished.\n";
 				}
 				else{
 					print "ERROR :: You are requesting a miRNA readcount analysis, but no aligned files are found (Neither Bowtie1 nor Bowtie2)\n";
@@ -618,12 +633,14 @@ sub run_miARma{
 				else{
 					my $bw2_dir=$cfg->val("General","projectdir")."/bwa_results/";
 					if($bw2_dir){
-						opendir(BW2DIR, $bw2_dir) || warn "Aligner:: Folder $bw2_dir is not found\n"; 
+						opendir(BW2DIR, $bw2_dir) || warn "5 Aligner:: Folder $bw2_dir is not found\n"; 
 						my @bwa_files= readdir(BW2DIR);
 						push(@files,map("$bw2_dir$_",@bwa_files));
 						close BW2DIR;
 						
 						my @circRNAfiles;
+						print STDERR date()." Starting a Readcount Analysis\n";
+						
 						foreach my $file(@files){
 							#Selecting only the sam files for their processing
 							my $result=CIRICount(
@@ -644,8 +661,13 @@ sub run_miARma{
 						  	input=>\@circRNAfiles, 
 							projectdir=>$cfg->val("General","projectdir")|| undef,
 							logfile=>$log_file || $cfg->val("General","logfile"),
+							verbose=>$cfg->val("General","verbose") || 0,
+							
 						);
 						@files=undef;
+						
+	  					print STDERR date()." Readcount Analysis finished.\n";
+						
 					}
 				}
 			}
@@ -689,6 +711,7 @@ sub run_miARma{
 				my @files= readdir(READIR);
 				push(@fastaq_files,map("$read_directory$_",@files));
 			}
+			print date() . " Starting a De novo identification and quantification of miRNAs\n";
 			foreach my $file(@fastaq_files){
 				ReadAligment(
 					file=>$file,
@@ -742,6 +765,8 @@ sub run_miARma{
 				);
 			}
 		}
+		print date() . " De novo identification and quantification of miRNAs finished\n";
+		
 	}	
 	#Diferential Expression
 	if($cfg->SectionExists("DEAnalysis")==1){
@@ -765,7 +790,7 @@ sub run_miARma{
 		else{
 			#run DEAnalysis
 			use CbBio::RNASeq::DEAnalysis;
-			print STDERR "miARma :: ".date()." Differential expression analysis using  ".$cfg->val("DEAnalysis","DEsoft") ." software(s)\n";
+			print STDERR date()." Starting a differential expression analysis using  ".$cfg->val("DEAnalysis","DEsoft") ." software(s)\n";
 			
 			my @files;
 			#if user did a regular readcount
@@ -831,6 +856,9 @@ sub run_miARma{
 				print "ERROR :: Please check that your tab files are saved in: ($read_count_dir / $denovo_dir)\n";
 				help_check_deanalysis();
 			}
+			
+			print STDERR date()." Differential expression analysis finished.\n";
+			
 		}
 	}
 	#miRGate prediction
@@ -838,17 +866,19 @@ sub run_miARma{
 		#run TargetP
 		my $dir=$cfg->val("General","projectdir");		
 		use CbBio::RNASeq::TargetPrediction;
+		print date()." Starting a target Prediction Analysis using miRGate\n";
 		
 		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") eq ""){
 			TargetPrediction(
 				miRNAs_folder=>$dir,
 				logfile=>$log_file || $cfg->val("General","logfile"),
-				verbose=>$cfg->val("General","verbose") || 0,
 				projectdir=>$cfg->val("General","projectdir")|| undef,
 				organism=>$cfg->val("General","organism")|| undef,
 				miARmaPath=>$miARmaPath,
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
 				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+				fc_threshold=>$cfg->val("TargetPrediction","fc_threshold")|| 0,
+				verbose=>$cfg->val("General","verbose") || 0,
 			);
 		}
 		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") ne ""){
@@ -856,24 +886,26 @@ sub run_miARma{
 				miRNAs_folder=>$dir,
 				genes_folder=>$cfg->val("TargetPrediction","genes_folder"),
 				logfile=>$log_file || $cfg->val("General","logfile"),
-				verbose=>$cfg->val("General","verbose") || 0,
 				projectdir=>$cfg->val("General","projectdir")|| undef,
 				organism=>$cfg->val("General","organism")|| undef,
 				miARmaPath=>$miARmaPath,
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
 				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+				fc_threshold=>$cfg->val("TargetPrediction","fc_threshold")|| 0,
+				verbose=>$cfg->val("General","verbose") || 0,
 			);
 		}
 		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") eq ""){
 			TargetPrediction(
 				genes_folder=>$dir,
 				logfile=>$log_file || $cfg->val("General","logfile"),
-				verbose=>$cfg->val("General","verbose") || 0,
 				projectdir=>$cfg->val("General","projectdir")|| undef,
 				organism=>$cfg->val("General","organism")|| undef,
 				miARmaPath=>$miARmaPath,
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
 				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+				fc_threshold=>$cfg->val("TargetPrediction","fc_threshold")|| 0,
+				verbose=>$cfg->val("General","verbose") || 0,				
 			);
 		}
 		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") ne "") {
@@ -881,17 +913,103 @@ sub run_miARma{
 				genes_folder=>$dir,
 				miRNAs_folder=>$cfg->val("TargetPrediction","miRNAs_folder"),
 				logfile=>$log_file || $cfg->val("General","logfile"),
-				verbose=>$cfg->val("General","verbose") || 0,
 				projectdir=>$cfg->val("General","projectdir")|| undef,
 				organism=>$cfg->val("General","organism")|| undef,
 				miARmaPath=>$miARmaPath,
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
 				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
+				verbose=>$cfg->val("General","verbose") || 0,
+				fc_threshold=>$cfg->val("TargetPrediction","fc_threshold")|| 0,
 			);
 		}
+		
+		print date()." Target Prediction Analysis finished.\n";
+		
 	}
+	my $end_run = time();
+	my $run_time = $end_run - $start_run;
+	print date() . " miARma finished. Job took ". sprintf("%d",$run_time/60) ." minutes\n";
+ 
+sub check_input_data{
+	my %args=@_;
+	my $cfg=$args{"config"};
+	my $check_input=$args{"check"};
+	my $type=$args{"type"};
+	my $parameter_type=parameter_definition();
+	my @sections=$cfg->Sections();
+	my @sections_tmp=@sections;
+	
+	my @print_section=splice(@sections_tmp,1,scalar(@sections_tmp));
+	print date()." Starting a miARma analysis for $type\n";
+	print date()." Checking provided parameters for: ".join(",",@print_section).". \n";
 
+	foreach my $section (@sections){
+		my @parametros=$cfg->Parameters($section);
+		foreach my $parametro (@parametros){
+			
+			if($parameter_type->{$parametro} eq "path"){
+				if(-e $cfg->val($section,$parametro)){
+				}
+				else{
+					print date()." Checking $section-$parametro parameter ... error!\n\tERROR Please check that the parameter $parametro inside section [$section] is correct.\n";
+					exit;
+				}
+			}
+			if($parameter_type->{$parametro} eq "path_dir"){
+				if(-e $cfg->val($section,$parametro)){
+					print date()." Checking $section-$parametro parameter ... Exists!\n".date()." The folder specified in ($parametro=".$cfg->val($section,$parametro).") already exists.\n". date(). " Wait 5 seconds to overwrite the folder. Cancel otherwise:\t";
+					for (my $var = 5; $var >=0; $var--){
+						print "\b" . $var;
+						sleep(1);
+					}
+					print "\n" . date(). " Continue.\n";
+				}
+			}
 
+			if($parameter_type->{$parametro} eq "file"){
+				if(-e $cfg->val($section,$parametro)){
+				}
+				else{
+					print date()." Checking $section-$parametro parameter ... error!\n\tERROR Please check that the parameter $parametro inside section [$section] is correct.\n";
+					exit;
+				}
+			}
+			if($parameter_type->{$parametro} eq "bw2"){
+				if(-e $cfg->val($section,$parametro) .".1.bt2"){
+				}
+				else{
+					print date()." Checking $section-$parametro parameter ... error!\n\tERROR Please check that the parameter $parametro inside section [$section] is correct.\n";
+					exit;
+				}
+			}
+			if($parameter_type->{$parametro} eq "bw1"){
+				if(-e $cfg->val($section,$parametro) .".1.ebwt"){
+				}
+				else{
+					print date()." Checking $section-$parametro parameter ... error!\n\tERROR Please check that the parameter $parametro inside section [$section] is correct.\n";
+					exit;
+				}
+			}
+			if($parameter_type->{$parametro} eq "bwa"){
+				if(-e $cfg->val($section,$parametro) .".bwt"){
+				}
+				else{
+					print date()." Checking $section-$parametro parameter ... error!\n\tERROR Please check that the parameter $parametro inside section [$section] is correct.\n";
+					exit;
+				}
+			}
+		}
+	}
+	if($check_input eq "-check" or $check_input eq "--check" or $check_input eq "check"){
+		print date()." All parameters are correct.\n";
+		exit;
+	}
+	else{
+		print date()." All parameters are correct.\n";
+		return();
+	}
+	
+}
 sub check_input_format{
 	use File::Basename;
 	my %args=@_;
@@ -916,7 +1034,7 @@ sub check_input_format{
 				push(@fastq_files,map("$dir_fastq$_",@files));
 			}
 			else{
-				print STDERR "miARma :: ".date() ." Can't find fastq files on $dir_fastq\n\n";
+				print STDERR date() ." ERROR: Can't find fastq files on $dir_fastq\n\n";
 				exit;
 			}
 		}
@@ -933,8 +1051,8 @@ sub check_input_format{
 	}
 	my $exit=0;
 	if(scalar(@fastq_files)>0){
-		print STDERR "miARma :: " . date() . " Checking if files in \"$dir_fastq\" are in the correct fastq format\n" if($dir_fastq);
-		print STDERR "miARma :: " . date() . " Checking if files are in the correct fastq format\n" if(!$dir_fastq);
+		print date() . " Checking if files in \"$dir_fastq\" are in the correct fastq format.\n" if($dir_fastq);
+		#print date() . " Checking if files are in the correct fastq format\n" if(!$dir_fastq and $cfg->SectionExists("Adapter")!=1);
 		my @wrong_file;
 		foreach my $file(@fastq_files){
 			if($file){
@@ -987,7 +1105,7 @@ sub check_input_format{
 					if($error == 0){
 						#No error, so they are fastq files, but is the extension correct ?
 						if($real_file =~ /.*\.fastq$/ and $real_file =~ /.*\.fastq\.lane\.clean$/ and $real_file =~ /.*\.fastq.gz$/ and $real_file =~ /.*\.fq$/ and $real_file =~ /.*\.fq.gz$/ and $real_file =~ /.*\.fq\.bz2$/ and $real_file =~ /.*\.fastq\.bz2$/){
-							print STDERR "$real_file is a fastq file, but due to cutadapt and other softwares, this file should include a fastq/fq extension. [Comppresed are also valid as .fq.gz]\n";
+							print STDERR date(). " $real_file is a fastq file, but due to cutadapt and other softwares, this file should include a fastq/fq extension. [Comppresed are also valid as .fq.gz]\n";
 							$exit=1;
 						}
 					}
@@ -1174,7 +1292,7 @@ sub print_header{
 	system("clear");
 	print "#########################################################################	
 #   miARma, miRNA and RNASeq Multiprocess Analysis			#
-#                miARma v 1.0.0 (Sep-2015)                              #
+#                miARma v 1.0.3 (Sep-2015)                              #
 #               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
@@ -1188,5 +1306,32 @@ sub date{
 	use Time::localtime;
 	my $now = ctime();
 	return("[$now]");
+}
+
+sub parameter_definition{
+	
+	my $parameter;
+	$parameter->{"read_dir"}="path";
+	$parameter->{"projectdir"}="path_dir";
+	$parameter->{"miARmaPath"}="path";
+	$parameter->{"adapter_file"}="file";
+	$parameter->{"metafile"}="file";
+	$parameter->{"bowtie1index"}="bw1";
+	$parameter->{"bowtie2index"}="bw2";
+	$parameter->{"bwaindex"}="bwa";
+	$parameter->{"fasta"}="file";
+	$parameter->{"gtf"}="file";
+	$parameter->{"database"}="file";
+	$parameter->{"adapter_file"}="file";
+	$parameter->{"genome"}="file";
+	$parameter->{"mature_miRNA_file"}="file";
+	$parameter->{"precursor_miRNA_file"}="file";
+	$parameter->{"Rdir"}="file";
+	$parameter->{"contrastfile"}="file";
+	$parameter->{"targetfile"}="file";
+	$parameter->{"genes_folder"}="path";
+	$parameter->{"miRNAs_folder"}="path";
+	
+	return($parameter);
 }
 1;

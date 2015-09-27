@@ -178,7 +178,7 @@ sub TargetPrediction{
 	}
 	#Gene target prediction
 	if(defined($args{"genes_folder"}) and !defined($args{"miRNAs_folder"}) ){
-		print STDERR "LOG :: " . date() . " Starting a gene target prediction from ".$args{"genes_folder"}."\n";
+		print STDOUT "LOG :: " . date() . " Starting a gene target prediction from ".$args{"genes_folder"}."\n" if($verbose);
 		opendir(DIR, $args{"genes_folder"}) || die $!;
 		my @files= readdir(DIR);
 		system("mkdir -p $projectdir/miRGate_results/");

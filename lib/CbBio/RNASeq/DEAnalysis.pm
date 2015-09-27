@@ -745,7 +745,7 @@ sub DE_noiseq{
 		}
 
 		# Printing the date and command execution on screen
-		print STDERR "DE_NOISEQ :: ".date()." Starting Differential Expression Analysis of $file with NOISeq\n"; 
+		print STDOUT "DE_NOISEQ :: ".date()." Starting Differential Expression Analysis of $file with NOISeq\n" if($verbose);
 
 		#Creating results directory
 		my $command="mkdir -p ".$output_dir;
@@ -963,7 +963,7 @@ sub DE_EdgeR{
 		}
 
 		# Printing the date and command execution on screen
-		print STDERR "DE_EDGER :: ".date()." Starting Differential Expression Analysis of $file with EdgeR\n"; 
+		print STDOUT "DE_EDGER :: ".date()." Starting Differential Expression Analysis of $file with EdgeR\n" if($verbose);
 
 		#Creating results directory
 		my $command="mkdir -p ".$output_dir;

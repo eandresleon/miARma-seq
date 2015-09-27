@@ -162,7 +162,7 @@ sub featureCount{
 	if ($file and $projectdir and $database and $logfile){
 		if($file !~ /no_aligned/ and $file !~ /unmapped/){
 		if($file =~ /.*\.bam$/ or $file =~ /.*\.sam$/){
-			print STDERR "SEQCOUNT :: " . date() . " Reading counts from $file\n";
+			print STDOUT "SEQCOUNT :: " . date() . " Reading counts from $file\n" if($verbose);
 			my $name;
 			if ($file =~ /.*\.sam$/){
 				#As input file contains the whole path fileparse is used to obtain the name of the file
@@ -190,6 +190,7 @@ sub featureCount{
 	
 			#Opening the run.log and printing the execution data
 			open (LOG,">> ".$logfile) || die $!;
+			print LOG "SEQCOUNT :: " . date() . " Reading counts from $file\n";
 			print LOG "SEQCOUNT :: ".date()." Executing $commanddef\n";
 			close LOG;
 			#If verbose option has been provided program will print execution data on the screen too.
@@ -284,7 +285,7 @@ sub featureFormat{
 	my $input=$args{"input"}; #Input is an referenced array with the paths of the files which have to be joined
 	my $projectdir=$args{"projectdir"}; #Directory to create the output file
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
-	
+	my $verbose=$args{"verbose"};
 	
 	#Variable declaration
 	my $hashref;
@@ -372,7 +373,11 @@ sub featureFormat{
 			push(@results, $fileresults) if($fileresults);
 		}
 		#Returning the path of the results file
-		print STDERR "\n\nSEQCOUNT :: ".date()." Please check the folder: $projectdir"."$output_dir.\n\n";
+		open(LOG,">> ".$logfile) || die "SEQCOUNTFORMAT ERROR :: ".date()."Can't open '$logfile': $!";
+		print LOG "SEQCOUNT :: ".date()." Please check the folder: $projectdir"."$output_dir.\n";
+		close LOG;
+		
+		print STDOUT "SEQCOUNT :: ".date()." Please check the folder: $projectdir"."$output_dir.\n" if($verbose);
 		
 		return(@results);
 	}else{
@@ -548,7 +553,7 @@ sub CIRICount{
 			my($filename) = fileparse($file);
 			$filename=~s/\.sam//g;
 			if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
-				print STDERR "CIRI :: ".date()." Checking $file for a circRNA analysis (Paired End)\n";
+				print STDOUT "CIRI :: ".date()." Checking $file for a circRNA analysis (Paired End)\n" if($verbose);
 				#CIRI execution command
 				#perl CIRI.pl -P -I test.sam -O outfile -F chr1.fa -A chr1.gtf
 				$command="CIRI_v1.2.pl -P -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $bwaindex . " -G " . $logfile;
@@ -558,7 +563,7 @@ sub CIRICount{
 			}
 			else{
 				#CIRI execution command
-				print STDERR "CIRI :: ".date()." Checking $file for a circRNA analysis (Single End)\n";
+				print STDOUT "CIRI :: ".date()." Checking $file for a circRNA analysis (Single End)\n" if($verbose);
 				$command="CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $bwaindex  . " -G " . $logfile;
 				#commandef is the command will be executed by system composed of the results directory creation 
 				#and the htseq_count execution. The error data will be printed on the run.log file
@@ -657,7 +662,7 @@ sub CIRIFormat{
 	my $input=$args{"input"}; #Input is an referenced array with the paths of the files which have to be joined
 	my $projectdir=$args{"projectdir"}; #Directory to create the output file
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
-	
+	my $verbose=$args{"verbose"};
 	
 	#Variable declaration
 	my $hashref;
@@ -672,42 +677,44 @@ sub CIRIFormat{
 		my $output_dir="/circRNAs_results/";
 		#Reading each path of the input referenced array
 		foreach my $file(sort {$a cmp $b} @$input){
-			print LOG "LOG :: Reading $file\n";
-			if($file =~ /\.ciri$/){
-				#Fileparse is used to obtain the name of the file
-				my $name=fileparse($file, qr{\.ciri$});
-				#Obtaining the process info from the file name and the original name of the file
-				$name =~ /(.*)_bwa/;
-				my $originalname=$1;
-				my $suffix=$2;
-				if($name !~/^\./){
-					print STDERR "CIRI :: ". date() . " Reading $file\n";
-					#Saving the Suffix with process information in a hash
-					$files->{$originalname}++;
+			if($file){
+				print LOG "LOG :: Reading $file\n";
+				if($file =~ /\.ciri$/){
+					#Fileparse is used to obtain the name of the file
+					my $name=fileparse($file, qr{\.ciri$});
+					#Obtaining the process info from the file name and the original name of the file
+					$name =~ /(.*)_bwa/;
+					my $originalname=$1;
+					my $suffix=$2;
+					if($name !~/^\./){
+						print STDOUT "\tCIRI :: ". date() . " Reading $file\n" if($verbose);
+						#Saving the Suffix with process information in a hash
+						$files->{$originalname}++;
 			
-					#Opening each file of the array
-					open (FILE, $file) or die "CIRI ERROR :: ".date()."Can't open '$file': $!";
-					#Reading the file. Each line contains the number of the miRNA, a tab and the number of reads
-					while(<FILE>){
-						#Deleting the last character of the line
-						chomp;
-						if($_ !~ /^circRNA_ID/){
-							#Using the split with the tab we can keep the name of the miRNA in $miRNA variable
-							#and the number of reads in $reads variable. 
-							my ($circRNAs,$chr,$start,$end,$reads)=split(/\t/);
-							#Creating a hash with the names of miRNAs
-							$hashref->{$circRNAs}->{$originalname}=$reads;
-							#Creating a hash with all the data, the first dimension contains the miRNA name,
-							#the second the name of the file and the third is the number of reads 
-							$data->{$originalname}++;	
-						}	
+						#Opening each file of the array
+						open (FILE, $file) or die "CIRI ERROR :: ".date()."Can't open '$file': $!";
+						#Reading the file. Each line contains the number of the miRNA, a tab and the number of reads
+						while(<FILE>){
+							#Deleting the last character of the line
+							chomp;
+							if($_ !~ /^circRNA_ID/){
+								#Using the split with the tab we can keep the name of the miRNA in $miRNA variable
+								#and the number of reads in $reads variable. 
+								my ($circRNAs,$chr,$start,$end,$reads)=split(/\t/);
+								#Creating a hash with the names of miRNAs
+								$hashref->{$circRNAs}->{$originalname}=$reads;
+								#Creating a hash with all the data, the first dimension contains the miRNA name,
+								#the second the name of the file and the third is the number of reads 
+								$data->{$originalname}++;	
+							}	
+						}
+						#Closing the file
+						close FILE;
 					}
-					#Closing the file
-					close FILE;
 				}
-			}
-			else{
-				print LOG "WARM :: the file $file is not in the correct format\n";
+				else{
+					print LOG "WARM :: the file [$file] is not in the correct format\n";
+				}
 			}
 		}
 		#Printing the results of the process with each combination of software
@@ -737,7 +744,13 @@ sub CIRIFormat{
 		close RESULTS;
 		
 		#Returning the path of the results file
-		print STDERR "\nCIRICOUNT :: ".date()." Please check the folder: $projectdir/$output_dir.\n\n";
+		
+		#Registering the error
+		open(LOG,">> ".$logfile) || die "CIRI ERROR :: ".date()."Can't open '$logfile': $!";
+		print LOG "CIRICOUNT :: ".date()." Please check the folder: $projectdir/$output_dir.\n";
+		close LOG;
+		
+		print STDOUT "CIRICOUNT :: ".date()." Please check the folder: $projectdir/$output_dir.\n" if($verbose);
 		
 		return($fileresults);
 		close LOG;
@@ -890,7 +903,11 @@ sub miRDeepCount{
 			}
 			close TAB;
 			
-			print STDERR "miRDeep :: ".date()." Known and novel miRNA count-file created ($tab_file.tab)\n";
+			open(LOG,">> ".$logfile) || die "miRDeepCount ERROR :: ".date()."Can't open '$logfile': $!";
+			print LOG "miRDeep :: ".date()." Known and novel miRNA count-file created ($tab_file.tab)\n";
+			close LOG;
+			
+			print STDOUT "miRDeep :: ".date()." Known and novel miRNA count-file created ($tab_file.tab)\n" if($verbose);
 			
 			#After counting redas, we are going to conver the sam file into a sorted BAM file (a smaller file)
 			#The path of the output file is returned to the main program
@@ -967,6 +984,7 @@ sub miRDeepFormat{
 	my $input=$args{"input"}; #Input is an referenced array with the paths of the files which have to be joined
 	my $projectdir=$args{"projectdir"}; #Directory to create the output file
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
+	my $verbose=$args{"verbose"}; #write the execution data on screen
 	
 	
 	#Variable declaration
@@ -990,7 +1008,7 @@ sub miRDeepFormat{
 				my $originalname=$name;
 				my $suffix=$2;
 				if($name !~/^\./){
-					print "miRDeep :: ". date() . " Reading $file\n";
+					print "\tmiRDeep :: ". date() . " Reading $file\n" if($verbose);
 					#Saving the Suffix with process information in a hash
 					$files->{$originalname}++;
 					#Opening each file of the array
@@ -1008,7 +1026,7 @@ sub miRDeepFormat{
 				}
 			}
 			else{
-				print LOG "WARM :: the file $file is not in the correct format\n";
+				print LOG "WARM :: the file [$file] is not in the correct format\n";
 			}
 
 		}
@@ -1039,8 +1057,12 @@ sub miRDeepFormat{
 		close RESULTS;
 		
 		#Returning the path of the results file
-		print STDERR "\miRDeep :: ".date()." Please check the folder: $projectdir/$output_dir.\n\n";
+		print STDOUT "miRDeep :: ".date()." Please check the folder: $projectdir/$output_dir.\n" if($verbose);
 		
+		open(LOG,">> ".$logfile) || die "miRDeep ERROR :: ".date()."Can't open '$logfile': $!";
+		print LOG "miRDeep :: ".date()." Please check the folder: $projectdir/$output_dir.\n";
+		close LOG;
+				
 		return($fileresults);
 		close LOG;
 	}else{

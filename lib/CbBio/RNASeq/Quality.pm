@@ -110,11 +110,14 @@ sub FastQC{
 	if($file and $logfile and $label and $projectdir){
 		#Obtaining the absolute path of the file
 		if($file =~ /.*\.fastq$/ or $file =~ /.*\.fastq\.gz$/ or $file=~ /.*\.fq$/ or $file=~ /.*\.fq\.gz$/ or $file=~ /.*\.fastq\.lane\.clean$/ or $file=~ /.*\.fq\.bz2$/ or $file=~ /.*\.fastq\.bz2$/){
+			#Printing process data on screen and in log file
+
+			if($verbose){
+				print STDOUT "\t". date()." Checking $file for FastQC analysis\n";
+			}
 			$file = abs_path($file);
 		  	system("mkdir -p $projectdir");
-			#Printing process data on screen and in log file
-			print STDERR "FASTQC :: ".date()." Checking $file for FastQC analysis\n";
-	
+
 			#Variable declarations
 			my $command;
 			my $commanddef;
@@ -337,7 +340,7 @@ sub FastQCStats{
 			close DIRRES;
 			}
 		}
-		print STDERR "FASTQC :: ".date()." Please check $dir for detailed quality information about each sample.\nA summary can be consulted in $statsfile\n";
+		#print STDERR "FASTQC :: ".date()." Please check $dir for detailed quality information about each sample.\nA summary can be consulted in $statsfile\n";
 	}
 	else
 	{

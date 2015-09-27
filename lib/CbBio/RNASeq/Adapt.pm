@@ -155,27 +155,27 @@ sub AdapterRemoval{
 		warn("ADAPTERREMOVAL ERROR :: ".date()." Invalid value for adaptersoft ($adaptersoft). Allowed values are: cutadapt, reaper, adapttrimming, cutadapt-reaper, cutadapt-adapttrimming, reaper-adapttrimming or cutadapt-reaper-adapttrimming");
 		help_AdapterRemoval();
 	}
-	if($cutadapt_exec == 1){
-		#cheking than the optput dir is not aleready created
-		if(-d $projectdir ."/cutadapt_results"){
-			print STDERR "ERROR :: ".date()." The cutadapt_result folder is already created. If you have perfomed a previous cutadapt job, please rename the folder or deleted.\n";
-			exit();
-		}
-	}
-	if($reaper_exec == 1){
-		#cheking than the optput dir is not aleready created
-		if(-d $projectdir ."/Reaper_results"){
-			print STDERR "ERROR :: ".date()." The Reaper_results folder is already created. If you have perfomed a previous Reaper job, please rename the folder or deleted.\n";
-			exit();
-		}
-	}
-	if($adaptrim_exec == 1){
-		#cheking than the optput dir is not aleready created
-		if(-d $projectdir ."/AdaptTriming_results"){
-			print STDERR "ERROR :: ".date()." The AdaptTriming_results folder is already created. If you have perfomed a previous Trimming job, please rename the folder or deleted.\n";
-			exit();
-		}
-	}
+	# if($cutadapt_exec == 1){
+	# 	#cheking than the optput dir is not aleready created
+	# 	if(-d $projectdir ."/cutadapt_results"){
+	# 		print STDERR "ERROR :: ".date()." The cutadapt_result folder is already created. If you have perfomed a previous cutadapt job, please rename the folder or deleted.\n";
+	# 		exit();
+	# 	}
+	# }
+	# if($reaper_exec == 1){
+	# 	#cheking than the optput dir is not aleready created
+	# 	if(-d $projectdir ."/Reaper_results"){
+	# 		print STDERR "ERROR :: ".date()." The Reaper_results folder is already created. If you have perfomed a previous Reaper job, please rename the folder or deleted.\n";
+	# 		exit();
+	# 	}
+	# }
+	# if($adaptrim_exec == 1){
+	# 	#cheking than the optput dir is not aleready created
+	# 	if(-d $projectdir ."/AdaptTriming_results"){
+	# 		print STDERR "ERROR :: ".date()." The AdaptTriming_results folder is already created. If you have perfomed a previous Trimming job, please rename the folder or deleted.\n";
+	# 		exit();
+	# 	}
+	# }
 	#reading all files
 	my $dir_used;
 	
@@ -284,8 +284,9 @@ sub AdapterRemoval{
 		  				logfile=> $logfile,
 		  				statsfile=>$statsfile,
 		  			);
-					print STDERR "\nADAPTERREMOVAL :: ".date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n";
-					
+					if($verbose){
+						print date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n";
+					}
 				}
 				if($reaper_exec == 1){
 					#Optional parameters to perform the analysis are predefined as undef variables
@@ -581,7 +582,7 @@ sub ReadLengthCount{
 		}
 		close FASTQ;
 		#Opening the new stats file
-		open(NEW,">> ".$file.".lane.report.clean.len") || die "READLENGTHCOUNT ERROR :: ".date()."Can't open '$file': $!";
+		open(NEW,"> ".$file.".lane.report.clean.len") || die "READLENGTHCOUNT ERROR :: ".date()."Can't open '$file': $!";
 		print NEW "length\tcount\n";
 		#Printing the stats
  		foreach my $read (sort {$a<=>$b} keys %$read_hash){
@@ -723,7 +724,7 @@ sub CutAdapt{
 		if($file !~ /^\./){
 
 			#Printing process data on screen
-			print STDERR "CUTADAPT :: ".date()." Checking $file for CutAdapt analysis\n";
+			print  STDOUT "CUTADAPT :: ".date()." Checking $file for CutAdapt analysis\n" if($verbose);
 			#Cutadapt execution command 
 			my $command="cut_adapt -b ".$adapter." ".$cutadaptpardef.$dir."/".$file;
 			#Extracting the name of the file
@@ -772,7 +773,7 @@ sub CutAdapt{
 		#checking that we have found the adapter for the specified file;
 		
 		if(defined $current_adapter){
-			print STDERR "CUTADAPT :: ".date()." Checking $file for CutAdapt analysis\n";
+			print STDOUT "CUTADAPT :: ".date()." Checking $file for CutAdapt analysis\n" if($verbose);
 			my $command="cut_adapt -b ".$current_adapter." ".$cutadaptpardef.$dir."/".$file;
 			#Extracting the name of the file
 			my $name=fileparse($file, qr{\.f.*});
