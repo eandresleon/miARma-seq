@@ -201,28 +201,28 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   }
   legend("topright", samplenames, col=boxcol, lty=lineformat, lwd=4, cex=0.8)
   
-  
-  #Clustering analysis plot
-  par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.6, cex.main=0.8)
-  pr.hc.c<- hclust(na.omit(dist(t(data))))
-  plot(pr.hc.c, xlab="Sample Distance",main=paste("Hierarchical Clustering of ", label, sep=""), labels=samplenames,col=boxcol)
-  #Normalized clustering analysis plot 
-  pr.hc.c<- hclust(na.omit(dist(t(dgenorm$counts))))
-  plot(pr.hc.c, xlab="Sample Distance",main=paste("Hierarchical Clustering of Normalized samples of ", label, sep=""), labels=samplenames,col=boxcol)
-  
-  #########################################################################
-  #3. MDS PLOT (EDGER) AND PCA ANALYSIS
-  #########################################################################
-  
-  #Exploring the data by MDS plot
-  labels<-colnames(targets)
-  par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.8, cex.main=0.8)
-  if(length(colnames(targets))==2){
-    plotMDS.default(dgenorm, labels=samplenames, col=boxcol, main=paste("MDS plot of ",label, " samples",sep=""), cex=0.75)
-  }else if(length(colnames(targets))==3){
-    plotMDS.default(dgenorm, labels=samplenames, col=boxcol, main=paste("MDS plot of ",label, " samples",sep=""), xlab=paste("logFC ",labels[2],sep=""), ylab=paste("logFC ",labels[3], sep=""), cex=0.75)
+  if(length(targets$Name)>2){
+    #Clustering analysis plot
+    par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.6, cex.main=0.8)
+    pr.hc.c<- hclust(na.omit(dist(t(data))))
+    plot(pr.hc.c, xlab="Sample Distance",main=paste("Hierarchical Clustering of ", label, sep=""), labels=samplenames,col=boxcol)
+    #Normalized clustering analysis plot 
+    pr.hc.c<- hclust(na.omit(dist(t(dgenorm$counts))))
+    plot(pr.hc.c, xlab="Sample Distance",main=paste("Hierarchical Clustering of Normalized samples of ", label, sep=""), labels=samplenames,col=boxcol)
+    
+    #########################################################################
+    #3. MDS PLOT (EDGER) AND PCA ANALYSIS
+    #########################################################################
+    
+    #Exploring the data by MDS plot
+    labels<-colnames(targets)
+    par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.8, cex.main=0.8)
+    if(length(colnames(targets))==2){
+      plotMDS.default(dgenorm, labels=samplenames, col=boxcol, main=paste("MDS plot of ",label, " samples",sep=""), cex=0.75)
+    }else if(length(colnames(targets))==3){
+      plotMDS.default(dgenorm, labels=samplenames, col=boxcol, main=paste("MDS plot of ",label, " samples",sep=""), xlab=paste("logFC ",labels[2],sep=""), ylab=paste("logFC ",labels[3], sep=""), cex=0.75)
+    }
   }
-  
   
   #3.1 PCA plot
   data.PC = prcomp(t(as.matrix(dgenorm)))
