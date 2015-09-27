@@ -1596,7 +1596,7 @@ sub TopHat{
 				if(-e $mate_file){
 					if($file ne $mate_file){
 						print STDOUT "\tTOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n" if($verbose);
-						$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " --transcriptome-index=$projectdir/$output_dir/transcriptome/ -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file ." ". $mate_file;
+						$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " --transcriptome-index=$projectdir/$output_dir/transcriptome/tr -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file ." ". $mate_file;
 					}
 				}
 				else{
@@ -1610,7 +1610,7 @@ sub TopHat{
 		}
 		else{
 			print STDOUT "\tTOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n" if($verbose);
-			$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " --transcriptome-index=$projectdir/$output_dir/transcriptome/ -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file;
+			$command="tophat --no-coverage-search ".$bowtiepardef." --GTF ". abs_path($GTF) . " --transcriptome-index=$projectdir/$output_dir/transcriptome/tr -o $projectdir/$output_dir" ." ".$bowtieindex." ".$file;
 		}
 		#tophat execution command
 		#tophat execution with verbose option
