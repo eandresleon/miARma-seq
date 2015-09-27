@@ -2124,11 +2124,11 @@ sub miRDeep{
 		
 		my $command_mapper;
 		if($adapter){
-			$command_mapper="export PERL5LIB=$miARmaPath/lib/Perl/; mapper.pl ".$file." -e -h -i -j -m -k ".$adapter ." -o ". $threads ." -p " . $bowtieindex." -s ". $projectdir.$output_dir.$name.".fa -t ".$projectdir.$output_dir.$name."_vs_genome.arf";
+			$command_mapper="export PERL5LIB=$miARmaPath/lib/Perl/; mapper.pl ".$file." -e -h -i -j -n -m -k ".$adapter ." -o ". $threads ." -p " . $bowtieindex." -s ". $projectdir.$output_dir.$name.".fa -t ".$projectdir.$output_dir.$name."_vs_genome.arf";
 		}
 		#if no adaptder is provided or found by minion, try without adapter
 		else{
-			$command_mapper="export PERL5LIB=$miARmaPath/lib/Perl/; mapper.pl ".$file." -e -h -i -j -m -o ". $threads ." -p " . $bowtieindex." -s ". $projectdir.$output_dir.$name.".fa -t ".$projectdir.$output_dir.$name."_vs_genome.arf";
+			$command_mapper="export PERL5LIB=$miARmaPath/lib/Perl/; mapper.pl ".$file." -e -h -i -j -n -m -o ". $threads ." -p " . $bowtieindex." -s ". $projectdir.$output_dir.$name.".fa -t ".$projectdir.$output_dir.$name."_vs_genome.arf";
 		}
 		
 		my $command_novo=" export PERL5LIB=$miARmaPath/lib/Perl/;miRDeep2.pl ".$projectdir.$output_dir.$name.".fa ".$genome. " ". $projectdir.$output_dir.$name."_vs_genome.arf $mature_miRNA_file none $precursor_miRNA_file -r $name -P -d -c -v";
