@@ -13,14 +13,46 @@ use strict;
 my $configuration_file;
 my $miARmaPath;
 my $check_input;
+
+sub help{
+	print_header();
+my $usage = qq{
+Usage:\n 
+  perl $0 file.ini [options]
+	
+Options:
+
+ -check   Instead of running the analysis contained in file.ini, it checks that parameters are correct and then quits.
+ -help    Print this help.
+	
+	
+};
+
+			print STDERR $usage;
+			exit(1);	
+}
+
+sub print_header{
+	system("clear");
+	print "#########################################################################	
+#   miARma, miRNA and RNASeq Multiprocess Analysis			#
+#                miARma v 1.0.3 (Sep-2015)                              #
+#               		                              		#
+#   Created at Computational Biology and Bioinformatics Group (CbBio)   #
+#   Institute of Biomedicine of Seville. IBIS (Spain)                   #
+#   Copyright (c) 2015 IBIS. All rights reserved.                       #
+#   mail : miARma-devel\@cbbio.es                                        #
+#########################################################################\n";
+}
+
 BEGIN {
 	
 	#checking input parameter
 	if(@ARGV<1){
-		print "\nSet the configuration file\n";
-		print "example: perl $0 config.ini \n";
-		print "[Execution stopped]\n\n";
-		exit(1);
+		help();
+	}
+	if($ARGV[0] eq "help" or $ARGV[0] eq "-help" or  $ARGV[0] eq "--help"){
+		help();
 	}
 	# configuration file
 	$configuration_file=$ARGV[0];
@@ -28,7 +60,7 @@ BEGIN {
 	my $check=0;
 	
 	# Searching for needed parameters before start
-	open(FILE,$configuration_file) || die "Cant read config file ($configuration_file)\n";
+	open(FILE,$configuration_file) || help();
 	while(<FILE>){
 		chomp;
 		if(lc($_) =~ /miarmapath/){
@@ -53,4 +85,5 @@ run_miARma(
 	miARmaPath=>$miARmaPath,
 	check=>$check_input,
 )
+
 
