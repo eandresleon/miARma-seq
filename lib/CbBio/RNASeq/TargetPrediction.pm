@@ -398,11 +398,11 @@ sub get_edgeR_data{
 			$_=~s/\"//g;
 			my($feature,$fc,$cpm,$pvalue,$fdr)=split(/\t/);
 			#filtering over-expressed
-			if($fdr<=$edger_cutoff and $fc>$fc_threshold){
+			if($fdr<=$edger_cutoff and $fc>=$fc_threshold){
 				$data->{$feature}->{UP}="$fc\t$fdr";
 			}
 			#filtering down-expressed
-			if($fdr<=$edger_cutoff and $fc<$fc_threshold){
+			if($fdr<=$edger_cutoff and $fc<(-$fc_threshold)){
 				$data->{$feature}->{DOWN}="$fc\t$fdr";
 			}
 		}
@@ -426,11 +426,11 @@ sub get_NoiSeq_data{
 			$_=~s/\"//g;
 			my($feature,undef,undef,$fc,undef,$fdr)=split(/\t/);
 			#filtering over-expressed
-			if($fdr>=$noiseq_cutoff and $fc>$fc_threshold){
+			if($fdr>=$noiseq_cutoff and $fc>=$fc_threshold){
 				$data->{$feature}->{UP}="$fc\t$fdr";
 			}
 			#filtering down-expressed
-			if($fdr>=$noiseq_cutoff and $fc<$fc_threshold){
+			if($fdr>=$noiseq_cutoff and $fc<-($fc_threshold)){
 				$data->{$feature}->{DOWN}="$fc\t$fdr";
 			}
 		}
