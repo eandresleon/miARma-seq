@@ -402,7 +402,7 @@ sub get_edgeR_data{
 				$data->{$feature}->{UP}="$fc\t$fdr";
 			}
 			#filtering down-expressed
-			if($fdr<=$edger_cutoff and $fc<(-$fc_threshold)){
+			if($fdr<=$edger_cutoff and $fc<($fc_threshold * -1)){
 				$data->{$feature}->{DOWN}="$fc\t$fdr";
 			}
 		}
@@ -430,7 +430,7 @@ sub get_NoiSeq_data{
 				$data->{$feature}->{UP}="$fc\t$fdr";
 			}
 			#filtering down-expressed
-			if($fdr>=$noiseq_cutoff and $fc<-($fc_threshold)){
+			if($fdr>=$noiseq_cutoff and $fc<($fc_threshold * -1 )){
 				$data->{$feature}->{DOWN}="$fc\t$fdr";
 			}
 		}
