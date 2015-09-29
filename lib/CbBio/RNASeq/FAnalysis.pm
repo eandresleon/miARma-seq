@@ -82,12 +82,10 @@ sub F_Analysis{
 	#Arguments provided by user are collected by %args. 
 	my %args=@_;
 	my $projectdir=$args{"projectdir"}; #Path of the directory where will be saved the results.
-	my $noiseq_dir=$args{"noiseq_dir"}; #Character string that will appear in the name the results file
-	my $edger_dir=$args{"edger_dir"}; #This value refers to filter processing in the reads (Should be "yes" or "no").
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
 	my $organism=$args{"organism"}; #Specific software to perform the functional analysis Analysis
 	my $verbose=$args{"verbose"};
-	my $seq_id=$args{"seq_id"}; #Type of entities used in differential expresion, genes (gene_id) or transcripts (transcript_id)
+	my $seq_id=$args{"seqid"}; #Type of entities used in differential expresion, genes (gene_id) or transcripts (transcript_id)
 	
 	my $dataset;
 	if(defined($args{"dataset"})){
@@ -98,14 +96,24 @@ sub F_Analysis{
 	}
 	open(LOG,">$logfile") || warn "Cant create logfile ($logfile)\n";
 	
+	my $noiseq_dir=undef;
+	my $edger_dir=undef;
+	if(-e $projectdir ."/" . "Noiseq_results/"){
+		$noiseq_dir=$projectdir ."/" . "Noiseq_results/";
+	}
+	if(-e $projectdir ."/" . "EdgeR_results/"){
+		$edger_dir=$projectdir ."/" . "EdgeR_results/";
+	}
 	#Checking mandatory parameters
 	if($projectdir and $logfile and $organism and ($noiseq_dir or $edger_dir) and $seq_id){
+		print date() . " Starting a Functional Analysis.\n";
+		
 		#Obtaining the absolute path of the directory and the file to R execution
 	  	my $projectdir = abs_path($projectdir);
 		#for edgeR
 		if($edger_dir){
-			print STDERR "LOG :: " . date() . " Starting a Functional Analysis based on edgeR data\n";
-			print LOG "LOG :: " . date() . " Starting a Functional Analysis based on edgeR data\n";
+			print LOG date() . " Starting a Functional Analysis based on edgeR data\n";
+			print STDOUT date() . " Starting a Functional Analysis based on edgeR data\n" if($verbose);
 			
 			my $edger_cutoff;
 			if(defined $args{"edger_cutoff"}){
@@ -126,8 +134,8 @@ sub F_Analysis{
 			my $universe_number=0;
 			foreach my $edger_files(@files){
 				if($edger_files =~ /\.xls$/){
-					print STDERR "LOG :: " . date() . " Reading $edger_files and filtering by FDR <=$edger_cutoff\n";
-					print LOG "LOG :: " . date() . " Reading $edger_files\n" if($verbose);
+					print STDOUT date() . " Reading $edger_files and filtering by FDR <=$edger_cutoff\n" if($verbose);
+					print LOG date() . " Reading $edger_files and filtering by FDR <=$edger_cutoff\n";
 					#Read edgeR data
 					open(EDGER,$edger_dir."/" . $edger_files) || warn "cant find $edger_dir/$edger_files\n";
 					while(<EDGER>){
@@ -169,15 +177,15 @@ sub F_Analysis{
 						);
 					}
 					else{
-						warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=$up_number, Downregulated genes n=$down_number\nPlease check $logfile\n\n";
+						warn date()." WARN :: The number of selected proteins is 0. No functional analysis can be done\n". date()." Upregulated genes n=$up_number, Downregulated genes n=$down_number\n".date()." Please check $logfile\n\n";
 						return();
 					}
 				}
 			}
 		}		
 		if($noiseq_dir){
-			print STDERR "\nLOG :: " . date() . " Starting a Functional Analysis based on NoiSeq data\n";
-			print LOG "LOG :: " . date() . " Starting a Functional Analysis based on NoiSeq data\n";
+			print STDOUT date() . " Starting a Functional Analysis based on NoiSeq data\n" if($verbose);
+			print LOG date() . " Starting a Functional Analysis based on NoiSeq data\n";
 			my $noiseq_cutoff;
 			if(defined $args{"noiseq_cutoff"}){
 				$noiseq_cutoff=$args{"noiseq_cutoff"};
@@ -197,14 +205,16 @@ sub F_Analysis{
 			my $universe_number=0;
 			foreach my $noiseq_files(@files){
 				if($noiseq_files =~ /\.xls$/){
-					print STDERR "LOG :: " . date() . " Reading $noiseq_files\n";
-					print LOG "LOG :: " . date() . " Reading $noiseq_files\n" if($verbose);
+					print STDOUT date() . " Reading $noiseq_files\n" if($verbose);
+					print LOG date() . " Reading $noiseq_files\n" if($verbose);
 					#Read edgeR data
 					open(NOISEQ,$noiseq_dir."/" . $noiseq_files) || warn "cant find $noiseq_dir/$noiseq_files\n";
 					while(<NOISEQ>){
 						chomp;
 						my($feature,undef,undef,$fc,undef,$fdr)=split(/\t/);
-						#print LOG "$feature\t$fc\t$fdr\n";
+						$feature=~s/\"//g;
+						#print STDERR "$feature\t$fc\t$fdr\n";
+						
 						$universe_noiseq_data->{$feature}++;
 						#filtering over-expressed
 						if($fdr>=$noiseq_cutoff and $fc>0){
@@ -213,46 +223,56 @@ sub F_Analysis{
 							#last if scalar(keys %$up_edger_data)==5;
 						}
 						#filtering down-expressed
-						if($fdr>=$noiseq_cutoff and $fc<0){
+						if($fdr>=$noiseq_cutoff and $fc <0){
 							$down_noiseq_data->{$feature}++;
 							$down_number++;
 						}
 						$universe_number++;
 					}
 					close NOISEQ;
-					print LOG "Number of genes at universe: " . scalar(keys %$universe_noiseq_data) ."\n" if($verbose);
-					print LOG "Number of Up-regulated genes (NoiSeq cutoff=$noiseq_cutoff): " . scalar(keys %$up_noiseq_data)  ."\n" if($verbose);
-					print LOG "Number of Down-regulated genes (NoiSeq cutoff=$noiseq_cutoff): " . scalar(keys %$down_noiseq_data)  ."\n" if($verbose);
+					print STDERR "Number of genes at universe: " . scalar(keys %$universe_noiseq_data) ."\n" if($verbose);
+					print STDERR "Number of Up-regulated genes (NoiSeq cutoff=$noiseq_cutoff): " . scalar(keys %$up_noiseq_data)  ."\n" if($verbose);
+					print STDERR "Number of Down-regulated genes (NoiSeq cutoff=$noiseq_cutoff): " . scalar(keys %$down_noiseq_data)  ."\n" if($verbose);
 				}
 			}
 
 			#Once all fila are read
-			goseq(
-				universe=>$universe_noiseq_data,
-				up=>$up_noiseq_data,
-				down=>$down_noiseq_data,
-				org=>$organism,
-				method=>"noiseq",
-				verbose=>$verbose,
-				logfile=>$logfile,
-				projectdir=>$projectdir,
-				organism=>$organism,
-				cut_off=>$noiseq_cutoff,
-				seq_id=>$seq_id,
-				dataset=>$dataset,
-			);
+			if($universe_number>0 and ($up_number>0 or $down_number>0)){
+				goseq(
+					universe=>$universe_noiseq_data,
+					up=>$up_noiseq_data,
+					down=>$down_noiseq_data,
+					org=>$organism,
+					method=>"noiseq",
+					verbose=>$verbose,
+					logfile=>$logfile,
+					projectdir=>$projectdir,
+					organism=>$organism,
+					cut_off=>$noiseq_cutoff,
+					seq_id=>$seq_id,
+					dataset=>$dataset,
+				);
+			}
+			else{
+				warn date()." WARN :: The number of selected proteins is 0. No functional analysis can be done\n". date()." Upregulated genes n=$up_number, Downregulated genes n=$down_number\n".date()." Please check $logfile\n\n";
+				return();
+			}
 		}
 		else{
-			print STDERR "WARN :: No files provided for functional anaysis, please check your edgeR folder ($edger_dir) and/or your NoiSeq folder ($noiseq_dir)\n";
+			print STDERR date() ." WARN :: No files provided for functional anaysis, please check your edgeR folder ($edger_dir) and/or your NoiSeq folder ($noiseq_dir)\n";
 			return();
 		}
+		print date() . " Functional Analysis finished.\n";
+		
 	}
 	else{
 		#If mandatory parameters have not been provided program will die and show error message
-		warn("F_Analysis ERROR :: ".date()." projectdir($projectdir), organism($organism), logfile ($logfile), seq_id ($seq_id) have not been provided");
+		warn(date()." F_Analysis ERROR :: projectdir($projectdir), organism($organism), logfile ($logfile), seq_id ($seq_id), noiseq_dir ($noiseq_dir) or edgeR_dir ($edger_dir) have not been provided");
 		help_F_Analysis();
 	}
 	close LOG;
+	
+	
 	sub help_F_Analysis{
 	    my $usage = qq{
 		  	$0 
@@ -307,16 +327,16 @@ sub goseq{
 		my $output_file="$output_dir/upRegulated_$method\_results.xls";
 
 		if (scalar(keys %$up)<1 or scalar(keys %$down)<1 or scalar(keys %$universe)<1){
-			warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=".scalar(keys %$up).", Downregulated genes n=".scalar(keys %$down)."\nPlease check $logfile\n\n";
+			warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=".scalar(keys %$up).", Downregulated genes n=".scalar(keys %$down)."\nPlease check $logfile\n";
 			return();
 		}
 		if(scalar(keys %$up)<75 or scalar(keys %$down)<75){
-			print STDERR "\nWARN :: The number of differentially expressed genes are too small. Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n\n";
+			print STDERR date(). " WARN :: The number of differentially expressed genes are too small. Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n";
 		}
 			
 		my $Rcommand="projectdir=\"$output_dir\",up=c(".join(",", keys (%$up))."),down=c(".join(",", keys (%$down))."),universe=c(".join(",", keys (%$universe))."),organism=\"$organism\",method=\"$method\",seq_id=\"$seq_id\"";
 		# Printing the date and command execution on screen
-		print STDERR "GOSeqR :: ".date()." Starting Functional Analysis\n"; 
+		#print STDERR "GOSeqR :: ".date()." Starting Functional Analysis\n"; 
 
 		#Creating results directory
 		my $command="mkdir -p ".$output_dir;
@@ -339,10 +359,11 @@ sub goseq{
 		$R->startR;
 		#Declaring R instructions for the functional analysis analysis. DE_noiseq R function is needed 
 		#source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/F_Analysis.R")
-		
+		#source("../../../lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
+
 		my $cmds = <<EOF;
 		setwd("$output_dir")
-		source("../../../lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
+		source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/F_Analysis.R")
 		resultsfiles<-NA
 		resultsfiles<-F_Analysis($Rcommand)
 EOF
@@ -361,7 +382,7 @@ EOF
 				
 		foreach my $result (@media){
 			if($result eq "NA"){
-				print STDERR "ERROR :: Nothing significative was found\n";
+				print STDERR date(). " ERROR :: Nothing significative was found\n";
 			}
 			else{
 				foreach my $res_file (@{$result}){

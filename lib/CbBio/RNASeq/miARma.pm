@@ -675,7 +675,6 @@ sub run_miARma{
 				print "ERROR :: You are requesting a readcount analysis, but no aligned files are found (Neither Bowtie1 nor Bowtie2 ... )\n";
 			 	help_check_aligner();
 			}
-			
 		}
 	}
 	#Denovo
@@ -861,6 +860,19 @@ sub run_miARma{
 			
 		}
 	}
+	#Functional Analysis
+	if($cfg->SectionExists("FAnalysis")==1){
+		 use CbBio::RNASeq::FAnalysis;
+		 F_Analysis(
+			projectdir=>$cfg->val("General","projectdir"),
+			verbose=>$cfg->val("General","verbose") || 0,
+			logfile=>$log_file || $cfg->val("General","logfile"),
+			organism=>$cfg->val("General","organism")|| undef,
+			seqid=>$cfg->val("FAnalysis","seqid") || undef,
+			edger_cutoff=>$cfg->val("FAnalysis","edger_cutoff") || 0.05,
+			noiseq_cutoff=>$cfg->val("FAnalysis","noiseq_cutoff") || 0.8,
+		 );
+	}
 	#miRGate prediction
 	if($cfg->SectionExists("TargetPrediction")==1){
 		#run TargetP
@@ -926,6 +938,7 @@ sub run_miARma{
 		print date()." Target Prediction Analysis finished.\n";
 		
 	}
+	
 	my $end_run = time();
 	my $run_time = $end_run - $start_run;
 	print date() . " miARma finished. Job took ". sprintf("%d",$run_time/60) ." minutes\n";

@@ -46,7 +46,7 @@ Mandatory arguments:
   
 }
 
-F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydataset){
+F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydataset="hsapiens_gene_ensembl"){
   
   #Checking the mandatory parameters
   if(missing(projectdir) | missing(up) | missing(down) | missing(universe) | missing(organism) | missing(method) | missing(seq_id)){
@@ -59,7 +59,7 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
   #########################################################################
   
   #installing need packages
-	list.of.packages <- c("goseq","biomaRt","Hmisc","geneLenDataBase","GO.db")
+	list.of.packages <- c("goseq","biomaRt","Hmisc","geneLenDataBase","GO.db","org.Hs.eg.db")
 	new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 	if(length(new.packages)){
 		
@@ -90,10 +90,7 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	genes_up<-NA
 	genes_down<-NA
 	
-	if(missing(mydataset)){
-		mydataset<-"hsapiens_gene_ensembl"
-	}
-	mybuild<-"hg19"
+	
 	if((tolower(organism) == "human") || (tolower(organism) == "man") || (tolower(organism) == "homo sapiens")){
 		mydataset="hsapiens_gene_ensembl"
 		mybuild="hg19"
@@ -128,8 +125,7 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 		genes_down<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% down_entrez)
 		names(genes_down)<-unique(mapping_table$ensembl_gene_id)
 		
-	}
-	else{
+	}	else{
 		genes_up<-as.integer(unique(universe) %nin% up)
 		names(genes_up)<-unique(universe)
 		genes_down<-as.integer(unique(universe) %nin% down)
@@ -166,8 +162,7 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 		resultsfiles<-NA
 		resultsfiles<-(c(file_up,file_down))
 		return(resultsfiles);
-	}
-	else{
+	}	else{
 		return(NA)
 	}
 }
