@@ -790,7 +790,7 @@ sub run_miARma{
 		else{
 			#run DEAnalysis
 			use CbBio::RNASeq::DEAnalysis;
-			print STDERR date()." Starting a differential expression analysis using  ".$cfg->val("DEAnalysis","DEsoft") ." software(s)\n";
+			print STDERR date()." Starting a differential expression analysis using ".$cfg->val("DEAnalysis","DEsoft") ." software(s)\n";
 			
 			my @files;
 			#if user did a regular readcount
