@@ -197,6 +197,8 @@ sub TargetPrediction{
 							    file=>$edger_files,
 							    edger_cutoff=>$edgeR_cutoff,
 							    verbose=>$verbose,
+								fc_threshold=>$fc_threshold,
+								
 							);
 							print STDOUT "LOG :: " . date() . " Searching targets from edgeR file [$edger_files] for " . scalar(keys %$data) ." genes using miRGate\n" if($verbose);
 							 miRGate(
@@ -220,6 +222,8 @@ sub TargetPrediction{
 					            file=>$noise_files,
 					            NoiSeq_cutoff=>$NoiSeq_cutoff,
 					            verbose=>$verbose,
+								fc_threshold=>$fc_threshold,
+								
 							);
 						print STDOUT "LOG :: " . date() . " Searching targets from NoiSeq file [$noise_files] for " . scalar(keys %$data) ." genes using miRGate\n" if($verbose);
 							 miRGate(
@@ -264,6 +268,8 @@ sub TargetPrediction{
 							    file=>$edger_files,
 							    edger_cutoff=>$edgeR_cutoff,
 							    verbose=>$verbose,
+								fc_threshold=>$fc_threshold,
+								
 							);
 						}
 					}
@@ -278,6 +284,8 @@ sub TargetPrediction{
 								file=>$noise_files,
 								NoiSeq_cutoff=>$NoiSeq_cutoff,
 								verbose=>$verbose,
+								fc_threshold=>$fc_threshold,
+								
 							);
 						}
 					}
@@ -302,6 +310,8 @@ sub TargetPrediction{
 							    file=>$edger_files,
 							    edger_cutoff=>$edgeR_cutoff,
 							    verbose=>$verbose,
+								fc_threshold=>$fc_threshold,
+								
 							);
 						}
 					}
@@ -316,6 +326,7 @@ sub TargetPrediction{
 					            file=>$noise_files,
 					            NoiSeq_cutoff=>$NoiSeq_cutoff,
 					            verbose=>$verbose,
+								fc_threshold=>$fc_threshold,
 							);
 						}
 					}
@@ -390,6 +401,8 @@ sub get_edgeR_data{
 	my $fc_threshold=$args{"fc_threshold"};
 
 	my $data;
+	print STDERR "LOG :: " . date() . " Reading $file (cut_off $edger_cutoff and fc_threshold $fc_threshold)\n" if($verbose);
+	
 	#Read edgeR data
 	open(EDGER,$file) || warn "cant find $file\n";
 	while(<EDGER>){
@@ -402,7 +415,7 @@ sub get_edgeR_data{
 				$data->{$feature}->{UP}="$fc\t$fdr";
 			}
 			#filtering down-expressed
-			if($fdr<=$edger_cutoff and $fc<(-$fc_threshold)){
+			if($fdr<=$edger_cutoff and $fc<($fc_threshold * -1)){
 				$data->{$feature}->{DOWN}="$fc\t$fdr";
 			}
 		}
@@ -417,7 +430,7 @@ sub get_NoiSeq_data{
 	my $verbose=$args{"verbose"};
 	my $fc_threshold=$args{"fc_threshold"};
 	my $data;
-	#print STDERR "LOG :: " . date() . " Reading $file (cut_off $noiseq_cutoff)\n" if($verbose);
+	print STDERR "LOG :: " . date() . " Reading $file (cut_off $noiseq_cutoff and fc_threshold $fc_threshold)\n" if($verbose);
 	#Read edgeR data
 	open(NOISEQ,$file) || warn "cant find $file\n";
 	while(<NOISEQ>){
@@ -430,7 +443,7 @@ sub get_NoiSeq_data{
 				$data->{$feature}->{UP}="$fc\t$fdr";
 			}
 			#filtering down-expressed
-			if($fdr>=$noiseq_cutoff and $fc<-($fc_threshold)){
+			if($fdr>=$noiseq_cutoff and $fc<($fc_threshold * -1 )){
 				$data->{$feature}->{DOWN}="$fc\t$fdr";
 			}
 		}
