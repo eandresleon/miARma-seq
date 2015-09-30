@@ -141,7 +141,7 @@ sub run_miARma{
 		}
 		#Mandatory parameters: path for results
 		elsif($cfg->exists("General","output_dir") eq "" or $cfg->val("General","output_dir") eq "" ){
-			print STDERR "\nERROR " . date() . " projectdir parameter in Section [General] is missing. Please check documentation\n";
+			print STDERR "\nERROR " . date() . " output_dir parameter in Section [General] is missing. Please check documentation\n";
 			$severe_error=1;			
 			help_check_general();
 		}
