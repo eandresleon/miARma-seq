@@ -212,7 +212,7 @@ sub F_Analysis{
 					while(<NOISEQ>){
 						chomp;
 						my($feature,undef,undef,$fc,undef,$fdr)=split(/\t/);
-						$feature=~s/\"//g;
+						#$feature=~s/\"//g;
 						#print STDERR "$feature\t$fc\t$fdr\n";
 						
 						$universe_noiseq_data->{$feature}++;
@@ -370,11 +370,7 @@ EOF
 		
 		#Printing the execution data on log file and on the screen if verbose parameter is defined 
 		open (LOG,">> ".$logfile) || die "F_Analysis ERROR :: ".date()."Can't open '$logfile': $!";
-		print LOG "F_Analysis :: ".date()." Executing $cmds\n";
-		if($verbose){
-			#print STDOUT "F_Analysis :: ".date()." Executing $cmds\n";
-		}
-		
+		print LOG date()." Executing $cmds\n";
 		#R commands execution
 		my $out2 = $R->run($cmds);
 		#Obtaining the files generated in the analysis
@@ -382,11 +378,11 @@ EOF
 				
 		foreach my $result (@media){
 			if($result eq "NA"){
-				print STDERR date(). " ERROR :: Nothing significative was found\n";
+				print STDERR date(). " ERROR :: Nothing significative was found using $method data\n";
 			}
 			else{
 				foreach my $res_file (@{$result}){
-					print "F_Analysis :: ".date()." The file ".$res_file." has been generated \n";
+					print "F_Analysis :: ".date()." The file ".$res_file." has been generated \n" if($verbose);
 				}
 			}
 		}

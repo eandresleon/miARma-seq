@@ -106,7 +106,7 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	
 	ensembl = useMart("ensembl",dataset=mydataset)
 		
-	if(tolower(seq_id)=="transcrip_id" ){
+	if(tolower(seq_id)=="transcript_id" ){
 		mapping_table<-getBM(
 		  attributes=c('ensembl_gene_id','ensembl_transcript_id'), 
 		  filters = 'ensembl_transcript_id', values=universe, 

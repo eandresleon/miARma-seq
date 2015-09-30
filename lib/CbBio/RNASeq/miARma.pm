@@ -140,7 +140,7 @@ sub run_miARma{
 			help_check_general();
 		}
 		#Mandatory parameters: path for results
-		elsif($cfg->exists("General","projectdir") eq "" or $cfg->val("General","projectdir") eq "" ){
+		elsif($cfg->exists("General","output_dir") eq "" or $cfg->val("General","output_dir") eq "" ){
 			print STDERR "\nERROR " . date() . " projectdir parameter in Section [General] is missing. Please check documentation\n";
 			$severe_error=1;			
 			help_check_general();
@@ -165,14 +165,14 @@ sub run_miARma{
 			
 			check_input_data(config=>$cfg,check=>$check_input,type=>$cfg->val("General","type"));
 			
-			system ("mkdir -p " . $cfg->val("General","projectdir"));
+			system ("mkdir -p " . $cfg->val("General","output_dir"));
 			#optional parameters: stats folder
 			if($cfg->exists("General","stats_file") ne "" or defined($stat_file)){
 				$stat_file=$cfg->val("General","stats_file");
 				system("touch $stat_file");
 			}
 			if($cfg->exists("General","stats_file") eq "" or undef($stat_file)){
-				$stat_file=$cfg->val("General","projectdir")."/miARma_stat.$$.log";
+				$stat_file=$cfg->val("General","output_dir")."/miARma_stat.$$.log";
 				$cfg->newval("General", "stats_file", $stat_file);
 				$cfg->RewriteConfig;
 				system("touch $stat_file");
@@ -183,7 +183,7 @@ sub run_miARma{
 				system("touch $log_file");
 			}
 			if($cfg->exists("General","logfile") eq "" or undef($log_file)){
-				$log_file=$cfg->val("General","projectdir")."/miARma_logfile.$$.log";
+				$log_file=$cfg->val("General","output_dir")."/miARma_logfile.$$.log";
 				$cfg->newval("General", "logfile", $log_file);
 				$cfg->RewriteConfig;
 				system("touch $log_file");
@@ -243,7 +243,7 @@ sub run_miARma{
 						$output_dir=FastQC(
 							miARmaPath=>$miARmaPath,
 							file=>$file,
-							projectdir=>$cfg->val("General","projectdir"),
+							projectdir=>$cfg->val("General","output_dir"),
 							threads=>$cfg->val("General","threads") || 1,
 							verbose=>$cfg->val("General","verbose") || 0,
 							logfile=>$log_file || $cfg->val("General","logfile"),
@@ -307,7 +307,7 @@ sub run_miARma{
 				logfile=>$log_file || $cfg->val("General","logfile"),
 				statsfile=>$stat_file || $cfg->val("General","stats_file"),
 				verbose=>$cfg->val("General","verbose")|| 0,
-				projectdir=>$cfg->val("General","projectdir"),
+				projectdir=>$cfg->val("General","output_dir"),
 				min=>$cfg->val("Adapter","min")|| undef,,
 				max=>$cfg->val("Adapter","max")|| undef,,
 				min_quality=>$cfg->val("Adapter","min_quality")|| undef,
@@ -334,7 +334,7 @@ sub run_miARma{
 					$output_dir_post=FastQC(
 						miARmaPath=>$miARmaPath,
 						file=>$processed_files,
-						projectdir=>$cfg->val("General","projectdir"),
+						projectdir=>$cfg->val("General","output_dir"),
 						threads=>$cfg->val("General","threads")|| 1,
 						verbose=>$cfg->val("General","verbose")|| 0,
 						logfile=>$log_file || $cfg->val("General","logfile"),
@@ -391,7 +391,7 @@ sub run_miARma{
 					my @index_value=IndexGeneration(
 					  	aligner=>$cfg->val("Aligner","aligner"),
 					  	fasta=>$cfg->val("Aligner","fasta"),
-					  	dir=>$cfg->val("General","projectdir"),
+					  	dir=>$cfg->val("General","output_dir"),
 						logfile=>$log_file || $cfg->val("General","logfile"),
 					  	indexname=>$cfg->val("Aligner","indexname"),
 						miARmaPath=>$miARmaPath
@@ -421,21 +421,21 @@ sub run_miARma{
 			my @files;
 			if(lc($cfg->val("General","type")) eq "mirna"){
 				#Reading CutAdapt results directory, collecting the files and completing with the path
-				my $cut_dir=$cfg->val("General","projectdir")."/cutadapt_results/";
+				my $cut_dir=$cfg->val("General","output_dir")."/cutadapt_results/";
 				if(-e $cut_dir){
 					opendir(CUTDIR, $cut_dir) || warn "Aligner:: Folder $cut_dir is not found, but cutadapt has been specified as an adaptersoft\n"; 
 					my @cut_files= readdir(CUTDIR);
 					push(@files,map("$cut_dir$_",@cut_files));
 				}
 				#Reading Reaper results directory, collecting the files and completing with the path
-				my $rea_dir=$cfg->val("General","projectdir")."/Reaper_results/";
+				my $rea_dir=$cfg->val("General","output_dir")."/Reaper_results/";
 				if(-e $rea_dir){
 					opendir(READIR, $rea_dir) || warn "Aligner:: Folder $rea_dir is not found, but Reaper has been specified as an adaptersoft\n"; 
 					my @rea_files= readdir(READIR);
 					push(@files,map("$rea_dir$_",@rea_files));
 				}
 				#Reading Trimming results directory, collecting the files and completing with the path
-				my $trim_dir=$cfg->val("General","projectdir")."/AdaptTriming_results/";
+				my $trim_dir=$cfg->val("General","output_dir")."/AdaptTriming_results/";
 				if(-e $trim_dir){
 					opendir(READIR, $trim_dir) || warn "Aligner:: Folder $trim_dir is not found, but Adaptrimming has been specified as an adaptersoft\n"; 
 					my @trim_files= readdir(READIR);
@@ -534,14 +534,14 @@ sub run_miARma{
 						verbose=>$cfg->val("General","verbose") || 0,
 					    bowtiemiss=>$cfg->val("Aligner","bowtiemiss") || undef,
 					    bowtieleng=>$cfg->val("Aligner","bowtieleng") || undef,
-						projectdir=>$cfg->val("General","projectdir")|| undef,
+						projectdir=>$cfg->val("General","output_dir")|| undef,
 					    bowtie1parameters=>$cfg->val("Aligner","bowtie1parameters")|| undef,
 					    bowtie2parameters=>$cfg->val("Aligner","bowtie2parameters")|| undef,
 					    miARmaPath=>$miARmaPath,
 						organism=>$cfg->val("General","organism")|| undef,
 						adapter=>$cfg->val("Adapter","adaptersoft")|| undef,
 						GTF=>$cfg->val("Aligner","gtf") || undef,
-						Seqtype=>$cfg->val("General","Seqtype") || undef,
+						Seqtype=>$cfg->val("General","seqtype") || undef,
 						tophatParameters=>$cfg->val("Aligner","tophatParameters") || undef,
 						tophat_seg_mismatches=>$cfg->val("Aligner","tophat_seg_mismatches") || undef,
 						tophat_seg_length=>$cfg->val("Aligner","tophat_seg_length") || undef,
@@ -570,7 +570,7 @@ sub run_miARma{
 			my @files;
 			if(lc($cfg->val("General","type")) ne "circrna"){
 				#Reading CutAdapt results directory, collecting the files and completing with the path
-				my $bw1_dir=$cfg->val("General","projectdir")."/Bowtie1_results/";
+				my $bw1_dir=$cfg->val("General","output_dir")."/Bowtie1_results/";
 				if(-e $bw1_dir){
 					opendir(BW1DIR, $bw1_dir) || warn "3 Aligner:: Folder $bw1_dir is not found\n"; 
 					my @bw1_files= readdir(BW1DIR);
@@ -578,7 +578,7 @@ sub run_miARma{
 					close BW1DIR;
 				}
 				#Reading Reaper results directory, collecting the files and completing with the path
-				my $bw2_dir=$cfg->val("General","projectdir")."/Bowtie2_results/";
+				my $bw2_dir=$cfg->val("General","output_dir")."/Bowtie2_results/";
 				if(-e $bw2_dir){
 					opendir(BW2DIR, $bw2_dir) || warn "4 Aligner:: Folder $bw2_dir is not found\n"; 
 					my @bw2_files= readdir(BW2DIR);
@@ -600,11 +600,11 @@ sub run_miARma{
 							featuretype=>$cfg->val("ReadCount","featuretype") || undef,
 							logfile=>$log_file || $cfg->val("General","logfile"),
 							verbose=>$cfg->val("General","verbose") || 0,
-							projectdir=>$cfg->val("General","projectdir")|| undef,
+							projectdir=>$cfg->val("General","output_dir")|| undef,
 							miARmaPath=>$miARmaPath,
 							threads=>$cfg->val("General","threads") || 1,
 							quality=>$cfg->val("ReadCount","quality") || undef,
-							Seqtype=>$cfg->val("General","Seqtype") || undef,
+							Seqtype=>$cfg->val("General","seqtype") || undef,
 						);
 						push(@htseqfiles, $result);
 					}
@@ -612,7 +612,7 @@ sub run_miARma{
 					#HTSEQFORMATEXECUTION
 					featureFormat( 
 					  	input=>\@htseqfiles, 
-					  	projectdir=>$cfg->val("General","projectdir")|| undef,
+					  	projectdir=>$cfg->val("General","output_dir")|| undef,
 						logfile=>$log_file || $cfg->val("General","logfile"),
 						verbose=>$cfg->val("General","verbose") || 0,
 					  );
@@ -631,7 +631,7 @@ sub run_miARma{
 					help_check_count();
 				}
 				else{
-					my $bw2_dir=$cfg->val("General","projectdir")."/bwa_results/";
+					my $bw2_dir=$cfg->val("General","output_dir")."/bwa_results/";
 					if($bw2_dir){
 						opendir(BW2DIR, $bw2_dir) || warn "5 Aligner:: Folder $bw2_dir is not found\n"; 
 						my @bwa_files= readdir(BW2DIR);
@@ -648,10 +648,10 @@ sub run_miARma{
 								database=>$cfg->val("ReadCount","database")|| undef,
 								logfile=>$log_file || $cfg->val("General","logfile"),
 								verbose=>$cfg->val("General","verbose") || 0,
-								projectdir=>$cfg->val("General","projectdir")|| undef,
+								projectdir=>$cfg->val("General","output_dir")|| undef,
 								threads=>$cfg->val("General","threads") || 1,
 								miARmaPath=>$miARmaPath,
-								Seqtype=>$cfg->val("General","Seqtype") || undef,
+								Seqtype=>$cfg->val("General","seqtype") || undef,
 								bwaindex=>$cfg->val("ReadCount","bwaindex") || undef,
 							);
 							push(@circRNAfiles, $result);
@@ -659,7 +659,7 @@ sub run_miARma{
 
 						CIRIFormat( 
 						  	input=>\@circRNAfiles, 
-							projectdir=>$cfg->val("General","projectdir")|| undef,
+							projectdir=>$cfg->val("General","output_dir")|| undef,
 							logfile=>$log_file || $cfg->val("General","logfile"),
 							verbose=>$cfg->val("General","verbose") || 0,
 							
@@ -719,7 +719,7 @@ sub run_miARma{
 				    bowtie1index=>$cfg->val("DeNovo","bowtie1index") || undef,
 					statsfile=>$stat_file || $cfg->val("General","stats_file"),
 					verbose=>$cfg->val("General","verbose")|| 0,
-					projectdir=>$cfg->val("General","projectdir"),
+					projectdir=>$cfg->val("General","output_dir"),
 					logfile=>$log_file || $cfg->val("General","logfile"),
 					miARmaPath=>$miARmaPath,
 					adapter=>$cfg->val("DeNovo","adapter") || undef,
@@ -731,7 +731,7 @@ sub run_miARma{
 				);
 			}
 			#Once ReadAlignment is finished, is time to count the reads
-			my $processed_reads=$cfg->val("General","projectdir") . "/miRDeep_results/";
+			my $processed_reads=$cfg->val("General","output_dir") . "/miRDeep_results/";
 			my @mirdeep_files;
 			if($processed_reads){
 				opendir(MIRDE, $processed_reads) || warn "Can't find miRDeep results ($processed_reads)\n"; 
@@ -750,7 +750,7 @@ sub run_miARma{
 					  	file=>$file,
 						logfile=>$log_file || $cfg->val("General","logfile"),
 						verbose=>$cfg->val("General","verbose")|| 0,
-						projectdir=>$cfg->val("General","projectdir"),
+						projectdir=>$cfg->val("General","output_dir"),
 						miARmaPath=>$miARmaPath,
 					);
 					push(@allRNAfiles, $result) if($result);
@@ -759,7 +759,7 @@ sub run_miARma{
 			if(scalar(@allRNAfiles)>0){
 				$result_file=miRDeepFormat( 
 				  	input=>\@allRNAfiles, 
-					projectdir=>$cfg->val("General","projectdir"),
+					projectdir=>$cfg->val("General","output_dir"),
 					logfile=>$log_file || $cfg->val("General","logfile"),
 				);
 			}
@@ -782,18 +782,18 @@ sub run_miARma{
 		# 	print STDERR "\nERROR " . date() . " filter parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
 		# 	help_check_aligner();
 		# }
-		elsif( lc($cfg->val("DEAnalysis","DEsoft")) eq "" and ($cfg->val("DEAnalysis","DEsoft") eq "")){
-			print STDERR "\nERROR " . date() . " DEsoft parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
+		elsif( lc($cfg->val("DEAnalysis","desoft")) eq "" and ($cfg->val("DEAnalysis","desoft") eq "")){
+			print STDERR "\nERROR " . date() . " desoft parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
 			help_check_deanalysis();
 		}
 		else{
 			#run DEAnalysis
 			use CbBio::RNASeq::DEAnalysis;
-			print STDERR date()." Starting a differential expression analysis using ".$cfg->val("DEAnalysis","DEsoft") ." software(s)\n";
+			print STDERR date()." Starting a differential expression analysis using ".$cfg->val("DEAnalysis","desoft") ." software(s)\n";
 			
 			my @files;
 			#if user did a regular readcount
-			my $read_count_dir=$cfg->val("General","projectdir")."/Readcount_results/";
+			my $read_count_dir=$cfg->val("General","output_dir")."/Readcount_results/";
 			if(-e $read_count_dir){
 				opendir(CUTDIR, $read_count_dir) || warn "DEAnalysis:: Folder $read_count_dir is not found\n"; 
 				my @cut_files= readdir(CUTDIR);
@@ -801,7 +801,7 @@ sub run_miARma{
 				
 			}
 			#if user did a denovo analysis
-			my $denovo_dir=$cfg->val("General","projectdir")."/DeNovo_ReadCount/"; 
+			my $denovo_dir=$cfg->val("General","output_dir")."/DeNovo_ReadCount/"; 
 			if(-e $denovo_dir){
 				opendir(READIR, $denovo_dir) ||  warn "DEAnalysis:: Folder $denovo_dir is not found\n"; 
 				my @rea_files= readdir(READIR);
@@ -809,7 +809,7 @@ sub run_miARma{
 			}
 
 			#if user did a circRNA analysis
-			my $circRNA_dir=$cfg->val("General","projectdir")."/circRNAs_results/"; 
+			my $circRNA_dir=$cfg->val("General","output_dir")."/circRNAs_results/"; 
 			if(-e $circRNA_dir){
 				opendir(READIR, $circRNA_dir) ||  warn "DEAnalysis:: Folder $circRNA_dir is not found\n"; 
 				my @rea_files= readdir(READIR);
@@ -819,15 +819,15 @@ sub run_miARma{
 			if(scalar(@files)>0){
 				foreach my $file(  sort @files){
 					DE_Analysis(
-						projectdir=>$cfg->val("General","projectdir")|| undef,
+						projectdir=>$cfg->val("General","output_dir")|| undef,
 						file=>$file,
 						targetfile=>$cfg->val("DEAnalysis","targetfile"),
 						label=>$cfg->val("General","label"),
 						filter=>$cfg->val("DEAnalysis","filter")|| "yes",
 						edger_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
 						noiseq_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
-						DEsoft=>$cfg->val("DEAnalysis","DEsoft")|| undef,
-						filtermethod=>$cfg->val("DEAnalysis","DEsoft")|| undef,
+						DEsoft=>$cfg->val("DEAnalysis","desoft")|| undef,
+						filtermethod=>$cfg->val("DEAnalysis","filtermethod")|| undef,
 						logfile=>$log_file || $cfg->val("General","logfile"),
 						verbose=>$cfg->val("General","verbose") || 0,
 						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue")|| undef,
@@ -840,7 +840,7 @@ sub run_miARma{
 						bcvvalue=>$cfg->val("DEAnalysis","bcvvalue") || undef,
 						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue") || undef,
 						cutoffvalue=>$cfg->val("DEAnalysis","cutoffvalue") || undef,
-						Rdir=>$cfg->val("DEAnalysis","Rdir") || undef,
+						Rdir=>$cfg->val("DEAnalysis","rdir") || undef,
 				     	replicatevalue=>$cfg->val("DEAnalysis","replicatevalue") || undef,
 						kvalue=>$cfg->val("DEAnalysis","kvalue") || undef,
 						lcvalue=>$cfg->val("DEAnalysis","lcvalue") || undef,
@@ -864,7 +864,7 @@ sub run_miARma{
 	if($cfg->SectionExists("FAnalysis")==1){
 		 use CbBio::RNASeq::FAnalysis;
 		 F_Analysis(
-			projectdir=>$cfg->val("General","projectdir"),
+			projectdir=>$cfg->val("General","output_dir"),
 			verbose=>$cfg->val("General","verbose") || 0,
 			logfile=>$log_file || $cfg->val("General","logfile"),
 			organism=>$cfg->val("General","organism")|| undef,
@@ -876,7 +876,7 @@ sub run_miARma{
 	#miRGate prediction
 	if($cfg->SectionExists("TargetPrediction")==1){
 		#run TargetP
-		my $dir=$cfg->val("General","projectdir");		
+		my $dir=$cfg->val("General","output_dir");		
 		use CbBio::RNASeq::TargetPrediction;
 		print date()." Starting a target Prediction Analysis using miRGate\n";
 		
@@ -884,7 +884,7 @@ sub run_miARma{
 			TargetPrediction(
 				miRNAs_folder=>$dir,
 				logfile=>$log_file || $cfg->val("General","logfile"),
-				projectdir=>$cfg->val("General","projectdir")|| undef,
+				projectdir=>$cfg->val("General","output_dir")|| undef,
 				organism=>$cfg->val("General","organism")|| undef,
 				miARmaPath=>$miARmaPath,
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
@@ -898,7 +898,7 @@ sub run_miARma{
 				miRNAs_folder=>$dir,
 				genes_folder=>$cfg->val("TargetPrediction","genes_folder"),
 				logfile=>$log_file || $cfg->val("General","logfile"),
-				projectdir=>$cfg->val("General","projectdir")|| undef,
+				projectdir=>$cfg->val("General","output_dir")|| undef,
 				organism=>$cfg->val("General","organism")|| undef,
 				miARmaPath=>$miARmaPath,
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
@@ -911,7 +911,7 @@ sub run_miARma{
 			TargetPrediction(
 				genes_folder=>$dir,
 				logfile=>$log_file || $cfg->val("General","logfile"),
-				projectdir=>$cfg->val("General","projectdir")|| undef,
+				projectdir=>$cfg->val("General","output_dir")|| undef,
 				organism=>$cfg->val("General","organism")|| undef,
 				miARmaPath=>$miARmaPath,
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
@@ -925,7 +925,7 @@ sub run_miARma{
 				genes_folder=>$dir,
 				miRNAs_folder=>$cfg->val("TargetPrediction","miRNAs_folder"),
 				logfile=>$log_file || $cfg->val("General","logfile"),
-				projectdir=>$cfg->val("General","projectdir")|| undef,
+				projectdir=>$cfg->val("General","output_dir")|| undef,
 				organism=>$cfg->val("General","organism")|| undef,
 				miARmaPath=>$miARmaPath,
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
@@ -1261,7 +1261,7 @@ bwaindex=index/bwa
 	[DEAnalysis]
 	targetfile=targets.txt
 	contrastfile=contrast.txt
-	DEsoft=EdgeR-Noiseq
+	desoft=EdgeR-Noiseq
 
 	};
 
@@ -1291,7 +1291,7 @@ Mandatory parameters:
 	#This value refers to filter processing in the reads (Should be "yes" or "no").
 	filter=yes
 	;Specific software to perform the Differential Expression Analysis (Allowed values: edger, noiseq or edger-noiseq)
-	DEsoft=EdgeR-Noiseq
+	desoft=EdgeR-Noiseq
 	; providing replicates
 	replicates=yes
 
@@ -1325,7 +1325,7 @@ sub parameter_definition{
 	
 	my $parameter;
 	$parameter->{"read_dir"}="path";
-	$parameter->{"projectdir"}="path_dir";
+	$parameter->{"output_dir"}="path_dir";
 	$parameter->{"miARmaPath"}="path";
 	$parameter->{"adapter_file"}="file";
 	$parameter->{"metafile"}="file";
@@ -1339,7 +1339,7 @@ sub parameter_definition{
 	$parameter->{"genome"}="file";
 	$parameter->{"mature_miRNA_file"}="file";
 	$parameter->{"precursor_miRNA_file"}="file";
-	$parameter->{"Rdir"}="file";
+	$parameter->{"rdir"}="file";
 	$parameter->{"contrastfile"}="file";
 	$parameter->{"targetfile"}="file";
 	$parameter->{"genes_folder"}="path";
