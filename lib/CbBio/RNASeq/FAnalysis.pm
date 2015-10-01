@@ -333,10 +333,25 @@ sub goseq{
 		if(scalar(keys %$up)<75 or scalar(keys %$down)<75){
 			print STDERR date(). " WARN :: The number of differentially expressed genes are too small. Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n";
 		}
-			
-		my $Rcommand="projectdir=\"$output_dir\",up=c(".join(",", keys (%$up))."),down=c(".join(",", keys (%$down))."),universe=c(".join(",", keys (%$universe))."),organism=\"$organism\",method=\"$method\",seq_id=\"$seq_id\"";
+		#save entities to read with R
+		my $up_file="$output_dir/.up_entities_$method.txt";
+		open (UP,">$up_file") || die "$! $up_file";
+		print UP join("\n", keys (%$up));
+		close UP;
+		
+		my $down_file="$output_dir/.down_entities_$method.txt";;
+		(open DW,">$down_file") || die "$! $down_file";
+		print DW join("\n", keys (%$down));
+		close DW;
+		
+		my $universe_file="$output_dir/.universe_entities_$method.txt";
+		open (UN,">$universe_file")  || die "$! $universe_file";
+		print UN join("\n", keys (%$universe));
+		close UN;
+		
+		my $Rcommand="projectdir=\"$output_dir\",up=\"$up_file\",down=\"$down_file\",universe=\"$universe_file\",organism=\"$organism\",method=\"$method\",seq_id=\"$seq_id\"";
 		# Printing the date and command execution on screen
-		#print STDERR "GOSeqR :: ".date()." Starting Functional Analysis\n"; 
+		print STDOUT "GOSeqR :: ".date()." Starting Functional Analysis with $Rcommand\n" if($verbose);
 
 		#Creating results directory
 		my $command="mkdir -p ".$output_dir;
@@ -359,11 +374,11 @@ sub goseq{
 		$R->startR;
 		#Declaring R instructions for the functional analysis analysis. DE_noiseq R function is needed 
 		#source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/F_Analysis.R")
-		#source("../../../lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
+		#source("/Users/eandres/Proyectos/EduardoAndres/miARma/New/lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
 
 		my $cmds = <<EOF;
 		setwd("$output_dir")
-		source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/F_Analysis.R")
+		source("/Users/eandres/Proyectos/EduardoAndres/miARma/New/lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
 		resultsfiles<-NA
 		resultsfiles<-F_Analysis($Rcommand)
 EOF

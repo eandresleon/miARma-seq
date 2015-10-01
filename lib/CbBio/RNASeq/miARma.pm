@@ -541,7 +541,7 @@ sub run_miARma{
 						organism=>$cfg->val("General","organism")|| undef,
 						adapter=>$cfg->val("Adapter","adaptersoft")|| undef,
 						GTF=>$cfg->val("Aligner","gtf") || undef,
-						Seqtype=>$cfg->val("General","seqtype") || undef,
+						Seqtype=>$cfg->val("General","seqtype") || "Single",
 						tophatParameters=>$cfg->val("Aligner","tophatParameters") || undef,
 						tophat_seg_mismatches=>$cfg->val("Aligner","tophat_seg_mismatches") || undef,
 						tophat_seg_length=>$cfg->val("Aligner","tophat_seg_length") || undef,
