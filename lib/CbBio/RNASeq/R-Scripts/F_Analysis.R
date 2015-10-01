@@ -65,7 +65,10 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 		
 		#install.packages(new.packages)
 		source("http://bioconductor.org/biocLite.R")
-		biocLite(new.packages)
+	  biocLite(new.packages,
+	           suppressUpdates=FALSE,
+	           suppressAutoUpdate=FALSE,
+	           ask=TRUE)
 	}
 
 	#Loading the needed packagge
