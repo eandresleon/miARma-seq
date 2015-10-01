@@ -82,17 +82,17 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	workingDir<-projectdir
 	setwd(workingDir)
 
-	up<-read.table(".up_entities_edgeR.txt")
-	up<-as.vector(up$V1)
-	up<-unique(up)
+	up_file<-read.table(up)
+	up_file<-as.vector(up_file$V1)
+	up<-unique(up_file)
 	
-	down<-read.table(".down_entities_edgeR.txt")
-	down<-as.vector(down$V1)
-	down<-unique(down)
+	down_file<-read.table(down)
+	down_file<-as.vector(down_file$V1)
+	down<-unique(down_file)
 	
-	universe<-read.table(".universe_entities_edgeR.txt")
-	universe<-as.vector(universe$V1)
-	universe<-unique(universe)
+	universe_file<-read.table(".universe_entities_edgeR.txt")
+	universe_file<-as.vector(universe)
+	universe<-unique(universe_file)
 	
 	mapping_table<-NA
 	genes_up<-NA
