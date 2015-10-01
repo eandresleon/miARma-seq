@@ -93,8 +93,8 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	down_file<-as.vector(down_file$V1)
 	down<-unique(down_file)
 	
-	universe_file<-read.table(".universe_entities_edgeR.txt")
-	universe_file<-as.vector(universe)
+	universe_file<-read.table(universe)
+	universe_file<-as.vector(universe_file$V1)
 	universe<-unique(universe_file)
 	
 	mapping_table<-NA
