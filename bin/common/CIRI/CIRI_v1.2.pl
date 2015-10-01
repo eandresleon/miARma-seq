@@ -97,7 +97,7 @@ if(!defined($read_length)){
 if(!defined($cRNA_out)){
 	push @die_reason, "Please use --out or -O option to designate output file!\n";
 }elsif(-e $cRNA_out and -f $cRNA_out){
-	push @die_reason, "Output file $cRNA_out already exists!\n";
+	#push @die_reason, "Output file $cRNA_out already exists!\n";
 }
 if( !defined($ref_dir) and !defined($ref_1file) ){
 	push @die_reason, "Please use --ref-dir or -R option to designate refenece directory for multiple reference files, or use --ref-file or -F to designate one file with all references in!\n";
@@ -230,7 +230,7 @@ my %type;
 my %candidate4mode_check;
 my %read_in_chr;
 #my ($mapq_uni, $mapq_both) = (3, 13);
-open CRNAOUT, ">>", $cRNA_out or die;
+open CRNAOUT, ">", $cRNA_out or die;
 open SAM, "<", $sam or die "cannot open the sam file: $!";
 open MOD, ">>", $log or die;
 print MOD scalar(localtime),"\n";
