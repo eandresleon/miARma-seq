@@ -330,8 +330,8 @@ sub goseq{
 			warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=".scalar(keys %$up).", Downregulated genes n=".scalar(keys %$down)."\nPlease check $logfile\n";
 			return();
 		}
-		if(scalar(keys %$up)<75 or scalar(keys %$down)<75){
-			print STDERR date(). " WARN :: The number of differentially expressed genes are too small. Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n";
+		if(scalar(keys %$up)<51 or scalar(keys %$down)<51){
+			print STDERR date(). " WARN :: The number of differentially expressed genes is too small (<50). Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n";
 		}
 		#save entities to read with R
 		my $up_file="$output_dir/.up_entities_$method.txt";
@@ -378,7 +378,7 @@ sub goseq{
 
 		my $cmds = <<EOF;
 		setwd("$output_dir")
-		source("/Users/eandres/Proyectos/EduardoAndres/miARma/New/lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
+		source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/F_Analysis.R")
 		resultsfiles<-NA
 		resultsfiles<-F_Analysis($Rcommand)
 EOF
