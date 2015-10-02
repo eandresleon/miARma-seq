@@ -1480,6 +1480,7 @@ sub bowtie2{
   	 [tophat_multihits] Instructs TopHat to allow up to this many alignments to the reference for a given read, and choose the alignments based on their alignment scores if there are more than this number. The default is 20 for read mapping    
   	 [tophat_seg_mismatches] Read segments are mapped independently, allowing up to this many mismatches in each segment alignment. The default is 2.  
   	 [tophat_seg_length] Each read is cut up into segments, each at least this long. These segments are mapped independently. The default is 25.
+	 [read_mismatches] Final read alignments having more than these many mismatches are discarded. The default is 2.
   	 [tophatParameters] Other parameter as explained in http://ccb.jhu.edu/software/tophat/manual.shtml   
   Returntype : File at directory Bowtie2_results. Also returns the path of the output file
   Requeriments: TopHat function requires for a correct analysis:
