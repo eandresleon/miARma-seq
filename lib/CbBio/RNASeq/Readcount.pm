@@ -597,7 +597,7 @@ sub CIRICount{
 		print LOG "CIRICount ERROR :: ".date()." Projectdir ($projectdir), file ($file), logfile ($logfile) and/or database($database) have not been provided";
 		close LOG;
 			#If mandatory parameters have not been provided program dies and shows error message
-		warn("CIRICount ERROR :: Projectdir ($projectdir), file ($file), logfile ($logfile) and/or database($database) have not been provided");
+		warn("CIRICount ERROR :: Projectdir ($projectdir), file ($file), logfile ($logfile), bwa index (bwaindex), sequencing type ($Seqtype) and/or database($database) have not been provided");
 		help_CIRICount();
 	}
 	sub help_CIRICount{

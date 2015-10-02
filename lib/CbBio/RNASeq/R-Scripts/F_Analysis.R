@@ -65,7 +65,10 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 		
 		#install.packages(new.packages)
 		source("http://bioconductor.org/biocLite.R")
-		biocLite(new.packages)
+	  biocLite(new.packages,
+	           suppressUpdates=FALSE,
+	           suppressAutoUpdate=FALSE,
+	           ask=TRUE)
 	}
 
 	#Loading the needed packagge
@@ -82,9 +85,17 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	workingDir<-projectdir
 	setwd(workingDir)
 
-	up<-unique(up)
-	down<-unique(down)
-	universe<-unique(universe)
+	up_file<-read.table(up)
+	up_file<-as.vector(up_file$V1)
+	up<-unique(up_file)
+	
+	down_file<-read.table(down)
+	down_file<-as.vector(down_file$V1)
+	down<-unique(down_file)
+	
+	universe_file<-read.table(universe)
+	universe_file<-as.vector(universe_file$V1)
+	universe<-unique(universe_file)
 	
 	mapping_table<-NA
 	genes_up<-NA
@@ -106,7 +117,7 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	
 	ensembl = useMart("ensembl",dataset=mydataset)
 		
-	if(tolower(seq_id)=="transcrip_id" ){
+	if(tolower(seq_id)=="transcript_id" ){
 		mapping_table<-getBM(
 		  attributes=c('ensembl_gene_id','ensembl_transcript_id'), 
 		  filters = 'ensembl_transcript_id', values=universe, 
@@ -125,6 +136,25 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 		genes_down<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% down_entrez)
 		names(genes_down)<-unique(mapping_table$ensembl_gene_id)
 		
+	} else if(tolower(seq_id)=="gene_name" ){
+	  mapping_table<-getBM(
+	    attributes=c('ensembl_gene_id','external_gene_name'), 
+	    filters = 'ensembl_transcript_id', values=universe, 
+	    mart=ensembl,
+	    uniqueRows=T
+	  )
+	  idx<-match(up,mapping_table$ensembl_transcript_id)
+	  up_entrez<-mapping_table[idx,1]
+	  
+	  genes_up<-as.integer(unique(mapping_table$ensembl_gene_id) %nin% up_entrez)
+	  
+	  names(genes_up)<-unique(mapping_table$ensembl_gene_id)
+	  
+	  idx<-match(down,mapping_table$ensembl_transcript_id)
+	  down_entrez<-mapping_table[idx,1]
+	  genes_down<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% down_entrez)
+	  names(genes_down)<-unique(mapping_table$ensembl_gene_id)
+	  
 	}	else{
 		genes_up<-as.integer(unique(universe) %nin% up)
 		names(genes_up)<-unique(universe)

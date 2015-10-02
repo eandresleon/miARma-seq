@@ -212,7 +212,7 @@ sub F_Analysis{
 					while(<NOISEQ>){
 						chomp;
 						my($feature,undef,undef,$fc,undef,$fdr)=split(/\t/);
-						$feature=~s/\"//g;
+						#$feature=~s/\"//g;
 						#print STDERR "$feature\t$fc\t$fdr\n";
 						
 						$universe_noiseq_data->{$feature}++;
@@ -326,23 +326,39 @@ sub goseq{
 		my $output_dir=$projectdir."/Functional_Analysis_results";
 		my $output_file="$output_dir/upRegulated_$method\_results.xls";
 
-		if (scalar(keys %$up)<1 or scalar(keys %$down)<1 or scalar(keys %$universe)<1){
-			warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=".scalar(keys %$up).", Downregulated genes n=".scalar(keys %$down)."\nPlease check $logfile\n";
-			return();
-		}
-		if(scalar(keys %$up)<75 or scalar(keys %$down)<75){
-			print STDERR date(). " WARN :: The number of differentially expressed genes are too small. Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n";
-		}
-			
-		my $Rcommand="projectdir=\"$output_dir\",up=c(".join(",", keys (%$up))."),down=c(".join(",", keys (%$down))."),universe=c(".join(",", keys (%$universe))."),organism=\"$organism\",method=\"$method\",seq_id=\"$seq_id\"";
-		# Printing the date and command execution on screen
-		#print STDERR "GOSeqR :: ".date()." Starting Functional Analysis\n"; 
-
 		#Creating results directory
 		my $command="mkdir -p ".$output_dir;
 		system($command) == 0
 		   or die "F_Analysis ERROR :: ".date()." System args failed: $? ($command)";
 
+		if (scalar(keys %$up)<1 or scalar(keys %$down)<1 or scalar(keys %$universe)<1){
+			warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=".scalar(keys %$up).", Downregulated genes n=".scalar(keys %$down)."\nPlease check $logfile\n";
+			return();
+		}
+		if(scalar(keys %$up)<51 or scalar(keys %$down)<51){
+			print STDERR date(). " WARN :: The number of differentially expressed genes is too small (<50). Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n";
+		}
+		#save entities to read with R		
+		my $up_file="$output_dir/.up_entities_$method.txt";
+		open (UP,">$up_file") || die "$! $up_file";
+		print UP join("\n", keys (%$up));
+		close UP;
+		
+		my $down_file="$output_dir/.down_entities_$method.txt";;
+		(open DW,">$down_file") || die "$! $down_file";
+		print DW join("\n", keys (%$down));
+		close DW;
+		
+		my $universe_file="$output_dir/.universe_entities_$method.txt";
+		open (UN,">$universe_file")  || die "$! $universe_file";
+		print UN join("\n", keys (%$universe));
+		close UN;
+		
+		my $Rcommand="projectdir=\"$output_dir\",up=\"$up_file\",down=\"$down_file\",universe=\"$universe_file\",organism=\"$organism\",method=\"$method\",seq_id=\"$seq_id\"";
+		# Printing the date and command execution on screen
+		print STDOUT "GOSeqR :: ".date()." Starting Functional Analysis with $Rcommand\n" if($verbose);
+
+		
 		#Calling R from perl
 		my $R;
 		#If user has defined the directory where R is installed the bridge will be created since that directory
@@ -359,7 +375,7 @@ sub goseq{
 		$R->startR;
 		#Declaring R instructions for the functional analysis analysis. DE_noiseq R function is needed 
 		#source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/F_Analysis.R")
-		#source("../../../lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
+		#source("/Users/eandres/Proyectos/EduardoAndres/miARma/New/lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
 
 		my $cmds = <<EOF;
 		setwd("$output_dir")
@@ -370,11 +386,7 @@ EOF
 		
 		#Printing the execution data on log file and on the screen if verbose parameter is defined 
 		open (LOG,">> ".$logfile) || die "F_Analysis ERROR :: ".date()."Can't open '$logfile': $!";
-		print LOG "F_Analysis :: ".date()." Executing $cmds\n";
-		if($verbose){
-			#print STDOUT "F_Analysis :: ".date()." Executing $cmds\n";
-		}
-		
+		print LOG date()." Executing $cmds\n";
 		#R commands execution
 		my $out2 = $R->run($cmds);
 		#Obtaining the files generated in the analysis
@@ -382,11 +394,11 @@ EOF
 				
 		foreach my $result (@media){
 			if($result eq "NA"){
-				print STDERR date(). " ERROR :: Nothing significative was found\n";
+				print STDERR date(). " ERROR :: Nothing significative was found using $method data\n";
 			}
 			else{
 				foreach my $res_file (@{$result}){
-					print "F_Analysis :: ".date()." The file ".$res_file." has been generated \n";
+					print "F_Analysis :: ".date()." The file ".$res_file." has been generated \n" if($verbose);
 				}
 			}
 		}
