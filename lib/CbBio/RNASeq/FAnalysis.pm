@@ -326,6 +326,11 @@ sub goseq{
 		my $output_dir=$projectdir."/Functional_Analysis_results";
 		my $output_file="$output_dir/upRegulated_$method\_results.xls";
 
+		#Creating results directory
+		my $command="mkdir -p ".$output_dir;
+		system($command) == 0
+		   or die "F_Analysis ERROR :: ".date()." System args failed: $? ($command)";
+
 		if (scalar(keys %$up)<1 or scalar(keys %$down)<1 or scalar(keys %$universe)<1){
 			warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=".scalar(keys %$up).", Downregulated genes n=".scalar(keys %$down)."\nPlease check $logfile\n";
 			return();
@@ -333,7 +338,7 @@ sub goseq{
 		if(scalar(keys %$up)<51 or scalar(keys %$down)<51){
 			print STDERR date(). " WARN :: The number of differentially expressed genes is too small (<50). Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n";
 		}
-		#save entities to read with R
+		#save entities to read with R		
 		my $up_file="$output_dir/.up_entities_$method.txt";
 		open (UP,">$up_file") || die "$! $up_file";
 		print UP join("\n", keys (%$up));
@@ -353,11 +358,7 @@ sub goseq{
 		# Printing the date and command execution on screen
 		print STDOUT "GOSeqR :: ".date()." Starting Functional Analysis with $Rcommand\n" if($verbose);
 
-		#Creating results directory
-		my $command="mkdir -p ".$output_dir;
-		system($command) == 0
-		   or die "F_Analysis ERROR :: ".date()." System args failed: $? ($command)";
-
+		
 		#Calling R from perl
 		my $R;
 		#If user has defined the directory where R is installed the bridge will be created since that directory
