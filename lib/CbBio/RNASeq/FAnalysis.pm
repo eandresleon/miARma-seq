@@ -331,13 +331,7 @@ sub goseq{
 		system($command) == 0
 		   or die "F_Analysis ERROR :: ".date()." System args failed: $? ($command)";
 
-		if (scalar(keys %$up)<1 or scalar(keys %$down)<1 or scalar(keys %$universe)<1){
-			warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=".scalar(keys %$up).", Downregulated genes n=".scalar(keys %$down)."\nPlease check $logfile\n";
-			return();
-		}
-		if(scalar(keys %$up)<51 or scalar(keys %$down)<51){
-			print STDERR date(). " WARN :: The number of differentially expressed genes is too small (<50). Some errors could appear. Try to use a less restringet cut_off (>$cut_off)\n";
-		}
+		
 		#save entities to read with R		
 		my $up_file="$output_dir/.up_entities_$method.txt";
 		open (UP,">$up_file") || die "$! $up_file";
@@ -394,6 +388,13 @@ EOF
 				
 		foreach my $result (@media){
 			if($result eq "NA"){
+				if (scalar(keys %$up)<1 or scalar(keys %$down)<1 or scalar(keys %$universe)<1){
+					warn "WARN :: ".date()." The number of selected proteins is 0. No functional analysis can be done\nWARN :: ".date()." Upregulated genes n=".scalar(keys %$up).", Downregulated genes n=".scalar(keys %$down)."\nPlease check $logfile\n";
+					return();
+				}
+				if(scalar(keys %$up)<51 or scalar(keys %$down)<51){
+					print STDERR date(). " WARN :: The number of differentially expressed genes is too small (<50). Some errors could appear. Try to use a less restringet cut_off for $method(>$cut_off)\n";
+				}
 				print STDERR date(). " ERROR :: Nothing significative was found using $method data\n";
 			}
 			else{

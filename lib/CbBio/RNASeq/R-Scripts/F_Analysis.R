@@ -139,7 +139,7 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	} else if(tolower(seq_id)=="gene_name" ){
 	  mapping_table<-getBM(
 	    attributes=c('ensembl_gene_id','external_gene_name'), 
-	    filters = 'ensembl_transcript_id', values=universe, 
+	    filters = 'external_gene_name', values=universe, 
 	    mart=ensembl,
 	    uniqueRows=T
 	  )
