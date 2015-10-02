@@ -136,6 +136,25 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 		genes_down<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% down_entrez)
 		names(genes_down)<-unique(mapping_table$ensembl_gene_id)
 		
+	} else if(tolower(seq_id)=="gene_name" ){
+	  mapping_table<-getBM(
+	    attributes=c('ensembl_gene_id','external_gene_name'), 
+	    filters = 'ensembl_transcript_id', values=universe, 
+	    mart=ensembl,
+	    uniqueRows=T
+	  )
+	  idx<-match(up,mapping_table$ensembl_transcript_id)
+	  up_entrez<-mapping_table[idx,1]
+	  
+	  genes_up<-as.integer(unique(mapping_table$ensembl_gene_id) %nin% up_entrez)
+	  
+	  names(genes_up)<-unique(mapping_table$ensembl_gene_id)
+	  
+	  idx<-match(down,mapping_table$ensembl_transcript_id)
+	  down_entrez<-mapping_table[idx,1]
+	  genes_down<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% down_entrez)
+	  names(genes_down)<-unique(mapping_table$ensembl_gene_id)
+	  
 	}	else{
 		genes_up<-as.integer(unique(universe) %nin% up)
 		names(genes_up)<-unique(universe)
