@@ -12,7 +12,7 @@ require Exporter;
 #Export package system
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(bowtie1_index bowtie1 bowtie2_index bowtie2 IndexGeneration ReadAligment bwa tophat);
+@EXPORT=qw(bowtie1_index bowtie1 bowtie2_index bowtie2 IndexGeneration ReadAligment bwa tophat ReadSummary);
 
 use strict;
 use DateTime;
@@ -302,7 +302,7 @@ sub ReadAligment{
 						bowtie1parameters=>$bowtie1parameters,
 						projectdir=>$projectdir,
 						miARmaPath=>$miARmaPath,
-						aligner=>$aligner,
+						adapter=>$adapter,	
 						Seqtype=>$Seqtype
 			  		);
 			  		return($output_file1);
@@ -1365,7 +1365,7 @@ sub bowtie2{
 				$mate_file=~s/_1/_2/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
-						$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." --met-file ".$projectdir.$output_dir.$name.".metrics -S --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
+						$command="bowtie2 ".$bowtiepardef." -x ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." --met-file ".$projectdir.$output_dir.$name.".metrics -S --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
 					}
 				}
 				else{
@@ -1379,7 +1379,7 @@ sub bowtie2{
 		}
 		else{
 			print STDOUT "\tBOWTIE 2 :: ".date()." Checking $file for bowtie2 (single-end) analysis\n" if($verbose);
-			$command="bowtie2".$bowtiepardef." -x ".$bowtieindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
+			$command="bowtie2 ".$bowtiepardef." -x ".$bowtieindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
 		}
 		
 		#Bowtie execution with verbose option
@@ -1480,7 +1480,7 @@ sub bowtie2{
   	 [tophat_multihits] Instructs TopHat to allow up to this many alignments to the reference for a given read, and choose the alignments based on their alignment scores if there are more than this number. The default is 20 for read mapping    
   	 [tophat_seg_mismatches] Read segments are mapped independently, allowing up to this many mismatches in each segment alignment. The default is 2.  
   	 [tophat_seg_length] Each read is cut up into segments, each at least this long. These segments are mapped independently. The default is 25.
-	 [read_mismatches] Final read alignments having more than these many mismatches are discarded. The default is 2.
+	 [tophat_read_mismatches] Final read alignments having more than these many mismatches are discarded. The default is 2.
   	 [tophatParameters] Other parameter as explained in http://ccb.jhu.edu/software/tophat/manual.shtml   
   Returntype : File at directory Bowtie2_results. Also returns the path of the output file
   Requeriments: TopHat function requires for a correct analysis:
@@ -2224,7 +2224,135 @@ sub miRDeep{
 	exit(); 
 	}	
 }
-
+sub ReadSummary{
+	use File::Basename;
+	#Arguments provided by user are collected by %args. Dir, file, aligner, statsfile, projectdir 
+	#and logfile are mandatory arguments while verbose and threads are optional.
+	my %args=@_;
+	my $input=$args{"files"}; #Input is an referenced array with the paths of the files which have to be joined
+	my $summary_file=$args{"summary"}; #Path of the logfile to write the execution data
+	my $projectdir=$args{"projectdir"}; #Optional arguments to show the execution data on screen
+	my $statsfile=$args{"statsfile"}; #Path of the statsfile to write the stats data
+	my $aligner=$args{"aligner"}; #Input directory where results directory will be created
+	my $tophat_aligner=$args{"tophat_aligner"};
+	
+	my $summary;
+	my $summary_path;
+	if(lc($aligner) eq "bowtie1" ){
+		$summary_path->{$aligner}=$projectdir ."/Bowtie1_results/";
+		open(STAT,$statsfile);
+		my $real_file;
+		my $processed;
+		my $aligned;
+		my $failed;
+		while(<STAT>){
+			chomp;
+			if($_ =~/^BOWTIE1/){
+				my $file=$_;
+				$file=~s/BOWTIE1 :: File://g;
+				$real_file=fileparse($file);
+				$processed=0;
+				$aligned=0;
+				$failed=0;
+			}
+			if($_ =~/^# reads processed:/){
+				$processed=$_;
+				$processed=~s/.*: //g;
+			}
+			if($_ =~/^# reads with at/){
+				$aligned=$_;
+				$aligned=~s/.*: //g;
+			}
+			if($_ =~/^# reads that failed/){
+				$failed=$_;
+				$failed=~s/.*: //g;
+			}
+			if($real_file and $failed){
+				$summary->{$real_file}="$processed\t$aligned\t$failed";
+			}
+		}
+	}
+	my $summary_bw2;
+	if(lc($aligner) eq "bowtie2" ){
+		$summary_path->{$aligner}=$projectdir ."/Bowtie2_results/";
+		open(STAT,$statsfile);
+		my $real_file;
+		my $processed;
+		my $aligned;
+		my $failed;
+		my $multimapping;
+		my $overall;
+		while(<STAT>){
+			chomp;
+			if($_ =~/^BOWTIE2/){
+				my $file=$_;
+				$file=~s/BOWTIE2 :: File://g;
+				$real_file=fileparse($file);
+				$processed=0;
+				$aligned=0;
+				$failed=0;
+				$multimapping=0;
+				$overall=0;
+			}
+			if($_ =~/reads; of these:/){
+				$processed=$_;
+				$processed=~s/^(\d+) reads; of these:/$1/g;
+			}
+			if($_ =~/ aligned 0 times/){
+				$failed=$_;
+				$failed=~s/\s+(\d+) .*/$1/g;
+			}
+			if($_ =~/aligned exactly 1 time/){
+				$aligned=$_;
+				$aligned=~s/\s+(\d+) .*/$1/g;
+			}
+			if($_ =~/aligned >1 times/){
+				$multimapping=$_;
+				$multimapping=~s/\s+(\d+) .*/$1/g;
+			}
+			if($_ =~/overall alignment rate/){
+				$overall=$_;
+				$overall=~s/^(\d+\.\d+)% .*/$1%/g;
+			}
+			if($real_file and $failed){
+				$summary_bw2->{$real_file}="$processed\t$aligned\t$multimapping\t$overall\t$failed";
+			}
+		}
+	}
+	
+	if(lc($aligner) eq "bowtie2-bowtie1" or lc($aligner) eq "bowtie1-bowtie2"){
+		ReadSummary(
+		    aligner=>"bowtie1",
+			summary=>$summary_file,
+			statsfile=>$statsfile,
+			projectdir=>$projectdir,
+		);
+		ReadSummary(
+		    aligner=>"bowtie2",
+			summary=>$summary_file,
+			statsfile=>$statsfile,
+			projectdir=>$projectdir,
+		);
+	}
+	if(scalar(keys %$summary)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nAlignment [".$summary_path->{$aligner}."]\n";
+		print SUMM "Filename\tProcessed Reads\tAligned reads\tFailed to align\n";
+		foreach my $processed_file (sort keys %$summary){
+			print SUMM $processed_file ."\t". $summary->{$processed_file}."\n";
+		}
+		close SUMM;
+	}
+	if(scalar(keys %$summary_bw2)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nAlignment [".$summary_path->{$aligner}."]\n";
+		print SUMM "Filename\tProcessed Reads\tAligned reads\tMultimapping reads\tOverall alignment\tFail to align\n";
+		foreach my $processed_file (sort keys %$summary_bw2){
+			print SUMM $processed_file ."\t". $summary_bw2->{$processed_file}."\n";
+		}
+		close SUMM;
+	}
+}
 sub system_bash {
   my @args = ( "bash", "-c", shift );
   system(@args);
