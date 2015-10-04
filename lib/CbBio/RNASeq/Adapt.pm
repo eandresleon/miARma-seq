@@ -15,7 +15,6 @@ $|=1;
 @EXPORT=qw(CutAdapt CutAdaptStats AdaptTriming ReadFilter Minion Reaper AdapterRemoval AdapterGraph ReadLengthCount);
 
 use strict;
-use warnings;
 use DateTime;
 use LWP;
 use File::Basename;
@@ -118,6 +117,7 @@ sub AdapterRemoval{
 	my $statsfile=$args{"statsfile"}; #Path of stats.log file where stats data will be saved
 	my $miARmaPath=$args{"miARmaPath"};
 	my $adapter_file=$args{"adapter_file"};
+	my $summary_file=$args{"summary"}; #Path to file whre print basic results
 	#Declaring the variables to collect the path of the new files and the variables to control the function
 	my $cutadapt_result;
 	my $reaper_result;
@@ -155,30 +155,10 @@ sub AdapterRemoval{
 		warn("ADAPTERREMOVAL ERROR :: ".date()." Invalid value for adaptersoft ($adaptersoft). Allowed values are: cutadapt, reaper, adapttrimming, cutadapt-reaper, cutadapt-adapttrimming, reaper-adapttrimming or cutadapt-reaper-adapttrimming");
 		help_AdapterRemoval();
 	}
-	# if($cutadapt_exec == 1){
-	# 	#cheking than the optput dir is not aleready created
-	# 	if(-d $projectdir ."/cutadapt_results"){
-	# 		print STDERR "ERROR :: ".date()." The cutadapt_result folder is already created. If you have perfomed a previous cutadapt job, please rename the folder or deleted.\n";
-	# 		exit();
-	# 	}
-	# }
-	# if($reaper_exec == 1){
-	# 	#cheking than the optput dir is not aleready created
-	# 	if(-d $projectdir ."/Reaper_results"){
-	# 		print STDERR "ERROR :: ".date()." The Reaper_results folder is already created. If you have perfomed a previous Reaper job, please rename the folder or deleted.\n";
-	# 		exit();
-	# 	}
-	# }
-	# if($adaptrim_exec == 1){
-	# 	#cheking than the optput dir is not aleready created
-	# 	if(-d $projectdir ."/AdaptTriming_results"){
-	# 		print STDERR "ERROR :: ".date()." The AdaptTriming_results folder is already created. If you have perfomed a previous Trimming job, please rename the folder or deleted.\n";
-	# 		exit();
-	# 	}
-	# }
 	#reading all files
 	my $dir_used;
-	
+	my $summary_cut;
+	my $summary_rea;
 	#creating results folder
 	system("mkdir -p $projectdir");
 	foreach my $file (@$files){
@@ -283,10 +263,68 @@ sub AdapterRemoval{
 		  				verbose=>$verbose, 
 		  				logfile=> $logfile,
 		  				statsfile=>$statsfile,
+						summary=>$summary_file,
 		  			);
-					if($verbose){
-						print date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n";
+					
+					#Reading cutadapt results to summarize processed results
+					open(STAT,$statsfile) || die "$! : Cant' read $statsfile\n";
+	
+					my $file;
+					my $processed_reads;
+					my $processed_bases;
+					my $trimmed_reads;
+					my $trimmed_bases;
+					my $quality_trimmed="0 (0% of processed reads)";
+					my $too_short="0 (0% of processed reads)";
+					my $too_long="0 (0% of processed reads)";
+	
+					while(<STAT>){
+						chomp;
+						if($_ =~ /^Command line/){
+							my @split=split(/\s+/);
+							$file=fileparse($split[$#split]);
+							my $file;
+							my $processed_reads;
+							my $processed_bases;
+							my $trimmed_reads;
+							my $trimmed_bases;
+							my $quality_trimmed="0 (0% of processed reads)";
+							my $too_short="0 (0% of processed reads)";
+							my $too_long="0 (0% of processed reads)";
+						}
+						if($_ =~ /Processed reads:/){
+							$_ =~s/Processed reads:\s+(.*)//g;
+							$processed_reads=$1;
+						}
+						if($_ =~ /Processed bases:/){
+							$_ =~s/Processed bases:\s+(.*)//g;
+							$processed_bases=$1;
+						}
+						if($_ =~ /Trimmed reads:/){
+							$_ =~s/Trimmed reads:\s+(.*)//g;
+							$trimmed_reads=$1;
+						}
+						if($_ =~ /Quality-trimmed:/){
+							$_ =~s/Quality-trimmed:\s+(.*)//g;
+							$quality_trimmed=$1;
+						}
+						if($_ =~ /Trimmed bases:/){
+							$_ =~s/Trimmed bases:\s+(.*)//g;
+							$trimmed_bases=$1;
+						}
+						if($_ =~ /Too short reads:/){
+							$_ =~s/Too short reads:\s+(.*)//g;
+							$too_short=$1;
+						}
+						if($_ =~ /Too long reads:/){
+							$_ =~s/Too long reads:\s+(.*)//g;
+							$too_long=$1;		
+						}
+						if($file){
+							$summary_cut->{$file}="$processed_reads\t$processed_bases\t$trimmed_reads\t$trimmed_bases\t$quality_trimmed\t$too_short\t$too_long";
+						}
 					}
+					close STAT;
 				}
 				if($reaper_exec == 1){
 					#Optional parameters to perform the analysis are predefined as undef variables
@@ -343,7 +381,49 @@ sub AdapterRemoval{
 						file=>$stats_path,
 						dir=>$abs_path."/Reaper_results/"
 		  			);
-					print STDERR "\nADAPTERREMOVAL :: ".date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n";
+					print STDERR date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n" if($verbose);
+					
+					my $stat_file=$reaper_result;
+					$stat_file=~s/\.lane\.clean/\.sumstat/g;
+					
+					my $processed_reads=0;
+					my $accepted=0;
+					my $discarded=0;
+					my $trimmed_bases=0;
+					my $quality_trimmed=0;
+					my $too_short=0;
+					open(STAT,$stat_file) || die "$! : Cant $stat_file\n";
+					while(<STAT>){
+						chomp;
+						if($_ =~ /^total_input=/){
+							$_=~s/total_input=(.*)//g;
+							$processed_reads=$1;
+						}
+						if($_ =~ /^total_accepted=/){
+							$_=~s/total_accepted=(.*)//g;
+							$accepted=$1;
+						}
+						if($_ =~ /^total_discarded=/){
+							$_=~s/total_discarded=(.*)//g;
+							$discarded=$1;
+						}
+						if($_ =~ /^discarded_length_cutoff=/){
+							$_ =~s/discarded_length_cutoff=(.*)//g;
+							$too_short=$1;
+						}
+						if($_ =~ /^bases_removed_by_quality=/){
+							$_ =~s/bases_removed_by_quality=(.*)//g;
+							$quality_trimmed=$1;		
+						}
+						if($_ =~ /^discarded_low_complexity=/){
+							$_ =~s/discarded_low_complexity=(.*)//g;
+							$trimmed_bases=$1;		
+						}
+						if($file){
+							$summary_rea->{$file}="$processed_reads\t$accepted\t$discarded\t$too_short\t$quality_trimmed\t$trimmed_bases";
+						}
+					}
+					close STAT;
 					
 				}
 				if($adaptrim_exec == 1){
@@ -370,7 +450,7 @@ sub AdapterRemoval{
 						projectdir=>$projectdir
 					);
 					push (@adapter_results, $reaper_result);
-					print STDERR "\nADAPTERREMOVAL :: ".date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n";
+					print STDERR date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n" if($verbose);
 					
 				}
 		  	}else{
@@ -388,6 +468,27 @@ sub AdapterRemoval{
 			warn("ADAPTERREMOVAL ERROR :: ".date()." Directory($dir), projectdir($projectdir), file($file), statsfile($statsfile) and/or logfile($logfile) have not been provided");
 			help_AdapterRemoval();
 		}
+	}
+
+	#Printing summary results
+	if(scalar(keys %$summary_cut)>0 and $cutadapt_exec==1){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nAdapter Removal [".$projectdir."/cutadapt_result]\n";
+		print SUMM "Filename\tProcessed Reads\tProcessed Bases\tTrimmed reads\tTrimmed bases\tQuality-Discarded\tToo short reads\tToo long reads\n";
+		foreach my $processed_file (sort keys %$summary_cut){
+			print SUMM $processed_file ."\t". $summary_cut->{$processed_file}."\n";
+		}
+		close SUMM;
+	}
+	
+	if(scalar(keys %$summary_rea)>0 and $reaper_exec==1){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nAdapter Removal [".$projectdir."/Reaper_results]\n";
+		print SUMM "Filename\tProcessed Reads\tAccepted Reads\tDiscarded Reads\tSize-Discarded\tQuality-Discarded\tLow Complexity-Discarded\n";
+		foreach my $processed_file (sort keys %$summary_rea){
+			print SUMM $processed_file ."\t". $summary_rea->{$processed_file}."\n";
+		}
+		close SUMM;
 	}
 	#Returning the names of the new files
 	
@@ -701,7 +802,7 @@ sub CutAdapt{
 	my $min_quality=0;
 	#If user has provided the minimun or maximum length will be collected by args and
 	#the min and max variables will be overwritten
-	if(defined $args{"min"}){
+	if($args{"min"}){
 		$min=$args{"min"};
 	}
 	if(defined $args{"max"}){
@@ -766,6 +867,12 @@ sub CutAdapt{
 			chomp;
 			my ($current_file,$adapter)=split(/\t/);
 			if($current_file eq $file){
+				$current_adapter=$adapter;
+			}
+			if($current_file eq $file.".bz2"){
+				$current_adapter=$adapter;
+			}
+			if($current_file eq $file.".gz"){
 				$current_adapter=$adapter;
 			}
 		}
@@ -885,6 +992,7 @@ sub CutAdapt{
 
 sub CutAdaptStats{
 
+	use File::Basename;
 	#Arguments provided by user are collected by %args. Dir, readstart,statsfile and logfile
 	#are mandatory arguments while verbose is optional.
 	my %args=@_;
@@ -893,7 +1001,7 @@ sub CutAdaptStats{
 	my $logfile=$args{"logfile"}; # Path of the logfile to write the execution data
 	my $inputfile=$args{"inputfile"}; #Fastq file before adapter removal
 	my $outputfile=$args{"outputfile"}; #Fastq file after adapter removal
-	
+	my $summary_file=$args{"summary"}; #Path to file whre print basic results
 	#Variable declaration
 	my $readstart;
 	my $firstline=0;
@@ -902,77 +1010,10 @@ sub CutAdaptStats{
 	my $pre;
 	my $post;
 	
+	#print STDERR "Recibo in $inputfile y out $outputfile\n";
 	#Checking mandatory parameters
 	if($inputfile and $outputfile and $logfile and $statsfile){
-		#Obtaining the begining of the reads
-		open(OUTPUT, $outputfile) || die "CUTADAPTSTATS ERROR :: ".date()."Can't open '$outputfile': $!";
-		while(<OUTPUT>){
-			#Deleting the last character (\n)
-			chomp;
-			if($_ =~ /^(@.{3,4})/ and $firstline == 0){
-				$readstart= $1;
-				$firstline=1; 
-			}
-		}
-		close OUTPUT;
-
-		if($inputfile){
-			#Command of search of the initial string in each file
-			my $command;
-			#In linux machines, zmore doesnt not uncompress bzfiles, so we do it always with bzcat
-			if($inputfile =~ /\.bz2$/){
-				$command= "bzcat  $inputfile | grep -c $readstart";
-			}
-			else{
-				$command= "zmore  $inputfile | grep -c $readstart";
-			}
-			#Executing the command and retaining the value 
-			my $value=`$command`;
-    		chomp($value);
-    		#The number of input reads is saved in the hash %reads. This hash has 2 
-    		#dimensions, the first dimension corresponds with the file name and the 
-    		#second dimension corresponds with the tag pre. In first dimension, .fastq
-    		#is added to equalise the first dimension of input and output files.
-			#In case is compressed
-    		#my($filename, $dirs, $suffix) = fileparse($inputfile); 
-    		$reads{$inputfile}{"pre"}=$value;
-   		}
 		
-		if($outputfile){
-			#Command of search of the initial string in each file
-			my $command= "zmore $outputfile | grep -c $readstart";
-			#Executing the command and retaining the value
-			my $value=`$command`;
-    		chomp($value);
-    		#The number of input reads is saved in the hash %reads. This hash has 2 
-    		#dimensions, the first dimension corresponds with the file name and the 
-    		#second dimension corresponds with the tag post. 
-    		$reads{$inputfile}{"post"}=$value;
-    	}
-    	
-    	#The statistical data is printed on logfile provided by user. Opening the log file.
-   		open(STATS,">> ".$statsfile) || die "CUTADAPTSTATS ERROR :: ".date()."Can't open '$statsfile': $!";
-   		#Printing the function and the date
-    	print STATS "CUTADAPTSTATS :: ".date()."\n";
-    	
-        #Accessing to the first dimension of the hash. The values are sorted by the file 		
-    	foreach my $dimension(sort {$a cmp $b}keys %reads){
-    		#As input and output file has the same name, accessing to the first dimension
-    		#we can obtain the pre and post values for each file. 
-    		my $pre=$reads{$dimension}{"pre"};
-    		my $post=$reads{$dimension}{"post"};
-    		#Percent variable collects the value of the number of conserved reads, which is
-    		#calculated as the percent between the reads before and after the analysis. This 
-    		#percent is shown with 2 decimals. 
-    		my $percent= sprintf("%.2f", (($post*100)/$pre)); 
-    		#Printing the information in stats.log file		
-			print STATS $dimension."\t".$pre."\t".$post."\t Reads= ".$percent."%"."\n";
-			#If verbose option has been provided program will print the data on screen too.
-			if($verbose){
-				print STDOUT $dimension."\t".$pre."\t".$post."\t Reads=".$percent."%"."\n";
-			}
-		}
-		close STATS;
 	}
     else{
     	#Registering error
@@ -1069,15 +1110,13 @@ sub AdaptTriming{
 			#}
 		##Checking the file extension
 		#elsif($file =~ /.*\.fastq$/ or $file =~ /.*\.fastq.gz$/ or $file =~ /.*\.fq$/ or $file =~ /.*\.fq.gz$/ or $file =~ /.*\.fq.bz2$/ or $file =~ /.*\.fastq.bz2$/){
-			print STDERR "ADAPTTRIMING :: ".date()." Trimming $trimmingnumber nt of the $readposition end of $file\n";
+			print STDERR date()." Trimming $trimmingnumber nt of the $readposition end of $file\n" if($verbose);
     		
 			#Printing process information
 			open(LOG,">> ".$logfile) || die "ADAPTTRIMING ERROR :: ".date()."Can't open '$logfile': $!";
     		print LOG "ADAPTTRIMING :: ".date()." Trimming $trimmingnumber nt of the $readposition end of $file\n";
     		#If verbose option has been provided program will print the data on screen too.
-    		if($verbose){
-				print STDOUT "ADAPTTRIMING :: ".date()." Trimming $trimmingnumber nt of the $readposition end of $file\n";
-			}
+    		
 			close LOG;
 			#Defining the results directory
 			my $output_dir= $projectdir."/AdaptTriming_results/";
@@ -1463,7 +1502,7 @@ sub Minion{
 	if($file and $logfile and $statsfile and $dir and $organism){
 
 		##Printing the process information
-		print STDOUT "MINION :: ".date()." Predicting an adapter sequence for $file \n";
+		print STDOUT date()." Predicting an adapter sequence for $file \n" if($verbose);
 
 		if(!exists($orgDB->{$organism})){
 			print STDERR "MINION :: The provided organism ($organism) is not compatible with our software (". join(",",(keys %$orgDB)) . ").\n Please write an email to miARma-devel\@cbbio.es to include it\n\n";
@@ -1486,13 +1525,13 @@ sub Minion{
 		#Defining the execution command
 		my $bzfiles;
 		if($file =~ /\.bz2$/){
-			$bzfiles="bunzip2 -c  $dir/$file | minion search-adapter $minionparameters ";
+			$bzfiles="bunzip2 -c  $dir/$file | minion search-adapter $minionparameters";
 		}
 		else{
-			$bzfiles="minion search-adapter -i ".$dir."/".$file.$minionparameters;
+			$bzfiles="minion search-adapter -i ".$dir."/".$file.$minionparameters ;
 		}
 
-		my $command="$bzfiles  | tee /tmp/minion.sq >> ".$statsfile;
+		my $command="$bzfiles  1>/tmp/minion.sq 2>> ".$statsfile;
 		#Executing the command
 		system($command) == 0
 		or die "MINION ERROR :: system args failed: $? ($command)";
@@ -1533,14 +1572,15 @@ sub Minion{
 
 		my $number_possible_results=scalar(keys %$results);
 		if($number_possible_results==0){
-			print STDERR "MINION ERROR :: Minion predictions for $file didn't comply our requeriments\n";
-			exit;
+			print STDERR date(). " MINION ERROR :: Minion predictions for $file didn't comply our requeriments\n";
+			next;
 		}
 		#Performing Blat analysis with the predicted adapters
 		my $adapter=BlatResults(
 			results=>$results,
 			org=>$organism,
-			orgDB=>$orgDB->{$organism}
+			orgDB=>$orgDB->{$organism},
+			verbose=>$verbose
 		);
 		if($adapter){
 			return($adapter);
@@ -1618,7 +1658,7 @@ sub BlatResults{
 	my $org=$args{"org"}; #Organism to blat with
 	my $dB=$args{"orgDB"}; #Genomic build to be used
 	my $ok=0; #Checking results
-
+	my $verbose=$args{"verbose"};
 	#Establishing conditions to conect Blat server
 	my $browser = LWP::UserAgent->new;
 
@@ -1629,9 +1669,9 @@ sub BlatResults{
 			foreach my $criteria (keys %{$results->{$pred}}){
 				my $sequence=$results->{$pred}->{$criteria};
 				if($criteria eq "sequence-density" and length($sequence)>=20){
-					print STDERR "MINION :: Checking $sequence\n";
+					print STDERR "MINION :: Checking $sequence\n" if($verbose);
 					#Printing process information
-					print STDOUT "MINION :: " . date() . " Checking $pred prediction against ".$org.":".$dB." genome based on $criteria criteria\n";
+					print STDOUT "MINION :: " . date() . " Checking $pred prediction against ".$org.":".$dB." genome based on $criteria criteria\n" if($verbose);
 					#Establishing the Blat web address 
 					my $URL = "http://genome.ucsc.edu/cgi-bin/hgBlat";
 
@@ -1659,7 +1699,7 @@ sub BlatResults{
 								my $data=$_;
 								$data =~s/.* (YourSeq.*)/$1/g;
 								my (undef,$score,undef,undef,undef,$identity,$chr,$strand,$start,$end)=split(/\s+/,$data);
-								print STDOUT "Your sequence is mapped to the following genomic Coordinates : [$chr:$start-$end;$strand], identity:$identity, score:$score\n";
+								print STDOUT "Your sequence is mapped to the following genomic Coordinates : [$chr:$start-$end;$strand], identity:$identity, score:$score\n" if($verbose);
 								#print STDOUT "So, returning :" . $results->{$pred +1}->{"fanout-score"} ."\n";								
 								#return($results->{$pred +1}->{"fanout-score"});
 								next;
@@ -1819,7 +1859,7 @@ sub Reaper{
 			#}
 		#elsif($file =~ /.*\.fastq$/ or $file=~ /.*\.fq$/ or $file=~ /.*\.fastq\.gz$/ or $file=~ /.*\.fq\.gz$/){
 			#Printing process data on screen
-			print STDERR "REAPER :: ".date()." Checking $file for Reaper analysis\n";
+			print STDERR date()." Checking $file for Reaper analysis\n" if($verbose);
 			#Extracting the name of the file
 			my $name=fileparse($file, qr{\.f.*});
 			
