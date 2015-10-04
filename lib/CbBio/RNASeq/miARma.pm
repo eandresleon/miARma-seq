@@ -195,6 +195,14 @@ sub run_miARma{
 		help_check_general();
 	}
 	
+	#Summary of results
+	my $summary_file= $cfg->val("General","output_dir"). "/summary_results_" . $cfg->val("General","label") ."_miARma.xls";
+	if(!-e $summary_file){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM date(). " Summary for " . $cfg->val("General","label") . ". ". $cfg->val("General","type") ." analysis using miARma.\n";
+		close SUMM;
+	}
+	
 	#Quality section
 	if($cfg->SectionExists("Quality")==1){
 		#Mandatory parameters: label
@@ -226,6 +234,7 @@ sub run_miARma{
 				$post_qual=0;					
 			}
 			
+			my $processed_files;
 			#run quality;
 			use CbBio::RNASeq::Quality;
 			if($dir){
@@ -235,11 +244,16 @@ sub run_miARma{
 					@files=map("$dir/$_",@files);
 					my $output_dir;
 				
+					open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+					print SUMM "\nQuality [".$dir."/Pre_fastqc_results]\n";
+					close SUMM;
+					
 					# # FASTQC EXECUTION
 					# # Reading the array with the names of the files
 					print date()." Starting Quality Analysis.\n";
 					foreach my $file(@files){
 						#Calling FastQC subroutine of Quality.pm package.
+						$processed_files->{$file}++;
 						$output_dir=FastQC(
 							miARmaPath=>$miARmaPath,
 							file=>$file,
@@ -258,6 +272,7 @@ sub run_miARma{
 						verbose=>$cfg->val("General","verbose") || 0,
 						statsfile=>$stat_file || $cfg->val("General","stats_file"),
 						logfile=>$log_file || $cfg->val("General","logfile"),
+						summary=>$summary_file
 					);
 					print date()." Quality Analysis finished.\n";
 				}
@@ -298,6 +313,8 @@ sub run_miARma{
 			check_input_format(-files=>\@files,-dir=>$dir);
 
 			print date()." Starting a Adapter removal analysis\n";
+			
+			@files=sort(@files);
 			my @files_adapter=AdapterRemoval(
 				adaptersoft=>$cfg->val("Adapter","adaptersoft"),
 				dir=>$dir,
@@ -308,8 +325,8 @@ sub run_miARma{
 				statsfile=>$stat_file || $cfg->val("General","stats_file"),
 				verbose=>$cfg->val("General","verbose")|| 0,
 				projectdir=>$cfg->val("General","output_dir"),
-				min=>$cfg->val("Adapter","min")|| undef,,
-				max=>$cfg->val("Adapter","max")|| undef,,
+				min=>$cfg->val("Adapter","min")|| 15,
+				max=>$cfg->val("Adapter","max")|| 35,
 				min_quality=>$cfg->val("Adapter","min_quality")|| undef,
 				miARmaPath=>$miARmaPath,
 				reaperparameters=>$cfg->val("Adapter","reaperparameters") || undef,
@@ -322,7 +339,9 @@ sub run_miARma{
 				metafile=>$cfg->val("Adapter","metafile")|| undef,
 				reaperparameters=>$cfg->val("Adapter","metafile")|| undef,
 				geom=>$cfg->val("Adapter","geom")|| undef,
-				tabu=>$cfg->val("Adapter","tabu")|| undef,			
+				tabu=>$cfg->val("Adapter","tabu")|| undef,
+				summary=>$summary_file,
+							
 			);
 			print date()." Adapter Analysis finished.\n";
 				
@@ -330,6 +349,9 @@ sub run_miARma{
 			if($post_qual==1){
 				print date()." Starting a Post Quality Analysis\n";
 				my $output_dir_post;
+				open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+				print SUMM "\nQuality [".$dir."/Post_fastqc_results]\n";
+				close SUMM;
 				foreach my $processed_files(@files_adapter){
 					$output_dir_post=FastQC(
 						miARmaPath=>$miARmaPath,
@@ -348,6 +370,7 @@ sub run_miARma{
 					verbose=>$cfg->val("General","verbose") || 0,
 					statsfile=>$stat_file || $cfg->val("General","stats_file"),
 					logfile=>$log_file || $cfg->val("General","logfile"),
+					summary=>$summary_file
 				);
 				print date()." Post Quality Analysis finished.\n";
 			}
@@ -442,7 +465,7 @@ sub run_miARma{
 					push(@files,map("$trim_dir$_",@trim_files));
 				}
 				if(!-e $cut_dir and !-e $rea_dir and !-e $trim_dir){
-					print STDERR "miARma :: ".date()." No processed files are found [neither cutadapt, nor reaper nor adaptrimming folders], assuming " .$cfg->val("General","read_dir").  " are already processed\n";
+					print STDERR date()." No processed files are found [neither cutadapt, nor reaper nor adaptrimming folders], assuming " .$cfg->val("General","read_dir").  " are already processed\n";
 					my $dir_reads_all=$cfg->val("General","read_dir");
 					if(-e $dir_reads_all){
 						opendir(READIR, $dir_reads_all) || die " No reads found to process\n";
@@ -519,10 +542,11 @@ sub run_miARma{
 			check_input_format(-files=>\@files,-dir=>"",-log=>$log_file,config=>$cfg);
 			
 			if(scalar(@files)>0){
+				my @alignes;
 				print STDERR date()." Starting a \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis\n";
 				# Reading the array with the names of the files
-				foreach my $file( sort @files){
-					ReadAligment(
+				foreach my $file(sort @files){
+					my $aligned_file=ReadAligment(
 					    file=>$file,
 					    aligner=>$cfg->val("Aligner","aligner"),
 						threads=>$cfg->val("General","threads") || 1,
@@ -547,10 +571,18 @@ sub run_miARma{
 						tophat_seg_length=>$cfg->val("Aligner","tophat_seg_length") || undef,
 						library_type=>$libray_type || "fr-firststrand",
 						tophat_multihits=>$cfg->val("Aligner","tophat_multihits") || undef,
-						read_mismatches=>$cfg->val("Aligner","read_mismatches") || undef,
+						read_mismatches=>$cfg->val("Aligner","tophat_read_mismatches") || undef,
 						tophat_aligner=>$cfg->val("Aligner","tophat_aligner") || undef,
 					);
+					push(@alignes,$file);
 				}
+				
+				ReadSummary(
+				    aligner=>$cfg->val("Aligner","aligner"),
+					summary=>$summary_file,
+					statsfile=>$stat_file|| $cfg->val("General","stats_file"),
+					projectdir=>$cfg->val("General","output_dir")|| undef,
+				);
 				print STDERR date()." \"".$cfg->val("Aligner","aligner")."\" Alignment Analysis finished\n";
 				
 			}
@@ -616,7 +648,12 @@ sub run_miARma{
 						logfile=>$log_file || $cfg->val("General","logfile"),
 						verbose=>$cfg->val("General","verbose") || 0,
 					  );
-					  
+					  featureSummary(
+				  		projectdir=>$cfg->val("General","output_dir")|| undef,
+						logfile=>$log_file || $cfg->val("General","logfile"),
+					  	summary=>$summary_file,
+					  );
+					
   					print STDERR date()." Readcount Analysis finished.\n";
 				}
 				else{
@@ -968,7 +1005,7 @@ sub check_input_data{
 					exit;
 				}
 			}
-			if($parameter_type->{$parametro} eq "path_dir"){
+			if($parameter_type->{$parametro} eq "path_dir" and !$check_input){
 				if(-e $cfg->val($section,$parametro)){
 					print date()." Checking $section-$parametro parameter ... Exists!\n".date()." The folder specified in ($parametro=".$cfg->val($section,$parametro).") already exists.\n". date(). " Wait 5 seconds to overwrite the folder. Cancel otherwise:\t";
 					for (my $var = 5; $var >=0; $var--){
@@ -1305,7 +1342,7 @@ sub print_header{
 	system("clear");
 	print "#########################################################################	
 #   miARma, miRNA and RNASeq Multiprocess Analysis			#
-#                miARma v 1.0.3 (Sep-2015)                              #
+#                miARma v 1.1.0 (Oct-2015)                              #
 #               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
