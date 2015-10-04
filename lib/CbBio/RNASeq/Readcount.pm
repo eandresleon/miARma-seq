@@ -11,7 +11,7 @@ package CbBio::RNASeq::Readcount;
 require Exporter;
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(featureCount featureFormat CIRICount CIRIFormat miRDeepCount miRDeepFormat);
+@EXPORT=qw(featureCount featureFormat CIRICount CIRIFormat miRDeepCount miRDeepFormat featureSummary);
 
 use strict;
 use File::Basename;
@@ -183,7 +183,7 @@ sub featureCount{
 			my $output_dir="/".$prefix."_readcount_results/";
 
 			#htseq-count execution command
-			$command="featureCounts ".$htseqpardef." -a ".$database." -o ".$projectdir.$output_dir.$name.".tab " . $file ;
+			$command="featureCounts -M -O ".$htseqpardef." -a ".$database." -o ".$projectdir.$output_dir.$name.".tab " . $file ;
 			#commandef is the command will be executed by system composed of the results directory creation 
 			#and the htseq_count execution. The error data will be printed on the run.log file
 			$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." 2>> ".$logfile;;
@@ -1091,6 +1091,66 @@ sub miRDeepFormat{
 	print STDERR $usage;
 	exit(); 
 	}  	
+}
+
+sub featureSummary{
+	use File::Basename;
+	
+	#Arguments provided by user are collected by %args. Dir and input are mandatory arguments.
+	my %args=@_;
+	my $input=$args{"input"}; #Input is an referenced array with the paths of the files which have to be joined
+	my $projectdir=$args{"projectdir"}; #Directory to create the output file
+	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
+	my $summary_file=$args{"summary"};
+	
+	open(STAT,$logfile);
+	my $real_file;
+	my $processed;
+	my $assigned;
+	my $strand;
+	my $summary;
+	my $summary_path=$projectdir ."/Readcount_results/";
+	
+	while(<STAT>){
+		chomp;
+		if($_ =~/^SEQCOUNT :/){
+			if($_ =~/Reading counts from/){
+				my $file=$_;
+				my @data=split(/\s+/);
+				$real_file=fileparse($data[$#data]);
+				$processed=0;
+				$assigned=0;
+				$strand="";
+			}
+		}
+		if($_ =~ /Strand specific/){
+			$strand=$_;
+			$strand=~s/.*Strand specific : (.+)\s+.*/$1/g;
+		}
+		if($_ =~ /Total reads/){
+			$processed=$_;
+			$processed=~s/.*Total reads : (\d+).*/$1/g;
+		}
+		if($_ =~ /Successfully assigned/){
+			$assigned=$_;
+			$assigned=~s/.*Successfully assigned reads : (\d+) (\(\d+\.\d+%\)).*/$1 $2/g;
+		}
+		
+		if($real_file and $assigned){
+			$summary->{$real_file}="$processed\t$assigned\t$strand";
+		}
+	}
+	close STAT;
+	
+	if(scalar(keys %$summary)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nReadCount [".$summary_path."]\n";
+		print SUMM "Filename\tProcessed Reads\tAssigned reads\tStrand\n";
+		foreach my $processed_file (sort keys %$summary){
+			print SUMM $processed_file ."\t". $summary->{$processed_file}."\n";
+		}
+		close SUMM;
+	}
 }
 
 sub date{
