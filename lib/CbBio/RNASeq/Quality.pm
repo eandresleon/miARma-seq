@@ -235,7 +235,7 @@ sub FastQCStats{
 	my $verbose=$args{"verbose"}; #Optional parameter to show the stats data on the screen
 	my $statsfile=$args{"statsfile"}; #Path of stats.log file where stats data will be printed
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be printed
-	
+	my $summary_file=$args{"summary"}; #Path to file whre print basic results
 	#Variable declaration
 	my @filesres; 
 	
@@ -245,6 +245,8 @@ sub FastQCStats{
 		opendir(DIRRES, $dir) || die "FASTQCSTATS ERROR :: Can't open $dir : $!";
 		my @filesres=readdir(DIRRES);
 		#Accessing to each directory
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "Filename\tNumber of reads\t\%GC Content\tRead Length\tEncoding\n";
 		foreach my $fileres(@filesres){
 			#Declaring variables to keep the stats 
 			my $seqnumber=0;
@@ -328,6 +330,9 @@ sub FastQCStats{
 				Total Sequences:\t $seqnumber\t Sequence length:\t $seqlength\n 
 				Encoding:\t $encoding\t GCcontent:\t $gc%\n";
 				close STATS;
+				
+				
+				print SUMM "$fileres\t$seqnumber\t$gc%\t$seqlength\t$encoding\n";
 				#If verbose option has been provided program will print the previous variables
 				# on screen too. 
 				if($verbose){
@@ -341,6 +346,7 @@ sub FastQCStats{
 			}
 		}
 		#print STDERR "FASTQC :: ".date()." Please check $dir for detailed quality information about each sample.\nA summary can be consulted in $statsfile\n";
+		close SUMM;
 	}
 	else
 	{
