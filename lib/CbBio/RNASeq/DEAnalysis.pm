@@ -12,7 +12,7 @@ package CbBio::RNASeq::DEAnalysis;
 require Exporter;
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(DE_noiseq DE_EdgeR DE_Analysis);
+@EXPORT=qw(DE_noiseq DE_EdgeR DE_Analysis DE_AnalysisSummary QC_EdgeR);
 
 use strict;
 use DateTime;
@@ -1058,6 +1058,126 @@ EOF
 	}  	
 }
 
+sub DE_AnalysisSummary{
+	use File::Basename;
+	#Arguments provided by user are collected by %args. Dir, file, aligner, statsfile, projectdir 
+	#and logfile are mandatory arguments while verbose and threads are optional.
+	my %args=@_;
+	my $summary_file=$args{"summary"}; #Path of the logfile to write the execution data
+	my $projectdir=$args{"projectdir"}; #Optional arguments to show the execution data on screen
+	my $DEsoft=$args{"DEsoft"}; #Input directory where results directory will be created
+	my $contrastfile=$args{"contrastfile"};
+	my $comparisons;
+	open(TARGET,$contrastfile) || warn date() . " WARN :: contrastfile ($contrastfile) is missing\n";
+	while(<TARGET>){
+		chomp;
+		$_=~s/\"//g;
+		if($_ !~ /Name/){
+			my($comp,$form)=split(/=/);
+			$comparisons->{$comp}++;
+		}
+	}
+	close TARGET;
+	my $summary_edger;
+	my $summary_noi;
+	
+	if(lc($DEsoft) eq "edger"){
+		opendir(EGDER, $projectdir ."/EdgeR_results/") || warn "DEAnalysis:: Folder \"$projectdir/EdgeR_results/\" is not found\n"; 
+		my @edgeR_files= readdir(EGDER);
+		foreach my $edge_files (sort @edgeR_files){
+			if($edge_files =~ /\.xls$/){				
+				foreach my $comp (sort keys $comparisons){
+					if($edge_files =~ /$comp/){
+						open(EDGEFILE,$projectdir ."/EdgeR_results/$edge_files") || die "$! $projectdir/EdgeR_results/$edge_files";
+						my $cont_pval=0;
+						my $cont_fdr=0;
+						while(<EDGEFILE>){
+							chomp;
+							$_=~s/\"//g;
+							if($_ !~ /logFC/){
+								my @data=split(/\t/);
+								if($data[3]<=0.05){
+									$cont_pval++;
+								}
+								if($data[4]<=0.05){
+									$cont_fdr++;
+								}
+							}
+						}
+						close EDGEFILE;
+						$summary_edger->{$comp}->{$edge_files}->{$cont_pval}=$cont_fdr;
+					}
+				}
+			}
+		}
+	}
+	if(lc($DEsoft) eq "noiseq"){
+		my $summary;
+		opendir(NOISEQ, $projectdir ."/Noiseq_results/") || warn "DEAnalysis:: Folder \"$projectdir/Noiseq_results/\" is not found\n"; 
+		my @Noiseq_files= readdir(NOISEQ);
+		foreach my $Noiseq_files (sort @Noiseq_files){
+			if($Noiseq_files =~ /\.xls$/){
+				foreach my $comp (sort keys $comparisons){
+					if($Noiseq_files =~ /$comp/){
+						open(NOIFILE,$projectdir ."/Noiseq_results/$Noiseq_files");
+						my $cont_pval=0;
+						while(<NOIFILE>){
+							chomp;
+							$_=~s/\"//g;
+							if($_ !~ /prob/){
+								my @data=split(/\t/);
+								if($data[5]>0.8){
+									$cont_pval++;
+								}
+							}
+						}
+						close NOIFILE;
+						$summary_noi->{$comp}->{$Noiseq_files}=$cont_pval;
+					}
+				}
+			}
+		}
+	}
+	if(lc($DEsoft) eq "noiseq-edger" or lc($DEsoft) eq "edger-noiseq" ){
+		DE_AnalysisSummary(
+		  	projectdir=>$projectdir,
+			DEsoft=>"edger",
+			summary=>$summary_file,
+			contrastfile=>$contrastfile,
+		);
+		DE_AnalysisSummary(
+		  	projectdir=>$projectdir,
+			DEsoft=>"noiseq",
+			summary=>$summary_file,
+			contrastfile=>$contrastfile,
+		);
+	}
+	
+	if(scalar(keys %$summary_edger)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nDifferential Expression Analysis by edgeR [".$projectdir ."/EdgeR_results/]\n";
+		print SUMM "Comparison\tFile\tNumber of DE elements (Pval <=0.05)\tNumber of DE elements (FDR <=0.05)\n";
+		foreach my $comp (sort keys $summary_edger){
+			foreach my $file (sort keys %{$summary_edger->{$comp}}){
+				foreach my $pval (sort keys %{$summary_edger->{$comp}->{$file}}){
+					print SUMM $comp ."\t$file\t$pval\t". $summary_edger->{$comp}->{$file}->{$pval}."\n";
+				}
+			}
+		}
+		close SUMM;
+	}
+	if(scalar(keys %$summary_noi)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nDifferential Expression Analysis by NoiSeq [".$projectdir ."/Noiseq_results/]\n";
+		print SUMM "Comparison\tFile\tNumber of DE elements (Prob >=0.8)\n";
+		foreach my $comp (sort keys $summary_noi){
+			foreach my $file (sort keys %{$summary_noi->{$comp}}){
+				print SUMM $comp ."\t$file\t". $summary_noi->{$comp}->{$file}."\n";
+			}
+		}
+		close SUMM;
+	}
+}
 sub date{
 	#my $dt = DateTime->now(time_zone=>'local');
 	#return($dt->hms . " [" . $dt->dmy ."]");
