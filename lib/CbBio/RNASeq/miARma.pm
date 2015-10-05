@@ -887,6 +887,13 @@ sub run_miARma{
 						qvalue=>$cfg->val("DEAnalysis","qvalue") || undef,						
 					);
 				}
+				
+				DE_AnalysisSummary(
+				  	projectdir=>$cfg->val("General","output_dir")|| undef,
+					DEsoft=>$cfg->val("DEAnalysis","desoft")|| undef,
+					summary=>$summary_file,
+					contrastfile=>$cfg->val("DEAnalysis","contrastfile"),
+				);
 			}
 			else{
 				print "ERROR :: Please check that your tab files are saved in: ($read_count_dir / $denovo_dir)\n";
