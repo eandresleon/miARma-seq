@@ -186,7 +186,6 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   for (a in 2:length(colnames(data))){
     number<-check_parameter(data[,a])
     if(number>1){
-      cat(paste("mi linetype es: ",lineformat[a],"\n",sep=""))
   	  lines(density(log10(data[,a])),col=boxcol[a], lwd=1.5, lty=lineformat[a])
     }
   }
