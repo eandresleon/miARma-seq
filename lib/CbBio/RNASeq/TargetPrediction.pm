@@ -604,10 +604,6 @@ sub TargetPrediction_Summary{
 	opendir ( DIR, $dirname ) || die "Error in opening dir $dirname\n";
 	my @files= readdir DIR;
 	
-	open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n\n";
-	print SUMM "miRNA-mRNA Target Predictions by miRGate [$dirname]\n";
-	#print SUMM "File\tNumber of DE elements (Pval <=0.05)\tNumber of DE elements (FDR <=0.05)\n";
-
 	my $miRNAs;
 	my $genes;
 		
@@ -643,33 +639,39 @@ sub TargetPrediction_Summary{
 	}
 	my $cont=0;
 	
-	print SUMM "\nmiRNAs with more associations\n";
-	print SUMM "File\tmiRNA\tNumber of associations\n";
-	foreach my $file (sort keys %$miRNAs){
-		foreach my $miRNA (sort {$miRNAs->{$file}->{$b} <=> $miRNAs->{$file}->{$a}} keys %{$miRNAs->{$file}}){
-			last if($cont==5);
-			$cont++;
-			print SUMM "$file\t$miRNA\t" . $miRNAs->{$file}->{$miRNA} ."\n";
+	if(scalar(keys %$miRNAs)>0 and scalar(keys %$genes)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n\n";
+		print SUMM "\nmiRNA-mRNA Target Predictions by miRGate [$dirname]\n";
+		#print SUMM "File\tNumber of DE elements (Pval <=0.05)\tNumber of DE elements (FDR <=0.05)\n";
+	
+		print SUMM "\nmiRNAs with more associations\n";
+		print SUMM "File\tmiRNA\tNumber of associations\n";
+		foreach my $file (sort keys %$miRNAs){
+			foreach my $miRNA (sort {$miRNAs->{$file}->{$b} <=> $miRNAs->{$file}->{$a}} keys %{$miRNAs->{$file}}){
+				last if($cont==5);
+				$cont++;
+				print SUMM "$file\t$miRNA\t" . $miRNAs->{$file}->{$miRNA} ."\n";
+			}
+			print SUMM "\n";
 		}
-		print SUMM "\n";
-	}
 	
-	print SUMM "\nGenes more regulated\n";
-	print SUMM "File\tGeneName\tNumber of associations\n";
-	my $cont=0;
-	
-	foreach my $file (sort keys %$genes){
-		############# Most Targeted genes ############
+		print SUMM "\nGenes more regulated\n";
+		print SUMM "File\tGeneName\tNumber of associations\n";
 		my $cont=0;
-		foreach my $GeneName (sort {$genes->{$file}->{$b} <=> $genes->{$file}->{$a}} keys %{$genes->{$file}}){
-			last if($cont==5);
-			$cont++;
-			my @miRs;
-			print SUMM "$file\t$GeneName\t" . $genes->{$file}->{$GeneName} ."\n";
+	
+		foreach my $file (sort keys %$genes){
+			############# Most Targeted genes ############
+			my $cont=0;
+			foreach my $GeneName (sort {$genes->{$file}->{$b} <=> $genes->{$file}->{$a}} keys %{$genes->{$file}}){
+				last if($cont==5);
+				$cont++;
+				my @miRs;
+				print SUMM "$file\t$GeneName\t" . $genes->{$file}->{$GeneName} ."\n";
+			}
+			print SUMM "\n";
 		}
-		print SUMM "\n";
+		close SUMM;
 	}
-	close SUMM;
 	closedir(DIR);
 }
 
