@@ -13,7 +13,7 @@ package CbBio::RNASeq::TargetPrediction;
 require Exporter;
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(TargetPrediction );
+@EXPORT=qw(TargetPrediction TargetPrediction_Summary);
 
 use strict;
 use LWP;
@@ -70,7 +70,8 @@ TargetPredictionTriming, Minion, Reaper, TargetPredictionerGraph and ReadLengthC
 
   Returntype : Fastq files and plots with reads distribution at directory CutTargetPrediction_results, Reaper_results and/or TargetPredictionTrimming_results. 
   TargetPredictionerRemoval also return the paths of the new generated files
-  Requeriments: cutTargetPrediction function requires for a correct analysis:
+  Requeriments: cutTargetPrediction function requires for a correct analysis:	my @files= readdir DIR;
+
   	- Perl v5.10.0 or higher software correctly installed
   	- CutTargetPrediction v1.2.1 or higher software correctly installed
   	- Reaper software correctly installed
@@ -127,16 +128,16 @@ sub TargetPrediction{
 					my @files= readdir(DIR);
 					@files=map($args{"miRNAs_folder"} ."/$file/$_",@files);
 					foreach my $edger_files(@files){
-						if($edger_files =~ /\.xls$/){
+						if($edger_files =~ /\.xls$/){							
 							my $output_file=fileparse($edger_files);
-							$output_file=~s/\.xls/_miRNAs_miRGate.xls/g;
+							$output_file=~s/\.xls/_miRNAs_miRGate.xls/g;							
 							my $data=get_edgeR_data(
 							    file=>$edger_files,
 							    edger_cutoff=>$edgeR_cutoff,
 							    verbose=>$verbose,
 								fc_threshold=>$fc_threshold,
 								
-							);
+							);							
 							print STDOUT "LOG :: " . date() . " Searching targets from edgeR file [$edger_files] for " . scalar(keys %$data) ." miRNAs using miRGate\n" if($verbose);
 							 miRGate(
 							 	miRNAs=>$data,
@@ -350,7 +351,7 @@ sub TargetPrediction{
 				 	miRNAs=>$miRNA_edgeR_results->{$miRNA_files},
 				 	organism=>$organism,
 				 	verbose=>$verbose,
-				 	output=>$projectdir ."/miRGate_results/". $g_o_edger ."_" . $m_o_edger,
+				 	output=>$projectdir ."/miRGate_results/". $g_o_edger ."_" . $m_o_edger .".xls",
 				 );
 			}
 		}
@@ -367,12 +368,11 @@ sub TargetPrediction{
 				 	miRNAs=>$miRNA_noiseq_results->{$miRNA_files},
 				 	organism=>$organism,
 				 	verbose=>$verbose,
-				 	output=>$projectdir ."/miRGate_results/". $g_o_noiseq ."_" . $m_o_noiseq,
+				 	output=>$projectdir ."/miRGate_results/". $g_o_noiseq ."_" . $m_o_noiseq . ".xls",
 				 );
 			}
 		}
 	}
-	
 	
 	sub help_TargetPredictionerRemoval{
 	    my $usage = qq{
@@ -457,7 +457,7 @@ sub miRGate{
 	my $miRNAs= $args{"miRNAs"};
 	my $UTRs= $args{"UTRs"};
 	my $organism=$args{"organism"};
-	my $output_file=$args{"output"} . ".xls";
+	my $output_file=$args{"output"};
 	my $verbose=$args{"verbose"};
 
 	my $miARmaPath=$args{"miARmaPath"};
@@ -594,6 +594,85 @@ sub miRGate{
 	}
 	return();
 }
+
+sub TargetPrediction_Summary{
+	my %args=@_;
+	my $summary_file=$args{"summary"}; #Path of the logfile to write the execution data
+	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
+	
+	my $dirname = $projectdir ."/miRGate_results/";
+	opendir ( DIR, $dirname ) || die "Error in opening dir $dirname\n";
+	my @files= readdir DIR;
+	
+	open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n\n";
+	print SUMM "miRNA-mRNA Target Predictions by miRGate [$dirname]\n";
+	#print SUMM "File\tNumber of DE elements (Pval <=0.05)\tNumber of DE elements (FDR <=0.05)\n";
+
+	my $miRNAs;
+	my $genes;
+		
+	foreach my $filename (sort @files){		     
+		if($filename =~ /\.xls$/){
+			#Filtering for xls (miRgate output format)
+
+			my $connections=0;
+			#Parding filename to gather the tumor name
+			open(RESULTS, $dirname ."/". $filename) || die $!;	
+				
+			while(<RESULTS>){
+				chomp;
+				if($_ !~ /FDR/){
+					my @data=split("\t");
+			
+					#Variable asignment
+					my $miRNA=$data[0];
+					my $miRNA_FC=$data[1];
+					my $miRNA_FDR=$data[2];
+					my $symbol=$data[4];
+					my $transcript=$data[5];
+					my $transcript_FC=$data[6];
+					my $transcript_FDR=$data[7];
+					my $methods=$data[8];
+
+					$miRNAs->{$filename}->{$miRNA}++;
+					$genes->{$filename}->{$symbol}++;
+				}
+			}
+			close RESULTS;
+		}
+	}
+	my $cont=0;
+	
+	print SUMM "\nmiRNAs with more associations\n";
+	print SUMM "File\tmiRNA\tNumber of associations\n";
+	foreach my $file (sort keys %$miRNAs){
+		foreach my $miRNA (sort {$miRNAs->{$file}->{$b} <=> $miRNAs->{$file}->{$a}} keys %{$miRNAs->{$file}}){
+			last if($cont==5);
+			$cont++;
+			print SUMM "$file\t$miRNA\t" . $miRNAs->{$file}->{$miRNA} ."\n";
+		}
+		print SUMM "\n";
+	}
+	
+	print SUMM "\nGenes more regulated\n";
+	print SUMM "File\tGeneName\tNumber of associations\n";
+	my $cont=0;
+	
+	foreach my $file (sort keys %$genes){
+		############# Most Targeted genes ############
+		my $cont=0;
+		foreach my $GeneName (sort {$genes->{$file}->{$b} <=> $genes->{$file}->{$a}} keys %{$genes->{$file}}){
+			last if($cont==5);
+			$cont++;
+			my @miRs;
+			print SUMM "$file\t$GeneName\t" . $genes->{$file}->{$GeneName} ."\n";
+		}
+		print SUMM "\n";
+	}
+	close SUMM;
+	closedir(DIR);
+}
+
 sub date{
 	#my $dt = DateTime->now(time_zone=>'local');
 	#return($dt->hms . " [" . $dt->dmy ."]");
