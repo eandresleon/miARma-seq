@@ -979,6 +979,10 @@ sub run_miARma{
 			);
 		}
 		
+		TargetPrediction_Summary(
+		  	projectdir=>$cfg->val("General","output_dir")|| undef,
+			summary=>$summary_file
+		);
 		print date()." Target Prediction Analysis finished.\n";
 		
 	}
