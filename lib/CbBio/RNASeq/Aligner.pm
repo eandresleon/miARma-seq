@@ -2454,7 +2454,7 @@ sub ReadSummary{
 					my $failed=$processed-$aligned;
 					my $perc= sprintf("%.2f",($aligned*100)/$processed);
 					if($processed and $aligned){
-						$summary->{$real_file}="$processed\t$aligned $perc%\t$failed";
+						$summary->{$real_file}="$processed\t$aligned ($perc%)\t$failed";
 						next;
 					}
 				}
