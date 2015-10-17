@@ -2444,11 +2444,11 @@ sub ReadSummary{
 					chomp;
 					if($line ==1){
 						$processed=$_;
-						$processed=~s/^(\d+)/$1/g;
+						$processed=~s/^(\d+) .+/$1/g;
 					}
 					if($line == 5){
 						$aligned=$_;
-						$aligned=~s/^(\d+)/$1/g;
+						$aligned=~s/^(\d+) .+/$1/g;
 					}
 					$line++;
 					my $failed=$processed-$aligned;
