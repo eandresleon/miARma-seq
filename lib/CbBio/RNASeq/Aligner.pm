@@ -1946,7 +1946,7 @@ sub bwa{
 			print STATS "\tBWA :: ".date()." Executing $commanddef\n";
 			#commandef is the command will be executed by system composed of the results directory creation 
 			#and the bowtie execution. The stats data will be redirected to the stats.log file
-			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command. " 2>> ".$statsfile "; " .$stat_command." 2>> ".$statsfile;
+			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command. " 2>> ".$statsfile . "; " .$stat_command." 2>> ".$statsfile;
 			
 		}
 
