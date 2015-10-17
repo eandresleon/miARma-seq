@@ -2364,17 +2364,17 @@ sub ReadSummary{
 			#test if tophat was used with bw2
 			$dirname = $projectdir ."/Bowtie1_results/";
 		}
-		if(lc($tophat_aligner) eq "bowtie2-bowtie1" or lc($tophat_aligner) eq "bowtie1-bowtie2")){
+		if(lc($tophat_aligner) eq "bowtie2-bowtie1" or lc($tophat_aligner) eq "bowtie1-bowtie2"){
 			ReadSummary(
 			    aligner=>"tophat",
-				tophat_aligner=>"bowtie1"
+				tophat_aligner=>"bowtie1",
 				summary=>$summary_file,
 				statsfile=>$statsfile,
 				projectdir=>$projectdir,
 			);
 			ReadSummary(
 		    	aligner=>"tophat",
-				tophat_aligner=>"bowtie2"
+				tophat_aligner=>"bowtie2",
 				summary=>$summary_file,
 				statsfile=>$statsfile,
 				projectdir=>$projectdir,
