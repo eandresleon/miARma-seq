@@ -1946,7 +1946,7 @@ sub bwa{
 			print STATS "\tBWA :: ".date()." Executing $commanddef\n";
 			#commandef is the command will be executed by system composed of the results directory creation 
 			#and the bowtie execution. The stats data will be redirected to the stats.log file
-			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command." 2>> ".$statsfile;
+			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command. "; " .$stat_command. " 2>> ".$statsfile;
 			
 		}
 
@@ -2355,17 +2355,32 @@ sub ReadSummary{
 		);
 	}
 	if(lc($aligner) eq "tophat"){
-		#test if tophat was used with bw2
-		my $dirname = $projectdir ."/Bowtie2_results/";
-		if(!-e $dirname){
-			#in case it was with bw1
-			$dirname = $projectdir ."/Bowtie1_results/";
-			#in case it is an error
-			if(!-e $dirname){
-				warn("No Tophat results were found at $projectdir\n");
-				return();	
-			}
+		my $dirname;
+		if(lc($tophat_aligner) eq "bowtie2"){
+			#test if tophat was used with bw2
+			$dirname = $projectdir ."/Bowtie2_results/";
 		}
+		if(lc($tophat_aligner) eq "bowtie1"){
+			#test if tophat was used with bw2
+			$dirname = $projectdir ."/Bowtie1_results/";
+		}
+		if(lc($tophat_aligner) eq "bowtie2-bowtie1" or lc($tophat_aligner) eq "bowtie1-bowtie2")){
+			ReadSummary(
+			    aligner=>"tophat",
+				tophat_aligner=>"bowtie1"
+				summary=>$summary_file,
+				statsfile=>$statsfile,
+				projectdir=>$projectdir,
+			);
+			ReadSummary(
+		    	aligner=>"tophat",
+				tophat_aligner=>"bowtie2"
+				summary=>$summary_file,
+				statsfile=>$statsfile,
+				projectdir=>$projectdir,
+			);
+		}
+		
 		$summary_path->{$aligner}=$dirname;
 		opendir ( DIR, $dirname ) || die "Error in opening dir $dirname\n";
 		my @files= readdir DIR;
