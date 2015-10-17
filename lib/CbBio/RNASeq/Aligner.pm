@@ -1648,16 +1648,20 @@ sub TopHat{
 		if(-e "$projectdir/$output_dir/accepted_hits.bam"){
 			my $output_file_mapped;
 			my $output_file_unmapped;
+			my $output_file_stats;
 			#Renaming results
 			if(lc($tophat_aligner) eq "bowtie1"){
 				$output_file_mapped="$projectdir/$output_dir/$name\_top_bw1.bam";
 				$output_file_unmapped="$projectdir/$output_dir/$name\_top_no_aligned.bam";
+				$output_file_stats="$projectdir/$output_dir/$name\_top_bw1_align_summary.txt";
 			}
 			else{
 				$output_file_mapped="$projectdir/$output_dir/$name\_top_bw2.bam";
 				$output_file_unmapped="$projectdir/$output_dir/$name\_top_no_aligned.bam";
+				$output_file_stats="$projectdir/$output_dir/$name\_top_bw2_align_summary.txt";
 			}
 			system("mv $projectdir/$output_dir/accepted_hits.bam $output_file_mapped");
+			system("mv $projectdir/$output_dir/align_summary.txt $output_file_stats");
 			if($output_file_unmapped){
 				system("mv $projectdir/$output_dir/unmapped.bam $output_file_unmapped");
 			}
@@ -1832,10 +1836,10 @@ sub bwa{
 	chomp($arch);
 	
 	if ($ENV{PATH}) {
-		$ENV{PATH} .= ":$miARmaPath/bin/".$arch."/bwa/";
+		$ENV{PATH} .= ":$miARmaPath/bin/".$arch."/bwa/".":$miARmaPath/bin/".$arch."/samtools/:";
 	}
 	else {
-		$ENV{PATH} = "$miARmaPath/bin/".$arch."/bwa/";
+		$ENV{PATH} = "$miARmaPath/bin/".$arch."/bwa/".":$miARmaPath/bin/".$arch."/samtools/:";
 	}
 	#First, check that bwa is in path:
 	my @bwa_bin=`which bwa`;
@@ -1843,6 +1847,13 @@ sub bwa{
 	if(scalar(@bwa_bin)<1){
 		die "BWA ::system args failed: $? : Is bwa installed and exported to \$PATH ?";
 	}
+	#First, check that bwa is in path:
+	my @sam_bin=`which samtools`;
+	#Executing the command
+	if(scalar(@sam_bin)<1){
+		die "BWA ::system args failed: $? : Is samtools installed and exported to \$PATH ?";
+	}
+	
 	my $file=$args{"file"}; #Name of the file which is going to be aligned
 	my $bwaindex=$args{"bwaindex"}; #Genome index in format .bwt 
 	my $threads=$args{"threads"}; #Optional number of threads to perform the analysis  
@@ -1871,6 +1882,7 @@ sub bwa{
 		#Extracting the name of the file
 		my $name=fileparse($file, qr{\.f.*});
 		my $command;
+		my $stat_command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			print STDOUT "\tBWA :: ".date()." Checking $file for bwa analysis (Paired End)\n" if($verbose);
 			print LOG "BWA :: ".date()." Checking $file for bwa analysis (Paired End)\n";
@@ -1882,13 +1894,18 @@ sub bwa{
 				$mate_file=~s/_1(.+)/_2$1/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){						
-						my $real_name=$projectdir.$output_dir.$name."_bwa.sam";;
+						my $real_name=$projectdir.$output_dir.$name."_bwa.sam";
 						$real_name=~s/_\d.+bwa/_bwa/g;
+						my $stat_file_bam=$real_name;
+						$stat_file_bam=~s/\.sam/_align_summary.txt/g;
 						if($file =~ /\.bz2$/){							
 							$command="bwa mem ".$bwapardef." ".$bwaindex."  <(bunzip2 -c $file) <(bunzip2 -c $mate_file)>".$real_name;
+							$stat_command="samtools flagstat $real_name > $stat_file_bam";
 						}
 						else{
 							$command="bwa mem ".$bwapardef." ".$bwaindex." ".$file." $mate_file >".$real_name;
+							$stat_command="samtools flagstat $real_name > $stat_file_bam";
+							
 						}
 					}
 				}
@@ -1906,6 +1923,9 @@ sub bwa{
 			print LOG "BWA :: ".date()." Checking $file for bwa analysis (Single End)\n";
 			#bwa execution command
 			$command="bwa mem ".$bwapardef." ".$bwaindex." ".$file." >".$projectdir.$output_dir.$name."_bwa.sam";
+			my $stat_file_bam=$projectdir.$output_dir.$name."_bwa_align_summary.txt";
+			$stat_command="samtools flagstat $real_name > $stat_file_bam";
+			
 		}
 
 		my $commanddef;
@@ -2238,6 +2258,8 @@ sub ReadSummary{
 	
 	my $summary;
 	my $summary_path;
+	my $summary_bw2;
+	
 	if(lc($aligner) eq "bowtie1" ){
 		$summary_path->{$aligner}=$projectdir ."/Bowtie1_results/";
 		open(STAT,$statsfile);
@@ -2272,7 +2294,6 @@ sub ReadSummary{
 			}
 		}
 	}
-	my $summary_bw2;
 	if(lc($aligner) eq "bowtie2" ){
 		$summary_path->{$aligner}=$projectdir ."/Bowtie2_results/";
 		open(STAT,$statsfile);
@@ -2319,7 +2340,6 @@ sub ReadSummary{
 			}
 		}
 	}
-	
 	if(lc($aligner) eq "bowtie2-bowtie1" or lc($aligner) eq "bowtie1-bowtie2"){
 		ReadSummary(
 		    aligner=>"bowtie1",
@@ -2333,6 +2353,102 @@ sub ReadSummary{
 			statsfile=>$statsfile,
 			projectdir=>$projectdir,
 		);
+	}
+	if(lc($aligner) eq "tophat"){
+		#test if tophat was used with bw2
+		my $dirname = $projectdir ."/Bowtie2_results/";
+		if(!-e $dirname){
+			#in case it was with bw1
+			$dirname = $projectdir ."/Bowtie1_results/";
+			#in case it is an error
+			if(!-e $dirname){
+				warn("No Tophat results were found at $projectdir\n");
+				return();	
+			}
+		}
+		$summary_path->{$aligner}=$dirname;
+		opendir ( DIR, $dirname ) || die "Error in opening dir $dirname\n";
+		my @files= readdir DIR;
+	
+		my $miRNAs;
+		my $genes;
+		foreach my $filename (sort @files){		     
+			if($filename =~ /_align_summary.txt$/){
+				open(RESULTS, $dirname ."/". $filename) || warn $!;	
+				my $real_file=fileparse($filename);
+				my $processed;
+				my $aligned;
+				my $failed;
+				my $multimapping;
+				my $overall;
+				while(<RESULTS>){
+					chomp;
+					if($_ =~/Input/){
+						$processed=$_;
+						$processed=~s/\s+Input\s+:\s+(\d+)/$1/g;
+					}
+					if($_ =~/Mapped/){
+						$aligned=$_;
+						$aligned=~s/\s+Mapped\s+:\s+(\d+) .+/$1/g;
+					}
+					if($_ =~/of these/){
+						$multimapping=$_;
+						$multimapping=~s/\s+of these:\s+(.+)/$1/g;
+						$multimapping=~s/have multiple alignments.+//g;
+					}
+					if($_ =~/overall read mapping rate/){
+						$overall=$_;
+						$overall=~s/^(\d+\.\d+)% .*/$1%/g;
+					}
+					
+					$failed=$processed - $aligned;
+					
+					if($real_file and $failed){
+						$summary_bw2->{$real_file}="$processed\t$aligned\t$multimapping\t$overall\t$failed";
+					}
+				}
+				close STAT;
+			}
+		}
+	}
+	if(lc($aligner) eq "bwa" ){
+		my $dirname = $projectdir ."/bwa_results/";
+		$summary_path->{$aligner}=$dirname;
+		opendir ( DIR, $dirname ) || die "Error in opening dir $dirname\n";
+		my @files= readdir DIR;
+	
+		foreach my $filename (sort @files){		     
+			if($filename =~ /_align_summary.txt$/){
+				open(RESULTS, $dirname ."/". $filename) || warn $!;	
+				my $real_file=fileparse($filename);
+				$real_file=~s/_align_summary.txt//g;
+				my $processed;
+				my $aligned;
+				my $failed;
+				my $multimapping;
+				my $overall;
+				my $line=1;
+				while(<RESULTS>){
+					chomp;
+					if($line ==1){
+						$processed=$_;
+						$processed=~s/^\d+/$1/g;
+					}
+					if($line == 5){
+						$aligned=$_;
+						$aligned=~s/^\d+/$1/g;
+					}
+					$line++;
+					my $failed=$processed-$aligned;
+					if($processed and $aligned){
+						$summary->{$real_file}="$processed\t$aligned\t$failed";
+						next;
+					}
+				}
+				
+			}
+		}
+		
 	}
 	if(scalar(keys %$summary)>0){
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
