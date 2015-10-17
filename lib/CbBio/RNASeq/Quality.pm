@@ -247,7 +247,7 @@ sub FastQCStats{
 		#Accessing to each directory
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
 		print SUMM "Filename\tNumber of reads\t\%GC Content\tRead Length\tEncoding\n";
-		foreach my $fileres(@filesres){
+		foreach my $fileres(sort @filesres){
 			#Declaring variables to keep the stats 
 			my $seqnumber=0;
 			my $seqlength=0;
