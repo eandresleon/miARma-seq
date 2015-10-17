@@ -2384,9 +2384,6 @@ sub ReadSummary{
 		$summary_path->{$aligner}=$dirname;
 		opendir ( DIR, $dirname ) || die "Error in opening dir $dirname\n";
 		my @files= readdir DIR;
-	
-		my $miRNAs;
-		my $genes;
 		foreach my $filename (sort @files){		     
 			if($filename =~ /_align_summary.txt$/){
 				open(RESULTS, $dirname ."/". $filename) || warn $!;	
@@ -2447,11 +2444,11 @@ sub ReadSummary{
 					chomp;
 					if($line ==1){
 						$processed=$_;
-						$processed=~s/^\d+/$1/g;
+						$processed=~s/^(\d+)/$1/g;
 					}
 					if($line == 5){
 						$aligned=$_;
-						$aligned=~s/^\d+/$1/g;
+						$aligned=~s/^(\d+)/$1/g;
 					}
 					$line++;
 					my $failed=$processed-$aligned;
