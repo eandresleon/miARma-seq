@@ -579,6 +579,7 @@ sub run_miARma{
 				
 				ReadSummary(
 				    aligner=>$cfg->val("Aligner","aligner"),
+					tophat_aligner=>$cfg->val("Aligner","tophat_aligner") || undef,
 					summary=>$summary_file,
 					statsfile=>$stat_file|| $cfg->val("General","stats_file"),
 					projectdir=>$cfg->val("General","output_dir")|| undef,
