@@ -12,7 +12,7 @@ package CbBio::RNASeq::FAnalysis;
 require Exporter;
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(F_Analysis);
+@EXPORT=qw(F_Analysis F_AnalysisSummary);
 
 use strict;
 use DateTime;
@@ -437,6 +437,70 @@ EOF
 	}
 }
 
+sub F_AnalysisSummary{
+	use File::Basename;
+	#Arguments provided by user are collected by %args. Dir, file, aligner, statsfile, projectdir 
+	#and logfile are mandatory arguments while verbose and threads are optional.
+	my %args=@_;
+	my $summary_file=$args{"summary"}; #Path of the logfile to write the execution data
+	my $projectdir=$args{"projectdir"}; #Optional arguments to show the execution data on screen
+
+	my $data;
+	my $category->{"CC"}="GO Cellular Component";
+	$category->{"BP"}="GO Biological Process";
+	$category->{"MF"}="GO Molecular Function";
+	$category->{"KEGG"}="KEGG Pathways";
+	
+	opendir(GOSEQ, $projectdir ."/Functional_Analysis_results/") || warn "F_Analysis:: Folder \"$projectdir/Functional_Analysis_results/\" is not found\n"; 
+	my @goseq_files= readdir(GOSEQ);
+	foreach my $goseq_file (sort @goseq_files){
+		if($goseq_file =~ /\.xls$/){	
+			open(GOSEQFILE,$projectdir ."/Functional_Analysis_results/$goseq_file") || die "$! $projectdir/Functional_Analysis_results/$goseq_file";
+			my $pval_threshold=0.05;
+			while(<GOSEQFILE>){
+				chomp;
+				$_=~s/\"//g;
+				if($_ !~ /category/){
+					
+					
+					my($goterm,$pval_over,$pval_under,undef,undef,$term,$ontology)=split(/\t/);
+					if($pval_under<=$pval_threshold){
+						$data->{$goseq_file}->{$ontology}->{DOWN}->{$goterm}=$term;
+					}
+					elsif($pval_over<=$pval_threshold){
+						$data->{$goseq_file}->{$ontology}->{UP}->{$goterm}=$term;
+					}
+					else{
+						$data->{$goseq_file}->{"Z"}->{DOWN}->{""}=1;
+						$data->{$goseq_file}->{"Z"}->{UP}->{""}=1;
+					}
+				}
+			}
+			close GOSEQFILE;
+		}
+	}
+	close GOSEQ;
+	
+	if(scalar(keys %$data)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nFunctional Analysis by GoSeq [".$projectdir ."/Functional_Analysis_results/]\n";
+		print SUMM "File\tNumber of Over Represented Terms (Pval<0.05)\tNumber of Under Represented Terms (Pval<0.05)\tOntology\n";
+		foreach my $file (sort keys %$data){
+			my $printed=0;
+			foreach my $ontology (sort keys %{$data->{$file}}){
+				if($ontology ne "Z"){
+					print SUMM "$file\t". scalar(keys %{$data->{$file}->{$ontology}->{UP}}) ."\t" . scalar(keys %{$data->{$file}->{$ontology}->{DOWN}}) ."\t". $category->{$ontology}."\n";
+					#print SUMM join("\t",keys %{$data->{$file}->{$ontology}->{UP}}) ."\n";
+					$printed=1;
+				}
+				else{
+					print SUMM "$file\t0\t0\t-\n" if($printed==0);
+				}
+			}
+		}
+		close SUMM;
+	}					
+}
 sub date{
 	#my $dt = DateTime->now(time_zone=>'local');
 	#return($dt->hms . " [" . $dt->dmy ."]");

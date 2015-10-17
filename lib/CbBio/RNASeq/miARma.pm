@@ -887,7 +887,7 @@ sub run_miARma{
 						qvalue=>$cfg->val("DEAnalysis","qvalue") || undef,						
 					);
 				}
-				
+				#print STDERR date()." Differential expression Summary.\n";
 				DE_AnalysisSummary(
 				  	projectdir=>$cfg->val("General","output_dir")|| undef,
 					DEsoft=>$cfg->val("DEAnalysis","desoft")|| undef,
@@ -908,14 +908,20 @@ sub run_miARma{
 	if($cfg->SectionExists("FAnalysis")==1){
 		 use CbBio::RNASeq::FAnalysis;
 		 F_Analysis(
-			projectdir=>$cfg->val("General","output_dir"),
-			verbose=>$cfg->val("General","verbose") || 0,
-			logfile=>$log_file || $cfg->val("General","logfile"),
-			organism=>$cfg->val("General","organism")|| undef,
-			seqid=>$cfg->val("FAnalysis","seqid") || undef,
-			edger_cutoff=>$cfg->val("FAnalysis","edger_cutoff") || 0.05,
-			noiseq_cutoff=>$cfg->val("FAnalysis","noiseq_cutoff") || 0.8,
+		 			projectdir=>$cfg->val("General","output_dir"),
+		 			verbose=>$cfg->val("General","verbose") || 0,
+		 			logfile=>$log_file || $cfg->val("General","logfile"),
+		 			organism=>$cfg->val("General","organism")|| undef,
+		 			seqid=>$cfg->val("FAnalysis","seqid") || undef,
+		 			edger_cutoff=>$cfg->val("FAnalysis","edger_cutoff") || 0.05,
+		 			noiseq_cutoff=>$cfg->val("FAnalysis","noiseq_cutoff") || 0.8,
 		 );
+		 
+		 F_AnalysisSummary(
+			projectdir=>$cfg->val("General","output_dir"),
+			summary=>$summary_file,
+		 );
+		 
 	}
 	#miRGate prediction
 	if($cfg->SectionExists("TargetPrediction")==1){
