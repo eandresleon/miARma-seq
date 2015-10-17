@@ -655,7 +655,7 @@ sub TargetPrediction_Summary{
 			print SUMM "\n";
 		}
 	
-		print SUMM "\nGenes more regulated\n";
+		print SUMM "Genes more regulated\n";
 		print SUMM "File\tGeneName\tNumber of associations\n";
 		my $cont=0;
 	
