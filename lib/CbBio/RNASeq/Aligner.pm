@@ -2452,8 +2452,9 @@ sub ReadSummary{
 					}
 					$line++;
 					my $failed=$processed-$aligned;
+					my $perc=($aligned*100)/$processed;
 					if($processed and $aligned){
-						$summary->{$real_file}="$processed\t$aligned\t$failed";
+						$summary->{$real_file}="$processed\t$aligned $perc%\t$failed";
 						next;
 					}
 				}
