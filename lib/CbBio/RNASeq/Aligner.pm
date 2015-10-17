@@ -1924,7 +1924,7 @@ sub bwa{
 			#bwa execution command
 			$command="bwa mem ".$bwapardef." ".$bwaindex." ".$file." >".$projectdir.$output_dir.$name."_bwa.sam";
 			my $stat_file_bam=$projectdir.$output_dir.$name."_bwa_align_summary.txt";
-			$stat_command="samtools flagstat $real_name > $stat_file_bam";
+			$stat_command="samtools flagstat ".$projectdir.$output_dir.$name."_bwa.sam"." > $stat_file_bam";
 			
 		}
 
