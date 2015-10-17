@@ -1074,7 +1074,7 @@ sub DE_AnalysisSummary{
 		$_=~s/\"//g;
 		if($_ !~ /Name/){
 			my($comp,$form)=split(/=/);
-			$comparisons->{$comp}++;
+			$comparisons->{$comp}=$form;
 		}
 	}
 	close TARGET;
@@ -1152,7 +1152,7 @@ sub DE_AnalysisSummary{
 			contrastfile=>$contrastfile,
 		);
 	}
-	
+
 	if(scalar(keys %$summary_edger)>0){
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
 		print SUMM "\nDifferential Expression Analysis by edgeR [".$projectdir ."/EdgeR_results/]\n";
@@ -1160,7 +1160,7 @@ sub DE_AnalysisSummary{
 		foreach my $comp (sort keys $summary_edger){
 			foreach my $file (sort keys %{$summary_edger->{$comp}}){
 				foreach my $pval (sort keys %{$summary_edger->{$comp}->{$file}}){
-					print SUMM $comp ."\t$file\t$pval\t". $summary_edger->{$comp}->{$file}->{$pval}."\n";
+					print SUMM $comparisons->{$comp} ."\t$file\t$pval\t". $summary_edger->{$comp}->{$file}->{$pval}."\n";
 				}
 			}
 		}
@@ -1172,7 +1172,7 @@ sub DE_AnalysisSummary{
 		print SUMM "Comparison\tFile\tNumber of DE elements (Prob >=0.8)\n";
 		foreach my $comp (sort keys $summary_noi){
 			foreach my $file (sort keys %{$summary_noi->{$comp}}){
-				print SUMM $comp ."\t$file\t". $summary_noi->{$comp}->{$file}."\n";
+				print SUMM $comparisons->{$comp}  ."\t$file\t". $summary_noi->{$comp}->{$file}."\n";
 			}
 		}
 		close SUMM;
