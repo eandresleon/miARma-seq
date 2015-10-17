@@ -2461,7 +2461,6 @@ sub ReadSummary{
 				
 			}
 		}
-		
 	}
 	if(scalar(keys %$summary)>0){
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
