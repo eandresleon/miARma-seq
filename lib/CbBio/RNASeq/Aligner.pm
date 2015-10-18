@@ -2381,45 +2381,49 @@ sub ReadSummary{
 			);
 		}
 		
-		$summary_path->{$aligner}=$dirname;
-		opendir ( DIR, $dirname ) || die "Error in opening dir $dirname\n";
-		my @files= readdir DIR;
-		foreach my $filename (sort @files){		     
-			if($filename =~ /_align_summary.txt$/){
-				open(RESULTS, $dirname ."/". $filename) || warn $!;	
-				my $real_file=fileparse($filename);
-				my $processed;
-				my $aligned;
-				my $failed;
-				my $multimapping;
-				my $overall;
-				while(<RESULTS>){
-					chomp;
-					if($_ =~/Input/){
-						$processed=$_;
-						$processed=~s/\s+Input\s+:\s+(\d+)/$1/g;
-					}
-					if($_ =~/Mapped/){
-						$aligned=$_;
-						$aligned=~s/\s+Mapped\s+:\s+(\d+) .+/$1/g;
-					}
-					if($_ =~/of these/){
-						$multimapping=$_;
-						$multimapping=~s/\s+of these:\s+(.+)/$1/g;
-						$multimapping=~s/have multiple alignments.+//g;
-					}
-					if($_ =~/overall read mapping rate/){
-						$overall=$_;
-						$overall=~s/^(\d+\.\d+)% .*/$1%/g;
-					}
+		if($dirname){
+			$summary_path->{$aligner}=$dirname;
+		
+			opendir ( DIR, $dirname ) || die "Error in opening dir $dirname\n";
+			my @files= readdir DIR;
+			foreach my $filename (sort @files){		     
+				if($filename =~ /_align_summary.txt$/){
+					open(RESULTS, $dirname ."/". $filename) || warn $!;	
+					my $real_file=fileparse($filename);
+					$real_file=~s/_align_summary.txt$//g;
+					my $processed;
+					my $aligned;
+					my $failed;
+					my $multimapping;
+					my $overall;
+					while(<RESULTS>){
+						chomp;
+						if($_ =~/Input/){
+							$processed=$_;
+							$processed=~s/\s+Input\s+:\s+(\d+)/$1/g;
+						}
+						if($_ =~/Mapped/){
+							$aligned=$_;
+							$aligned=~s/\s+Mapped\s+:\s+(\d+) .+/$1/g;
+						}
+						if($_ =~/of these/){
+							$multimapping=$_;
+							$multimapping=~s/\s+of these:\s+(.+)/$1/g;
+							$multimapping=~s/have multiple alignments.+//g;
+						}
+						if($_ =~/overall read mapping rate/){
+							$overall=$_;
+							$overall=~s/^(\d+\.\d+)% .*/$1%/g;
+						}
 					
-					$failed=$processed - $aligned;
+						$failed=$processed - $aligned;
 					
-					if($real_file and $failed){
-						$summary_bw2->{$real_file}="$processed\t$aligned\t$multimapping\t$overall\t$failed";
+						if($real_file and $failed){
+							$summary_bw2->{$real_file}="$processed\t$aligned\t$multimapping\t$overall\t$failed";
+						}
 					}
+					close STAT;
 				}
-				close STAT;
 			}
 		}
 	}
