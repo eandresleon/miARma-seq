@@ -11,7 +11,7 @@ package CbBio::RNASeq::Readcount;
 require Exporter;
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(featureCount featureFormat CIRICount CIRIFormat miRDeepCount miRDeepFormat featureSummary);
+@EXPORT=qw(featureCount featureFormat CIRICount CIRIFormat miRDeepCount miRDeepFormat featureSummary miRDeepSummary);
 
 use strict;
 use File::Basename;
@@ -825,6 +825,10 @@ sub miRDeepCount{
 	my $command;
 	my $commanddef;
 	my $tab_file=undef;
+	
+	my $novel_miRNAs;
+	my $known_miRNAs;
+	
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $logfile){
 		if($file =~ /.*\.xls$/){
@@ -838,6 +842,7 @@ sub miRDeepCount{
 			my $starter=0;
 			my $miRNAsCounts;
 			my $total_miRNAs;
+			
 			while(<FILE>){
 				chomp;
 				if($_ =~/^novel/){
@@ -861,6 +866,7 @@ sub miRDeepCount{
 						$read_count=~s/\.\d+//g;
 						$miRNAsCounts->{$miR}+=$read_count if($miR);
 						$total_miRNAs->{$miR}++;
+						$novel_miRNAs->{$filename}->{$miR}++;
 					}
 				}
 				elsif($starter==2){
@@ -1092,6 +1098,48 @@ sub miRDeepFormat{
 	exit(); 
 	}  	
 }
+sub miRDeepSummary{
+	use File::Basename;
+	#Arguments provided by user are collected by %args. Dir and input are mandatory arguments.
+	my %args=@_;
+	my $input=$args{"input"}; #Input is an referenced array with the paths of the files which have to be joined
+	my $projectdir=$args{"projectdir"}; #Directory to create the output file
+	my $summary_file=$args{"summary"}; #write the execution data on screen
+	my $summary_path=$projectdir ."/miRDeep_results/";
+	
+	my $result;
+	if($input and $projectdir and $summary_file){
+		#Reading each path of the input referenced array
+		foreach my $file(sort {$a cmp $b} @$input){
+			open(TAB,$file) || warn "Can't find $file\n";
+			my $filename=fileparse($file);
+			$filename=~s/\.tab$//g;
+			while(<TAB>){
+				chomp;
+				my ($miR,$read_number)=split(/\t/);
+				if($miR =~ /^chr/ and $miR =~ /:/){
+					#its novel
+					$result->{$filename}->{"novel"}->{$miR}++;
+				}
+				else{
+					#its Known
+					$result->{$filename}->{"known"}->{$miR}++;
+				}
+			}
+			close TAB;
+		}
+	}
+	
+	if(scalar(keys %$result)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create result file ($summary_file)\n";
+		print SUMM "\nmiRDeep [".$summary_path."]\n";
+		print SUMM "Filename\tNumber of novel miRNAs\tNumber of known miRNAs\n";
+		foreach my $processed_file (sort keys %$result){
+			print SUMM $processed_file ."\t". scalar( keys %{$result->{$processed_file}->{"novel"}}) ."\t". scalar( keys %{$result->{$processed_file}->{"known"}}) ."\n";
+		}
+		close SUMM;
+	}
+}
 
 sub featureSummary{
 	use File::Basename;
@@ -1148,6 +1196,37 @@ sub featureSummary{
 		print SUMM "Filename\tProcessed Reads\tAssigned reads\tStrand\n";
 		foreach my $processed_file (sort keys %$summary){
 			print SUMM $processed_file ."\t". $summary->{$processed_file}."\n";
+		}
+		close SUMM;
+	}
+	
+	my $results;
+	foreach my $file(sort {$a cmp $b} @$input){
+		if($file =~ /\.tab$/){
+			open(TAB,$file) || warn "Can't find $file\n";
+			my $filename=fileparse($file);
+			$filename=~s/\.tab$//g;
+			while(<TAB>){
+			 	chomp;
+				if($_ !~ /^#/ and $_ !~ /^Geneid/){
+					#Using the split with the tab we can keep the name of the miRNA in $miRNA variable
+					#and the number of reads in $reads variable. 
+					my ($miRNAs,$chr,$start,$end,$strand,$length,$reads)=split(/\t/);
+					#Creating a hash with the names of miRNAs
+					if($reads>0){
+						$results->{$filename}->{$miRNAs}++;
+					}
+				}	
+			}
+			close TAB;
+		}
+	}
+	
+	if(scalar(keys %$results)>0){
+		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+		print SUMM "\nFilename\tNumber of identified entities\n";
+		foreach my $processed_file (sort keys %$results){
+			print SUMM $processed_file ."\t". scalar(keys %{$results->{$processed_file}})."\n";
 		}
 		close SUMM;
 	}

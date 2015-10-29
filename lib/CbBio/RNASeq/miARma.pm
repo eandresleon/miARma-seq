@@ -653,6 +653,7 @@ sub run_miARma{
 				  		projectdir=>$cfg->val("General","output_dir")|| undef,
 						logfile=>$log_file || $cfg->val("General","logfile"),
 					  	summary=>$summary_file,
+					  	input=>\@htseqfiles, 
 					  );
 					
   					print STDERR date()." Readcount Analysis finished.\n";
@@ -800,6 +801,14 @@ sub run_miARma{
 					projectdir=>$cfg->val("General","output_dir"),
 					logfile=>$log_file || $cfg->val("General","logfile"),
 				);
+			}
+			if(scalar(@allRNAfiles)>0){
+				$result_file=miRDeepSummary( 
+				  	input=>\@allRNAfiles, 
+					projectdir=>$cfg->val("General","output_dir"),
+					summary=>$summary_file,
+				);
+				
 			}
 		}
 		print date() . " De novo identification and quantification of miRNAs finished\n";
