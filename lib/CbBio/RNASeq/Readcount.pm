@@ -663,6 +663,7 @@ sub CIRIFormat{
 	my $projectdir=$args{"projectdir"}; #Directory to create the output file
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
 	my $verbose=$args{"verbose"};
+	my $summary_file=$args{"summary"};
 	
 	#Variable declaration
 	my $hashref;
@@ -676,6 +677,7 @@ sub CIRIFormat{
 		#Declaration of the output path 
 		my $output_dir="/circRNAs_results/";
 		#Reading each path of the input referenced array
+		my $results;
 		foreach my $file(sort {$a cmp $b} @$input){
 			if($file){
 				print LOG "LOG :: Reading $file\n";
@@ -705,7 +707,8 @@ sub CIRIFormat{
 								$hashref->{$circRNAs}->{$originalname}=$reads;
 								#Creating a hash with all the data, the first dimension contains the miRNA name,
 								#the second the name of the file and the third is the number of reads 
-								$data->{$originalname}++;	
+								$data->{$originalname}++;
+								$results->{$originalname}->{$circRNAs}++;	
 							}	
 						}
 						#Closing the file
@@ -743,7 +746,18 @@ sub CIRIFormat{
 		}
 		close RESULTS;
 		
+		my $summary_path=$projectdir ."/circRNAs_results/";
 		#Returning the path of the results file
+		if(scalar(keys %$results)>0){
+			open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
+			print SUMM "\nReadCount [".$summary_path."]\n";
+			print SUMM "Filename\tNumber of identified circRNAs\n";
+			foreach my $processed_file (sort keys %$results){
+				print SUMM $processed_file ."\t". scalar( keys %{$results->{$processed_file}})."\n";
+			}
+			close SUMM;
+		}
+		
 		
 		#Registering the error
 		open(LOG,">> ".$logfile) || die "CIRI ERROR :: ".date()."Can't open '$logfile': $!";

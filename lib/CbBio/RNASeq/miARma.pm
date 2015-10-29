@@ -701,7 +701,7 @@ sub run_miARma{
 							projectdir=>$cfg->val("General","output_dir")|| undef,
 							logfile=>$log_file || $cfg->val("General","logfile"),
 							verbose=>$cfg->val("General","verbose") || 0,
-							
+							summary=>$summary_file,
 						);
 						@files=undef;
 						
@@ -1000,7 +1000,6 @@ sub run_miARma{
 			summary=>$summary_file
 		);
 		print date()." Target Prediction Analysis finished.\n";
-		
 	}
 	
 	my $end_run = time();
@@ -1085,8 +1084,8 @@ sub check_input_data{
 		print date()." All parameters are correct.\n";
 		return();
 	}
-	
 }
+
 sub check_input_format{
 	use File::Basename;
 	my %args=@_;
