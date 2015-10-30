@@ -397,15 +397,15 @@ sub run_miARma{
 
 			my $do_index=$cfg->val("Aligner","fasta");
 			if($do_index and $cfg->val("Aligner","bowtie2index") ne "" and lc($cfg->val("Aligner","aligner")) eq "bowtie2"){
-				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie2index are excluyent, discarding fasta parameter\n";
+				print STDERR date() . " Inside [Aligner] fasta and bowtie2index are excluyent, discarding fasta parameter\n";
 				$do_index=undef;
 			}
 			if($do_index and $cfg->val("Aligner","bowtie1index") ne "" and lc($cfg->val("Aligner","aligner")) eq "bowtie1"){
-				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bowtie1index are excluyent, discarding fasta parameter\n";
+				print STDERR date() . " Inside [Aligner] fasta and bowtie1index are excluyent, discarding fasta parameter\n";
 				$do_index=undef;
 			}
 			if($do_index and $cfg->val("Aligner","bwaindex") ne "" and lc($cfg->val("Aligner","aligner")) eq "bwa"){
-				print STDERR "miARma :: " . date() . " Inside [Aligner] fasta and bwaiindex are excluyent, discarding fasta parameter\n";
+				print STDERR date() . " Inside [Aligner] fasta and bwaiindex are excluyent, discarding fasta parameter\n";
 				$do_index=undef;
 			}
 			if($do_index){

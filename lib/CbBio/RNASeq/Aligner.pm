@@ -807,7 +807,7 @@ sub bowtie1_index{
 	
 	#Checking the mandatory arguments
 	if ($fasta and $dir and $indexname and $logfile){
-		print STDERR "BOWTIE1_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
+		print STDERR date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
 		#bowtie-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex1 directory with the name index 
 		my $command="bowtie-build -f ".$fasta." ".$dir."/Bowtie1_index/".$indexname;
@@ -985,9 +985,9 @@ sub bowtie1{
 				$mate_file=~s/_1/_2/g;
 				if(-e $mate_file){
 					if($file ne $mate_file){
-						print STDERR "BOWTIE 1 :: ".date()." Checking $file for bowtie1 (Paired-End) analysis\n";
+						print STDERR date()." Checking $file for bowtie1 (Paired-End) analysis\n" if($verbose);
 						if($file =~ /\.gz$/){
-							print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
+							print STDERR date()." Uncompressing $file\n" if($verbose);
 							#In case gzip
 							system("gunzip -f -k $file");
 							system("gunzip -f -k $mate_file");
@@ -999,7 +999,7 @@ sub bowtie1{
 						}
 						elsif($file =~ /\.bz2$/){
 							#in case bzip2
-							print STDERR "BOWTIE 1 :: ".date()." Uncompressing $file\n";
+							print STDERR date()." Uncompressing $file\n" if($verbose);
 							system("bunzip2 -f -d -k $file");
 							system("bunzip2 -f -d -k $mate_file");
 							#New extension
@@ -1189,7 +1189,7 @@ sub bowtie2_index{
 
 	#Checking the mandatory arguments
 	if ($fasta and $dir and $logfile and $indexname){
-		print STDERR "BOWTIE2_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
+		print STDERR date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
 		#bowtie2-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex2 directory with the name index 
 		$command= "bowtie2-build -f ".$fasta." ".$dir."/Bowtie2_index/".$indexname;
