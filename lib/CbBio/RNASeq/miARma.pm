@@ -664,8 +664,8 @@ sub run_miARma{
 				}
 			}
 			elsif(lc($cfg->val("General","type")) eq "circrna"){
-				if($cfg->exists("ReadCount","bwaindex") eq "" or ($cfg->val("ReadCount","bwaindex") eq "")){
-					print STDERR "\nERROR " . date() . " bwaindex parameter in Section [Readcount] for circRNAs is missing/unfilled. Please check documentation\n";
+				if($cfg->exists("ReadCount","fasta") eq "" or ($cfg->val("ReadCount","fasta") eq "")){
+					print STDERR "\nERROR " . date() . " fasta parameter in Section [Readcount] for circRNAs is missing/unfilled. Please check documentation\n";
 					$severe_error=1;			
 					help_check_count();
 				}
