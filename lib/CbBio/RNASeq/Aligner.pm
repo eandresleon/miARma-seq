@@ -1776,7 +1776,7 @@ sub bwa_index{
 	
 	#Checking the mandatory arguments
 	if ($fasta and $dir and $indexname and $logfile){
-		print STDERR "BWA_INDEX :: ".date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
+		print STDERR date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
 		#bowtie-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex1 directory with the name index 
 		my $command="bwa index -a bwtsw -p ".$dir."/BWA_index/$indexname ".$fasta;

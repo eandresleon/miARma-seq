@@ -410,7 +410,7 @@ sub run_miARma{
 			}
 			if($do_index){
 				if($cfg->exists("Aligner","indexname") ne ""){
-					print STDERR "miARma :: " . date() . " Indexing ".$cfg->val("Aligner","fasta") ." for a ".$cfg->val("Aligner","aligner")." analysis\n";
+					print STDERR date() . " Indexing ".$cfg->val("Aligner","fasta") ." for a ".$cfg->val("Aligner","aligner")." analysis\n";
 					my @index_value=IndexGeneration(
 					  	aligner=>$cfg->val("Aligner","aligner"),
 					  	fasta=>$cfg->val("Aligner","fasta"),
@@ -420,7 +420,7 @@ sub run_miARma{
 						miARmaPath=>$miARmaPath
 					 );
 					 
- 					print STDERR "miARma :: " . date() . " Index $index_value[0] created\n";
+ 					print STDERR date() . " Index $index_value[0] created\n";
 
 					if(lc($cfg->val("Aligner","aligner")) eq "bowtie1" and $cfg->val("Aligner","bowtie1index") eq ""){
 			 			$cfg->newval("Aligner", "bowtie1index", $index_value[0]);
