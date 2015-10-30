@@ -96,7 +96,7 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   data <- read.table(file, header=TRUE, sep="\t")
   
   #Importing targets
-  targets<-readTargets(targetfile)
+  targets<-readTargets(targetfile,row.names="Filename")
   
   #########################################################################
   #2- FILTERING AND NORMALIZATION
@@ -104,10 +104,10 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
    
   #Checking the dimensions of the targets
   #For 1 dimension target file must contain 2 columns: names and condition and for 2 dimensions must contain 3: names, condition 1 and condition 2
-  if(length(colnames(targets))==2){
-    group<-factor(targets[,2])
-  }else if(length(colnames(targets))==3){
-    group<-factor(paste(targets[,2],targets[,3],sep="_"))
+  if(length(colnames(targets))==3){
+    group<-factor(targets[,3])
+  }else if(length(colnames(targets))==4){
+    group<-factor(paste(targets[,3],targets[,4],sep="_"))
   }else{
     stop("Target file has an incorrect format. Please see documentation to get information of the correct format of this file")
   }
@@ -147,7 +147,7 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   if(tolower(replicates)=="yes"){
     #Dispersion estimation and DE analysis differs according to to the number of factors. 
     filepaths<-NA
-    if(length(colnames(targets))==2){
+    if(length(colnames(targets))==3){
       #For 1 factor qCML method is recommended to estimate the dispersion and exact test to perform DE analysis
       dgenorm <- estimateCommonDisp(dgenorm)
       dgenorm <- estimateTagwiseDisp(dgenorm)
@@ -183,7 +183,7 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         message<-paste(time, " The file ", resultsfile ," has been generated in ", projectdir," for ",contrastsname[1]," comparison\n", sep="")
         cat(message, sep="")
       }
-    }else if(length(colnames(targets))==3){
+    }else if(length(colnames(targets))==4){
       #Generating the comparison matrix
       design<-model.matrix(~0+group)
       colnames(design)<-levels(group)
