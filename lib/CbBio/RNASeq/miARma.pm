@@ -808,7 +808,6 @@ sub run_miARma{
 					projectdir=>$cfg->val("General","output_dir"),
 					summary=>$summary_file,
 				);
-				
 			}
 		}
 		print date() . " De novo identification and quantification of miRNAs finished\n";

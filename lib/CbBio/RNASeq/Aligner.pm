@@ -258,9 +258,9 @@ sub ReadAligment{
 	my $output_file2;
 	my @results;
 	if($file =~ /.*\.fastq$/ or $file =~ /.*\.fastq\.lane\.clean$/ or $file =~ /.*\.fastq.gz$/ or $file =~ /.*\.fq$/ or $file =~ /.*\.fq.gz$/ or $file =~ /.*\.fq\.bz2$/ or $file =~ /.*\.fastq\.bz2$/){
-		if($file and $aligner and $logfile and $statsfile and $projectdir){
+		if($file and ($aligner or $adapter_file) and $logfile and $statsfile and $projectdir){
 			#Checking the selected aligner for the analysis
-			if (lc($aligner) eq "bowtie1"){
+			if(lc($aligner) eq "bowtie1"){
 				#Collecting specific bowtie1 index
 				my $bowtie1index=$args{"bowtie1index"}; #Genome index to align your reads in .ebwt format
 				#Optional parameters are predefined as undef
@@ -311,7 +311,7 @@ sub ReadAligment{
 			  		die("READALIGNMENT ERROR:: ".date()."Index argument ($bowtie1index) has not been provided");
 			  	}
 			}
-			elsif (lc($aligner) eq "bowtie2"){
+			elsif(lc($aligner) eq "bowtie2"){
 				#Collecting specific bowtie2 index
 				my $bowtie2index=$args{"bowtie2index"}; #Genome index to align your reads in .bt2 format
 				#Optional parameters are predefined as undef
@@ -358,7 +358,7 @@ sub ReadAligment{
 		  		return($output_file2);
 
 			}
-			elsif (lc($aligner) eq "bowtie1-bowtie2" or lc($aligner) eq "bowtie2-bowtie1"){
+			elsif(lc($aligner) eq "bowtie1-bowtie2" or lc($aligner) eq "bowtie2-bowtie1"){
 				#Collecting specific bowtie index
 				my $bowtie1index=$args{"bowtie1index"}; #Genome index to align your reads in .ebwt format
 				my $bowtie2index=$args{"bowtie2index"}; #Genome index to align your reads in .bt2 format
@@ -660,6 +660,12 @@ sub ReadAligment{
 						chomp;
 						my ($current_file,$current_adapter)=split(/\t/);
 						if($current_file eq $file_name){
+							$adapter=$current_adapter;
+						}
+						if($current_file eq $file_name.".bz2"){
+							$adapter=$current_adapter;
+						}
+						if($current_file eq $file_name.".gz"){
 							$adapter=$current_adapter;
 						}
 					}
