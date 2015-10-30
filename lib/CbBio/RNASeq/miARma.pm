@@ -691,7 +691,7 @@ sub run_miARma{
 								threads=>$cfg->val("General","threads") || 1,
 								miARmaPath=>$miARmaPath,
 								Seqtype=>$cfg->val("General","seqtype") || undef,
-								bwaindex=>$cfg->val("ReadCount","bwaindex") || undef,
+								fasta=>$cfg->val("ReadCount","fasta") || undef,
 							);
 							push(@circRNAfiles, $result);
 						}

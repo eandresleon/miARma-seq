@@ -540,14 +540,14 @@ sub CIRICount{
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Input directory where results directory will be created
-	my $bwaindex=$args{"bwaindex"}; #Input directory where results directory will be created
+	my $fasta=$args{"fasta"}; #Input directory where results directory will be created
 
 	#Variable declaration
 	my $command;
 	my $commanddef;
 	
 	#Checking the mandatory parameters
-	if ($file and $projectdir and $database and $logfile and $bwaindex and $Seqtype){
+	if ($file and $projectdir and $database and $logfile and $fasta and $Seqtype){
 		if($file =~ /.*\.sam$/){
 			my $output_dir="/"."circRNAs_results/";
 			my($filename) = fileparse($file);
@@ -556,7 +556,7 @@ sub CIRICount{
 				print STDOUT "CIRI :: ".date()." Checking $file for a circRNA analysis (Paired End)\n" if($verbose);
 				#CIRI execution command
 				#perl CIRI.pl -P -I test.sam -O outfile -F chr1.fa -A chr1.gtf
-				$command="CIRI_v1.2.pl -P -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $bwaindex . " -G " . $logfile;
+				$command="CIRI_v1.2.pl -P -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta . " -G " . $logfile;
 				#commandef is the command will be executed by system composed of the results directory creation 
 				#and the htseq_count execution. The error data will be printed on the run.log file
 				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." > ".$logfile ." 2>&1";
@@ -564,7 +564,7 @@ sub CIRICount{
 			else{
 				#CIRI execution command
 				print STDOUT "CIRI :: ".date()." Checking $file for a circRNA analysis (Single End)\n" if($verbose);
-				$command="CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $bwaindex  . " -G " . $logfile;
+				$command="CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta  . " -G " . $logfile;
 				#commandef is the command will be executed by system composed of the results directory creation 
 				#and the htseq_count execution. The error data will be printed on the run.log file
 				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." >".$logfile ."2>&1";
@@ -597,7 +597,7 @@ sub CIRICount{
 		print LOG "CIRICount ERROR :: ".date()." Projectdir ($projectdir), file ($file), logfile ($logfile) and/or database($database) have not been provided";
 		close LOG;
 			#If mandatory parameters have not been provided program dies and shows error message
-		warn("CIRICount ERROR :: Projectdir ($projectdir), file ($file), logfile ($logfile), bwa index (bwaindex), sequencing type ($Seqtype) and/or database($database) have not been provided");
+		warn("CIRICount ERROR :: Projectdir ($projectdir), file ($file), logfile ($logfile), bwa index (fasta), sequencing type ($Seqtype) and/or database($database) have not been provided");
 		help_CIRICount();
 	}
 	sub help_CIRICount{
@@ -607,7 +607,7 @@ sub CIRICount{
 			Mandatory parameters:
 	 		[file] Path of the file which is going to be processed (bam format)
 	 		[logfile] Path of run.log file where execution data will be saved
-	 		[database] GFF file used to calculate the number of reads in CIRI analysis
+	 		[fasta] fasta file used to calculate the number of reads in CIRI analysis
 	 		[projectdir] Directory where htseq_results directory will be created
 
 	 		Optional parameters:
