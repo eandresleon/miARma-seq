@@ -109,7 +109,7 @@ DE_noiseq<-function(projectdir,dir,file,targetsfile,label,filter,contrastfile,le
   }
   
   #Generating factors for experimental conditions
-  target<-read.table(file=targetsfile, sep="\t", header=T)
+  target<-read.table(file=targetsfile, sep="\t", header=T,row.names=1)
   #Generating factors using targets. Only one factor is allowed
   myfactors <- data.frame(Factor1=target[,2])
   samplenames<-target[,1]
