@@ -647,6 +647,7 @@ sub TargetPrediction_Summary{
 		print SUMM "\nmiRNAs with more associations\n";
 		print SUMM "File\tmiRNA\tNumber of associations\n";
 		foreach my $file (sort keys %$miRNAs){
+			my $cont=0;
 			foreach my $miRNA (sort {$miRNAs->{$file}->{$b} <=> $miRNAs->{$file}->{$a}} keys %{$miRNAs->{$file}}){
 				last if($cont==5);
 				$cont++;
