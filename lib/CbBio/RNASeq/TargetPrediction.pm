@@ -652,7 +652,7 @@ sub TargetPrediction_Summary{
 				$cont++;
 				print SUMM "$file\t$miRNA\t" . $miRNAs->{$file}->{$miRNA} ."\n";
 			}
-			#print SUMM "\n";
+			print SUMM "\n";
 		}
 	
 		print SUMM "\nGenes more regulated\n";

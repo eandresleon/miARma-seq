@@ -251,7 +251,7 @@ sub run_miARma{
 					# # FASTQC EXECUTION
 					# # Reading the array with the names of the files
 					print date()." Starting Quality Analysis.\n";
-					foreach my $file(@files){
+					foreach my $file(sort @files){
 						#Calling FastQC subroutine of Quality.pm package.
 						$processed_files->{$file}++;
 						$output_dir=FastQC(
