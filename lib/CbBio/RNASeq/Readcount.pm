@@ -567,7 +567,7 @@ sub CIRICount{
 				$command="CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta  . " -G " . $logfile;
 				#commandef is the command will be executed by system composed of the results directory creation 
 				#and the htseq_count execution. The error data will be printed on the run.log file
-				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." >".$logfile ."2>&1";
+				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." >".$logfile ." 2>&1";
 			}
 			#Opening the run.log and printing the execution data
 			open (LOG,">> ".$logfile) || die $!;
