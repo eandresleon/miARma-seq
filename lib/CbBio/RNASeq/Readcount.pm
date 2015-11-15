@@ -1199,7 +1199,7 @@ sub featureSummary{
 		}
 		if($_ =~ /Successfully assigned/){
 			$assigned=$_;
-			$assigned=~s/.*Successfully assigned reads* : (\d+) (\(\d+\.\d+%\)).*/$1 $2/g;
+			$assigned=~s/.*Successfully assigned (.*): (\d+) (\(\d+\.\d+%\)).*/$1 $2/g;
 			$assigned=~s/reads//g;
 			$assigned=~s/fragments//g;
 		}
