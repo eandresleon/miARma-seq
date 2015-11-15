@@ -1200,8 +1200,8 @@ sub featureSummary{
 		if($_ =~ /Successfully assigned/){
 			$assigned=$_;
 			$assigned=~s/.*Successfully assigned reads* : (\d+) (\(\d+\.\d+%\)).*/$1 $2/g;
-			$assigned=~/reads//g;
-			$assigned=~/fragments//g;
+			$assigned=~s/reads//g;
+			$assigned=~s/fragments//g;
 		}
 		
 		if($real_file and $assigned){
