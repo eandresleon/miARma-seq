@@ -2416,6 +2416,7 @@ sub ReadSummary{
 							$multimapping=$_;
 							$multimapping=~s/\s+of these:\s+(.+)/$1/g;
 							$multimapping=~s/have multiple alignments.+//g;
+							$multimapping=~s/have multiple alignments//g;
 						}
 						if($_ =~/overall read mapping rate/){
 							$overall=$_;

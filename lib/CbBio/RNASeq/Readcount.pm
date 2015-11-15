@@ -1193,9 +1193,15 @@ sub featureSummary{
 			$processed=$_;
 			$processed=~s/.*Total reads : (\d+).*/$1/g;
 		}
+		if($_ =~ /Total fragments/){
+			$processed=$_;
+			$processed=~s/.*Total fragments : (\d+).*/$1/g;
+		}
 		if($_ =~ /Successfully assigned/){
 			$assigned=$_;
-			$assigned=~s/.*Successfully assigned reads : (\d+) (\(\d+\.\d+%\)).*/$1 $2/g;
+			$assigned=~s/.*Successfully assigned reads* : (\d+) (\(\d+\.\d+%\)).*/$1 $2/g;
+			$assigned=~/reads//g;
+			$assigned=~/fragments//g;
 		}
 		
 		if($real_file and $assigned){
