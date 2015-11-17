@@ -154,7 +154,7 @@ sub FastQC{
 		}
 		else{
 			if($verbose and -e($file)){
-				warn("FASTQC ERROR :: ".date()." File($file) has an invalid format.");
+				#warn("FASTQC ERROR :: ".date()." File($file) has an invalid format.");
 			}
 		}
 		return($projectdir.$output_dir);
