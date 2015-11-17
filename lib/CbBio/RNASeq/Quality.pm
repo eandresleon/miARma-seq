@@ -153,7 +153,7 @@ sub FastQC{
 			#The path of output results is returned to main program
 		}
 		else{
-			if($verbose){
+			if($verbose and -e($file)){
 				warn("FASTQC ERROR :: ".date()." File($file) has an invalid format.");
 			}
 		}
