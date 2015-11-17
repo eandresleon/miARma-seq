@@ -152,13 +152,13 @@ sub FastQC{
 			}
 			#The path of output results is returned to main program
 		}
-		return($projectdir.$output_dir);
-		
 		else{
 			if($verbose){
 				warn("FASTQC ERROR :: ".date()." File($file) has an invalid format.");
 			}
 		}
+		return($projectdir.$output_dir);
+		
 	}
 	else
 	{
@@ -569,3 +569,4 @@ sub date{
 	return("[$now]");
 }	
 1;
+
