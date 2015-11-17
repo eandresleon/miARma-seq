@@ -567,7 +567,7 @@ sub CIRICount{
 				$command="CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta  . " -G " . $logfile;
 				#commandef is the command will be executed by system composed of the results directory creation 
 				#and the htseq_count execution. The error data will be printed on the run.log file
-				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." >".$logfile ."2>&1";
+				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." >".$logfile ." 2>&1";
 			}
 			#Opening the run.log and printing the execution data
 			open (LOG,">> ".$logfile) || die $!;
@@ -1193,9 +1193,16 @@ sub featureSummary{
 			$processed=$_;
 			$processed=~s/.*Total reads : (\d+).*/$1/g;
 		}
+		if($_ =~ /Total fragments/){
+			$processed=$_;
+			$processed=~s/.*Total fragments : (\d+).*/$1/g;
+		}
 		if($_ =~ /Successfully assigned/){
 			$assigned=$_;
-			$assigned=~s/.*Successfully assigned reads : (\d+) (\(\d+\.\d+%\)).*/$1 $2/g;
+			$assigned=~s/ reads //g;
+			$assigned=~s/ fragments //g;
+			$assigned=~s/.*Successfully assigned: (\d+) (\(\d+\.\d+%\)).*/$1 $2/g;
+
 		}
 		
 		if($real_file and $assigned){

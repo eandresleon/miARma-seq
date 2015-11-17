@@ -637,7 +637,7 @@ sub run_miARma{
 							miARmaPath=>$miARmaPath,
 							threads=>$cfg->val("General","threads") || 1,
 							quality=>$cfg->val("ReadCount","quality") || undef,
-							Seqtype=>$cfg->val("General","seqtype") || undef,
+							Seqtype=>$cfg->val("General","seqtype") || "Single",
 						);
 						push(@htseqfiles, $result);
 					}
@@ -690,7 +690,7 @@ sub run_miARma{
 								projectdir=>$cfg->val("General","output_dir")|| undef,
 								threads=>$cfg->val("General","threads") || 1,
 								miARmaPath=>$miARmaPath,
-								Seqtype=>$cfg->val("General","seqtype") || undef,
+								Seqtype=>$cfg->val("General","seqtype") || "Single",
 								fasta=>$cfg->val("ReadCount","fasta") || undef,
 							);
 							push(@circRNAfiles, $result);
