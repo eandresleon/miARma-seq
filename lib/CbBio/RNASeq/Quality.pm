@@ -102,7 +102,7 @@ sub FastQC{
 	my $threads=$args{"threads"} || 1; #Optional number of threads to perform the analysis faster
 	my $verbose=$args{"verbose"} || 0; #Optional argument to show the execution data on screen
 	my $label=$args{"prefix"}; #Label to write in the directory results name
-	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
+	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be createdc
 	#Describing results directory 
 	my $output_dir= "/".$label."_fastqc_results/";
 	
@@ -116,7 +116,7 @@ sub FastQC{
 				print STDOUT "\t". date()." Checking $file for FastQC analysis\n";
 			}
 			$file = abs_path($file);
-		  	system("mkdir -p $projectdir");
+		  	system("mkdir -p $projectdir.$output_dir/");
 
 			#Variable declarations
 			my $command;
@@ -152,12 +152,13 @@ sub FastQC{
 			}
 			#The path of output results is returned to main program
 		}
+		else{
+			if($verbose and -e($file)){
+				#warn("FASTQC ERROR :: ".date()." File($file) has an invalid format.");
+			}
+		}
 		return($projectdir.$output_dir);
 		
-		#else{
-		#	warn("FASTQC ERROR :: ".date()." File($file) has an invalid format.");
-		#	help_FastQC();
-		#}
 	}
 	else
 	{
@@ -313,7 +314,7 @@ sub FastQCStats{
 						$gc=$1;
 						$linebefgc=0;
 					}
-					#If the line don´t contain any of the regular expressions the counters
+					#If the line donÂ´t contain any of the regular expressions the counters
 					# will keep the 0 value.
 					else
 					{
@@ -568,3 +569,4 @@ sub date{
 	return("[$now]");
 }	
 1;
+

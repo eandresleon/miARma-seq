@@ -183,7 +183,7 @@ sub F_Analysis{
 				}
 			}
 		}		
-		if($noiseq_dir){
+		elsif($noiseq_dir){
 			print STDOUT date() . " Starting a Functional Analysis based on NoiSeq data\n" if($verbose);
 			print LOG date() . " Starting a Functional Analysis based on NoiSeq data\n";
 			my $noiseq_cutoff;
