@@ -94,11 +94,13 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   workingDir<-projectdir
   setwd(workingDir)
   data <- read.table(file, header=TRUE, sep="\t")
+  data<-data[,sort(colnames(data))]
   
   #Importing targets
   targets<-readTargets(targetfile,row.names="Filename")
-  
-  #########################################################################
+  targets<-targets[order(targets$Filename),]
+
+    #########################################################################
   #2- FILTERING AND NORMALIZATION
   #########################################################################
    
