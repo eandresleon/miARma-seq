@@ -1660,14 +1660,25 @@ sub TopHat{
 				$output_file_mapped="$projectdir/$output_dir/$name\_top_bw1.bam";
 				$output_file_unmapped="$projectdir/$output_dir/$name\_top_no_aligned.bam";
 				$output_file_stats="$projectdir/$output_dir/$name\_top_bw1_align_summary.txt";
+				$output_file_del="$projectdir/$output_dir/$name\_top_bw1_deletions.bed";
+				$output_file_ins="$projectdir/$output_dir/$name\_top_bw1_insertions.bed";
+				$output_file_junct="$projectdir/$output_dir/$name\_top_bw1_junctions.bed";
 			}
 			else{
 				$output_file_mapped="$projectdir/$output_dir/$name\_top_bw2.bam";
 				$output_file_unmapped="$projectdir/$output_dir/$name\_top_no_aligned.bam";
 				$output_file_stats="$projectdir/$output_dir/$name\_top_bw2_align_summary.txt";
+				$output_file_del="$projectdir/$output_dir/$name\_top_bw2_deletions.bed";
+				$output_file_ins="$projectdir/$output_dir/$name\_top_bw2_insertions.bed";
+				$output_file_junct="$projectdir/$output_dir/$name\_top_bw2_junctions.bed";
 			}
+			
 			system("mv $projectdir/$output_dir/accepted_hits.bam $output_file_mapped");
 			system("mv $projectdir/$output_dir/align_summary.txt $output_file_stats");
+			system("mv $projectdir/$output_dir/deletions.bed $output_file_del");
+			system("mv $projectdir/$output_dir/insertions.bed $output_file_ins");
+			system("mv $projectdir/$output_dir/junctions.bed $output_file_junct");
+			
 			if($output_file_unmapped){
 				system("mv $projectdir/$output_dir/unmapped.bam $output_file_unmapped");
 			}
