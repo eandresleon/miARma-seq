@@ -1655,6 +1655,10 @@ sub TopHat{
 			my $output_file_mapped;
 			my $output_file_unmapped;
 			my $output_file_stats;
+			my $output_file_ins;
+			my $output_file_del;
+			my $output_file_junct;
+			
 			#Renaming results
 			if(lc($tophat_aligner) eq "bowtie1"){
 				$output_file_mapped="$projectdir/$output_dir/$name\_top_bw1.bam";
