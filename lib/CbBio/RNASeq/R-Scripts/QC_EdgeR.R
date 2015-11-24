@@ -100,12 +100,16 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   filepath<-file.path(workingDir,file)
   data <- read.table(filepath, header=TRUE, sep="\t")
   
+  data<-data[,sort(colnames(data))]
+  
   #########################################################################
   #2-EDGER ANALYSIS-BOXPLOT, DENSITY PLOT AND CLUSTERING
   #########################################################################
   
   #Importing targets
   targets<-readTargets(targetfile)
+  targets<-targets[order(targets$Filename),]
+  
   options(warn=-1)
   #Checking the dimensions of the targets
   #For 1 dimension target file must contain 2 columns: names and condition and for 2 dimensions must contain 3: names, condition 1 and condition 2
