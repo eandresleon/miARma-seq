@@ -1180,6 +1180,9 @@ sub featureSummary{
 				my $file=$_;
 				my @data=split(/\s+/);
 				$real_file=fileparse($data[$#data]);
+				$real_file=~s/\.tab$//g;
+				$real_file=~s/\.bam$//g;
+				
 				$processed=0;
 				$assigned=0;
 				$strand="";
@@ -1210,16 +1213,7 @@ sub featureSummary{
 		}
 	}
 	close STAT;
-	
-	if(scalar(keys %$summary)>0){
-		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
-		print SUMM "\nReadCount [".$summary_path."]\n";
-		print SUMM "Filename\tProcessed Reads\tAssigned reads\tStrand\n";
-		foreach my $processed_file (sort keys %$summary){
-			print SUMM $processed_file ."\t". $summary->{$processed_file}."\n";
-		}
-		close SUMM;
-	}
+
 	
 	my $results;
 	foreach my $file(sort {$a cmp $b} @$input){
@@ -1243,11 +1237,12 @@ sub featureSummary{
 		}
 	}
 	
-	if(scalar(keys %$results)>0){
+	if(scalar(keys %$summary)>0 and scalar(keys %$results)>0){
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
-		print SUMM "\nFilename\tNumber of identified entities\n";
-		foreach my $processed_file (sort keys %$results){
-			print SUMM $processed_file ."\t". scalar(keys %{$results->{$processed_file}})."\n";
+		print SUMM "\nReadCount [".$summary_path."]\n";
+		print SUMM "Filename\tProcessed Reads\tAssigned reads\tStrand\tNumber of identified entities\n";
+		foreach my $processed_file (sort keys %$summary){
+			print SUMM $processed_file ."\t". $summary->{$processed_file}."\t". scalar(keys %{$results->{$processed_file}}) ."\n";
 		}
 		close SUMM;
 	}
