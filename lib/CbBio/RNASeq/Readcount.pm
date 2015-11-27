@@ -1240,9 +1240,9 @@ sub featureSummary{
 	if(scalar(keys %$summary)>0 and scalar(keys %$results)>0){
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
 		print SUMM "\nReadCount [".$summary_path."]\n";
-		print SUMM "Filename\tProcessed Reads\tAssigned reads\tStrand\tNumber of identified entities\n";
+		print SUMM "Filename\tProcessed Reads\tAssigned reads\tNumber of identified entities\tStrand\n";
 		foreach my $processed_file (sort keys %$summary){
-			print SUMM $processed_file ."\t". $summary->{$processed_file}."\t". scalar(keys %{$results->{$processed_file}}) ."\n";
+			print SUMM $processed_file ."\t". scalar(keys %{$results->{$processed_file}}) ."\t" .$summary->{$processed_file}."\n".;
 		}
 		close SUMM;
 	}
