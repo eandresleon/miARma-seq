@@ -1191,6 +1191,7 @@ sub featureSummary{
 		if($_ =~ /Strand specific/){
 			$strand=$_;
 			$strand=~s/.*Strand specific : (.+)\s+.*/$1/g;
+			$strand=~s/\s+//g;
 		}
 		if($_ =~ /Total reads/){
 			$processed=$_;
@@ -1242,7 +1243,7 @@ sub featureSummary{
 		print SUMM "\nReadCount [".$summary_path."]\n";
 		print SUMM "Filename\tProcessed Reads\tAssigned reads\tNumber of identified entities\tStrand\n";
 		foreach my $processed_file (sort keys %$summary){
-			print SUMM $processed_file ."\t". scalar(keys %{$results->{$processed_file}}) ."\t" .$summary->{$processed_file}."\n";
+			print SUMM $processed_file ."\t". $summary->{$processed_file} ."\t". scalar(keys %{$results->{$processed_file}}) ."\n";
 		}
 		close SUMM;
 	}
