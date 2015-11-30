@@ -177,7 +177,7 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   
   #Density plots of the number of reads 
   par(mfrow=c(1,1), col.main="royalblue4", col.lab="royalblue4", col.axis="royalblue4", bg="white", fg="royalblue4", font=2, cex.axis=0.8)
-  plot(density(log10(data[,1])),col=boxcol[1],ylim=c(0,0.3), main=paste("Density plot of number of reads of ", label, sep=""), lwd=1.5, xlab="log10(counts)")
+  plot(density(log10(data[,1])),col=boxcol[1], main=paste("Density plot of number of reads of ", label, sep=""), lwd=1.5, xlab="log10(counts)")
   lineformat<-NA
   countb<-1
   for (a in 1:length(levels(group))){
@@ -196,7 +196,7 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   legend("topright", samplenames, col=boxcol, lty=lineformat, lwd=4, cex=0.8)
   
   #Density plot of normalized counts data
-  plot(density(log10(dgenorm$counts[,1])),col=boxcol[1],ylim=c(0,0.5), main=paste("Density plot of normalized and filtered number of reads of ", label, sep=""), lwd=1.5, xlab="log10(counts)")
+  plot(density(log10(dgenorm$counts[,1])),col=boxcol[1], main=paste("Density plot of normalized and filtered number of reads of ", label, sep=""), lwd=1.5, xlab="log10(counts)")
   for (a in 2:length(colnames(data))){
     number<-check_parameter(dgenorm$counts[,a])
     if(number>1){
