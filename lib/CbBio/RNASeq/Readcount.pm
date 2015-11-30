@@ -183,7 +183,7 @@ sub featureCount{
 			my $output_dir="/".$prefix."_readcount_results/";
 
 			#htseq-count execution command
-			$command="featureCounts -M -O ".$htseqpardef." -a ".$database." -o ".$projectdir.$output_dir.$name.".tab " . $file ;
+			$command="featureCounts ".$htseqpardef." -a ".$database." -o ".$projectdir.$output_dir.$name.".tab " . $file ;
 			#commandef is the command will be executed by system composed of the results directory creation 
 			#and the htseq_count execution. The error data will be printed on the run.log file
 			$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." 2>> ".$logfile;;
