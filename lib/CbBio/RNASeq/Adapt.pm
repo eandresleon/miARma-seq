@@ -440,7 +440,7 @@ sub AdapterRemoval{
 						$readposition=$args{"readposition"};
 					}
 
-					AdaptTriming(
+					my $adapt_file=AdaptTriming(
 						dir=>$dir,
 						file=>$file,
 						trimmingnumber=>$trimmingnumber,
@@ -449,7 +449,7 @@ sub AdapterRemoval{
 						logfile=>$logfile,
 						projectdir=>$projectdir
 					);
-					push (@adapter_results, $reaper_result);
+					push (@adapter_results, $adapt_file);
 					print STDERR date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n" if($verbose);
 					
 				}
