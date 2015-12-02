@@ -605,6 +605,7 @@ sub ReadAligment{
 				}else{
 					$Seqtype="SingleEnd";
 				}
+
 				if($bwaindex){
 					#Calling Bowtie1 function
 					$output_file1=bwa( 
@@ -617,6 +618,7 @@ sub ReadAligment{
 						projectdir=>$projectdir,
 						miARmaPath=>$miARmaPath,
 						Seqtype=>$Seqtype,
+						bwaparameters=>$args{"bwaparameters"} || undef
 			  		);
 			 		return($output_file1);
 			  	}
@@ -1883,12 +1885,13 @@ sub bwa{
 	my $statsfile=$args{"statsfile"}; #Path of the statsfile to write the stats data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Singe-End]
+	my $bwapardef=$args{"bwaparameters"}; #additional parameter for bwa
 	
 	# Variable declaration and describing results directory 
 	my $output_dir="/bwa_results/";
 
 	#Variable to collect the optional parameters 
-	my $bwapardef= "-T 19 ";
+	$bwapardef. = " -T 19 ";
 	#The number of missmatches can be provided by the user
 
 	#Number of threads can be provided by the user

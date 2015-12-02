@@ -391,6 +391,10 @@ sub run_miARma{
 			print STDERR "\nERROR " . date() . " Bowtie2 has been selected as aligner but bowtie2index/fasta is missing/unfilled. Please check documentation\n";
 			help_check_aligner();
 		}
+		elsif( lc($cfg->val("Aligner","aligner")) eq "bwa" and ( $cfg->val("Aligner","bwaindex") eq "" and $cfg->val("Aligner","fasta") eq "")){
+			print STDERR "\nERROR " . date() . " BWA has been selected as aligner but bwaindex/fasta is missing/unfilled. Please check documentation\n";
+			help_check_aligner();
+		}
 		else{
 			#run Adapter
 			use CbBio::RNASeq::Aligner;
@@ -573,6 +577,7 @@ sub run_miARma{
 						tophat_multihits=>$cfg->val("Aligner","tophat_multihits") || undef,
 						read_mismatches=>$cfg->val("Aligner","tophat_read_mismatches") || undef,
 						tophat_aligner=>$cfg->val("Aligner","tophat_aligner") || undef,
+						bwaparameters=>$cfg->val("Aligner","bwaparameters") || undef,
 					);
 					push(@alignes,$file);
 				}
