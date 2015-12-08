@@ -1891,7 +1891,7 @@ sub bwa{
 	my $output_dir="/bwa_results/";
 
 	#Variable to collect the optional parameters 
-	$bwapardef. = " -T 19 ";
+	$bwapardef.= " -T 19 ";
 	#The number of missmatches can be provided by the user
 
 	#Number of threads can be provided by the user

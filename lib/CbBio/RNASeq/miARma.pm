@@ -502,17 +502,41 @@ sub run_miARma{
 				}
 				
 				#Reading read directory, collecting the files and completing with the path
-				my $dir=$cfg->val("General","read_dir");
-				if(-e $dir){
-					opendir(DIR, $dir) || warn "1) Aligner:: Folder $dir is not found\n"; 
-					my @cut_files= readdir(DIR);
-					push(@files,map("$dir/$_",@cut_files));
-				}
-				else{
-					print STDERR "Sorry but I couldn't find any read to align in : $dir in " . $cfg->val("General","read_dir") ."\n";
-					help_check_general();
-				}
 				
+				#Reading read directory, collecting the files and completing with the path
+				my $cut_dir=$cfg->val("General","output_dir")."/cutadapt_results/";
+				if(-e $cut_dir){
+					opendir(CUTDIR, $cut_dir) || warn "Aligner:: Folder $cut_dir is not found, but cutadapt has been specified as an adaptersoft\n"; 
+					my @cut_files= readdir(CUTDIR);
+					push(@files,map("$cut_dir$_",@cut_files));
+				}
+				#Reading Reaper results directory, collecting the files and completing with the path
+				my $rea_dir=$cfg->val("General","output_dir")."/Reaper_results/";
+				if(-e $rea_dir){
+					opendir(READIR, $rea_dir) || warn "Aligner:: Folder $rea_dir is not found, but Reaper has been specified as an adaptersoft\n"; 
+					my @rea_files= readdir(READIR);
+					push(@files,map("$rea_dir$_",@rea_files));
+				}
+				#Reading Trimming results directory, collecting the files and completing with the path
+				my $trim_dir=$cfg->val("General","output_dir")."/AdaptTriming_results/";
+				if(-e $trim_dir){
+					opendir(READIR, $trim_dir) || warn "Aligner:: Folder $trim_dir is not found, but Adaptrimming has been specified as an adaptersoft\n"; 
+					my @trim_files= readdir(READIR);
+					push(@files,map("$trim_dir$_",@trim_files));
+				}
+				if(!-e $cut_dir and !-e $rea_dir and !-e $trim_dir){
+					print STDERR date()." No processed files are found [neither cutadapt, nor reaper nor adaptrimming folders], assuming " .$cfg->val("General","read_dir").  " are already processed\n";
+					my $dir_reads_all=$cfg->val("General","read_dir");
+					if(-e $dir_reads_all){
+						opendir(READIR, $dir_reads_all) || die " No reads found to process\n";
+						my @dir_reads_all= readdir(READIR);
+						push(@files,map("$dir_reads_all$_",@dir_reads_all));
+					}
+					else{
+						print STDERR "Sorry but I couldn't find any read to align in : $cut_dir or in $rea_dir or in $trim_dir or in " . $cfg->val("General","read_dir") ."\n";
+						help_check_general();
+					}
+				}
 			}
 			elsif(lc($cfg->val("General","type")) eq "circrna"){
 				#Mandatory for circRNA analysis
@@ -525,15 +549,40 @@ sub run_miARma{
 					help_check_aligner();
 				}
 				#Reading read directory, collecting the files and completing with the path
-				my $dir=$cfg->val("General","read_dir");
-				if(-e $dir){
-					opendir(DIR, $dir) || warn "2) Aligner:: Folder $dir is not found\n"; 
-					my @cut_files= readdir(DIR);
-					push(@files,map("$dir/$_",@cut_files));
+				
+				#Reading read directory, collecting the files and completing with the path
+				my $cut_dir=$cfg->val("General","output_dir")."/cutadapt_results/";
+				if(-e $cut_dir){
+					opendir(CUTDIR, $cut_dir) || warn "Aligner:: Folder $cut_dir is not found, but cutadapt has been specified as an adaptersoft\n"; 
+					my @cut_files= readdir(CUTDIR);
+					push(@files,map("$cut_dir$_",@cut_files));
 				}
-				else{
-					print STDERR "Sorry but I couldn't find any read to align in : $dir in " . $cfg->val("General","read_dir") ."\n";
-					help_check_general();
+				#Reading Reaper results directory, collecting the files and completing with the path
+				my $rea_dir=$cfg->val("General","output_dir")."/Reaper_results/";
+				if(-e $rea_dir){
+					opendir(READIR, $rea_dir) || warn "Aligner:: Folder $rea_dir is not found, but Reaper has been specified as an adaptersoft\n"; 
+					my @rea_files= readdir(READIR);
+					push(@files,map("$rea_dir$_",@rea_files));
+				}
+				#Reading Trimming results directory, collecting the files and completing with the path
+				my $trim_dir=$cfg->val("General","output_dir")."/AdaptTriming_results/";
+				if(-e $trim_dir){
+					opendir(READIR, $trim_dir) || warn "Aligner:: Folder $trim_dir is not found, but Adaptrimming has been specified as an adaptersoft\n"; 
+					my @trim_files= readdir(READIR);
+					push(@files,map("$trim_dir$_",@trim_files));
+				}
+				if(!-e $cut_dir and !-e $rea_dir and !-e $trim_dir){
+					print STDERR date()." No processed files are found [neither cutadapt, nor reaper nor adaptrimming folders], assuming " .$cfg->val("General","read_dir").  " are already processed\n";
+					my $dir_reads_all=$cfg->val("General","read_dir");
+					if(-e $dir_reads_all){
+						opendir(READIR, $dir_reads_all) || die " No reads found to process\n";
+						my @dir_reads_all= readdir(READIR);
+						push(@files,map("$dir_reads_all$_",@dir_reads_all));
+					}
+					else{
+						print STDERR "Sorry but I couldn't find any read to align in : $cut_dir or in $rea_dir or in $trim_dir or in " . $cfg->val("General","read_dir") ."\n";
+						help_check_general();
+					}
 				}
 			}
 			my $libray_type="fr-firststrand";

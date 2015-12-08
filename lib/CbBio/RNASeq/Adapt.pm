@@ -1534,7 +1534,7 @@ sub Minion{
 		my $command="$bzfiles  1>/tmp/minion.sq 2>> ".$statsfile;
 		#Executing the command
 		system($command) == 0
-		or die "MINION ERROR :: system args failed: $? ($command)";
+		or die "MINION ERROR :: system args failed: $? ($command)\nAre you sure this fastq file contains and adapter sequence?";
 		#Printing the process information on the log file
 		open(LOG,">> ".$logfile) || die "MINION ERROR :: ".date()."Can't open '$logfile': $!";
 		print LOG "MINION :: ".date()." Executing $command \n";
