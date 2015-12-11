@@ -152,11 +152,17 @@ sub run_miARma{
 			help_check_general();
 		}
 		#Mandatory parameters: analysis type
-		elsif($cfg->exists("General","type") eq "" or $cfg->val("General","type") eq "" ){
-			print STDERR "\nERROR " . date() . " type parameter in Section [General] is missing. Please check documentation\n";
+		elsif($cfg->exists("General","type") eq "" or $cfg->val("General","type") eq ""){
+			print STDERR "\nERROR " . date() . " type parameter in Section [General] is missing . Please check documentation\n";
 			$severe_error=1;			
 			help_check_general();
 		}
+		elsif($cfg->val("General","type") ne "circRNA" and $cfg->val("General","type") ne "miRNA" and $cfg->val("General","type") ne "mRNA"){
+			print STDERR "\nERROR " . date() . " type parameter in Section [General] is misspelled. Only \"miRNA/mRNA or circRNA\" is accepted and you provide \"".$cfg->val("General","type")."\". Please check documentation\n";
+			$severe_error=1;			
+			help_check_general();
+		}
+		
 		else{
 			#First, we are going to check if input files are real fastq files if no error is found
 			#check_input_format(-config => $cfg);
@@ -500,9 +506,7 @@ sub run_miARma{
 					print STDERR "\nERROR " . date() . " gtf parameter in Section [Aligner] is missing. Please check documentation\n";
 					help_check_aligner();
 				}
-				
-				#Reading read directory, collecting the files and completing with the path
-				
+								
 				#Reading read directory, collecting the files and completing with the path
 				my $cut_dir=$cfg->val("General","output_dir")."/cutadapt_results/";
 				if(-e $cut_dir){
@@ -548,7 +552,6 @@ sub run_miARma{
 					print STDERR "\nERROR " . date() . " Bowtie1 has been selected as aligner but bowtie1index/fasta is missing/unfilled. Please check documentation\n";
 					help_check_aligner();
 				}
-				#Reading read directory, collecting the files and completing with the path
 				
 				#Reading read directory, collecting the files and completing with the path
 				my $cut_dir=$cfg->val("General","output_dir")."/cutadapt_results/";
