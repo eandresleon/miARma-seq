@@ -152,11 +152,17 @@ sub run_miARma{
 			help_check_general();
 		}
 		#Mandatory parameters: analysis type
-		elsif($cfg->exists("General","type") eq "" or $cfg->val("General","type") eq "" ){
-			print STDERR "\nERROR " . date() . " type parameter in Section [General] is missing. Please check documentation\n";
+		elsif($cfg->exists("General","type") eq "" or $cfg->val("General","type") eq ""){
+			print STDERR "\nERROR " . date() . " type parameter in Section [General] is missing . Please check documentation\n";
 			$severe_error=1;			
 			help_check_general();
 		}
+		elsif($cfg->val("General","type") ne "circRNA" and $cfg->val("General","type") ne "miRNA" and $cfg->val("General","type") ne "mRNA"){
+			print STDERR "\nERROR " . date() . " type parameter in Section [General] is misspelled. Only \"miRNA/mRNA or circRNA\" is accepted and you provide \"".$cfg->val("General","type")."\". Please check documentation\n";
+			$severe_error=1;			
+			help_check_general();
+		}
+		
 		else{
 			#First, we are going to check if input files are real fastq files if no error is found
 			#check_input_format(-config => $cfg);
