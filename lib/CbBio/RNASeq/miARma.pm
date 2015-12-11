@@ -469,7 +469,7 @@ sub run_miARma{
 					push(@files,map("$trim_dir$_",@trim_files));
 				}
 				if(!-e $cut_dir and !-e $rea_dir and !-e $trim_dir){
-					print STDERR date()." No processed files are found [neither cutadapt, nor reaper nor adaptrimming folders], assuming " .$cfg->val("General","read_dir").  " are already processed\n";
+					print STDERR date()." No processed files are found [neither cutadapt, nor reaper nor adaptrimming folders], assuming " .$cfg->val("General","read_dir").  " don't need to be proccessed\n";
 					my $dir_reads_all=$cfg->val("General","read_dir");
 					if(-e $dir_reads_all){
 						opendir(READIR, $dir_reads_all) || die " No reads found to process\n";
