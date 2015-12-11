@@ -500,9 +500,7 @@ sub run_miARma{
 					print STDERR "\nERROR " . date() . " gtf parameter in Section [Aligner] is missing. Please check documentation\n";
 					help_check_aligner();
 				}
-				
-				#Reading read directory, collecting the files and completing with the path
-				
+								
 				#Reading read directory, collecting the files and completing with the path
 				my $cut_dir=$cfg->val("General","output_dir")."/cutadapt_results/";
 				if(-e $cut_dir){
@@ -548,7 +546,6 @@ sub run_miARma{
 					print STDERR "\nERROR " . date() . " Bowtie1 has been selected as aligner but bowtie1index/fasta is missing/unfilled. Please check documentation\n";
 					help_check_aligner();
 				}
-				#Reading read directory, collecting the files and completing with the path
 				
 				#Reading read directory, collecting the files and completing with the path
 				my $cut_dir=$cfg->val("General","output_dir")."/cutadapt_results/";
