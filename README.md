@@ -30,9 +30,9 @@ Copyright (c) 2016 IBIS. All rights reserved.
 
 miARma-Seq is a tool that provides an easy and common interface to various analysis software. It also intends to reduce to the minimum the number of dependencies. Nevertheless, some basic programs listed below must be correctly installed:
 
-* Perl v5.6.0 or higher.(http://www.cpan.org/src/5.0/perl-5.6.1.tar.gz)
-* Java JDK v.1.6. or higher.(http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
-* R environment v.3.2 or higher.(http://www.r-project.org/)
+* [Perl v5.6.0 or higher.](http://www.cpan.org/src/5.0/perl-5.6.1.tar.gz)
+* [Java JDK v.1.6. or higher.](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+* [R environment v.3.2 or higher.](http://www.r-project.org/)
 * [Bioconductor v.1.3 or higher.](https://www.bioconductor.org/install/)
 
 #### Compilers: #####
@@ -47,7 +47,7 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 * [miARma can be installed using the following guide](http://miarmaseq.cbbio.es/PreRequisites.html)
 
 
-### Guidelines ###
+### Guidelines/How to ###
 
 * [miRNAs guide](http://miarmaseq.cbbio.es/Guide/miRNAs_miARma_doc_def.htm)
 * [mRNAs guide](http://miarmaseq.cbbio.es/Guide/mRNA_miARma_doc_def.htm)
