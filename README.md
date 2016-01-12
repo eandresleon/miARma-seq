@@ -7,7 +7,7 @@ Copyright (c) 2016 IBIS. All rights reserved.
 
 ### 1. Included in miARma ###
 
-##### Quality Software #####
+#### Quality Software ####
 * Fastqc v0.10.1
 #### Trimming Softare ####
 * CutAdapt v13-100
@@ -34,6 +34,7 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 * Java JDK v.1.6. or higher.
 * R environment v.3.2 or higher.
 * Bioconductor v.1.3 or higher.
+
 #### Compilers: #####
 + Apple:
     - Xcode
@@ -43,18 +44,17 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 
 ### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+* [miARma can be installed using the following guide](http://miarmaseq.cbbio.es/PreRequisites.html)
 
-### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
+### Guidelines ###
+
+* [miRNAs guide](http://miarmaseq.cbbio.es/Guide/miRNAs_miARma_doc_def.htm)
+* [mRNAs guide](http://miarmaseq.cbbio.es/Guide/mRNA_miARma_doc_def.htm)
+* [circRNAs guide](http://miarmaseq.cbbio.es/Guide/circRNA_miARma_doc_def.htm)
+
+### Code Documentation ####
+* [Perldoc](http://miarmaseq.cbbio.es/Doc/)
 
 ### Who do I talk to? ###
 
