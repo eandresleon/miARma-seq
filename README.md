@@ -5,9 +5,9 @@ Created at Computational Biology and Bioinformatics Group (CbBio)
 Institute of Biomedicine of Seville. IBIS (Spain)
 Copyright (c) 2016 IBIS. All rights reserved.
 
-### Included in miARma ###
+### 1. Included in miARma ###
 
-##### Quality Software #####
+#### Quality Software ####
 * Fastqc v0.10.1
 #### Trimming Softare ####
 * CutAdapt v13-100
@@ -22,22 +22,24 @@ Copyright (c) 2016 IBIS. All rights reserved.
 * feactureCounts v1.4.6
 * Ciri v1.2
 * miRDeep v2
-##### Others #####
+#### Others ####
 * RNAfold v2.1.9
 * Samtools v1.2
 
-* I) Pre-requisites
+### 2. Pre-requisites ###
+
 miARma-Seq is a tool that provides an easy and common interface to various analysis software. It also intends to reduce to the minimum the number of dependencies. Nevertheless, some basic programs listed below must be correctly installed:
-Perl v5.6.0 or higher.
-Java JDK v.1.6. or higher.
-R environment v.3.2 or higher.
-Bioconductor v.1.3 or higher.
-Compilers:
-Apple:
-Xcode
-Linux:
-Gcc
-make
+
+* Perl v5.6.0 or higher.
+* Java JDK v.1.6. or higher.
+* R environment v.3.2 or higher.
+* Bioconductor v.1.3 or higher.
+#### Compilers: #####
+* Apple:
+** Xcode
+* Linux:
+** Gcc
+** make
 
 ### How do I get set up? ###
 
@@ -56,4 +58,5 @@ make
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
+* miARma-devel@cbbio.es
+
