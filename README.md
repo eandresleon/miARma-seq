@@ -7,7 +7,7 @@ Copyright (c) 2016 IBIS. All rights reserved.
 
 ### 1. Included in miARma ###
 
-#### Quality Software ####
+##### Quality Software #####
 * Fastqc v0.10.1
 #### Trimming Softare ####
 * CutAdapt v13-100
@@ -35,11 +35,11 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 * R environment v.3.2 or higher.
 * Bioconductor v.1.3 or higher.
 #### Compilers: #####
-* Apple:
-** Xcode
-* Linux:
-** Gcc
-** make
++ Apple:
+ - Xcode
++ Linux:
+ - Gcc
+ - make
 
 ### How do I get set up? ###
 
