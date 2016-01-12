@@ -36,10 +36,10 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 * Bioconductor v.1.3 or higher.
 #### Compilers: #####
 + Apple:
- - Xcode
+    - Xcode
 + Linux:
- - Gcc
- - make
+    - Gcc
+    - make
 
 ### How do I get set up? ###
 
