@@ -67,10 +67,10 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
     
     #install.packages(new.packages)
     source("http://bioconductor.org/biocLite.R")
-    biocLite(new.packages,
-             suppressUpdates=FALSE,
-             suppressAutoUpdate=FALSE,
-             ask=TRUE)
+  biocLite(new.packages,
+           suppressUpdates=T,
+           suppressAutoUpdate=T,
+           ask=F)
   }
   
   #Loading the needed packagge

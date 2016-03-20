@@ -79,7 +79,10 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
 		
 		#install.packages(new.packages)
 		source("http://bioconductor.org/biocLite.R")
-		biocLite(new.packages)
+  	  biocLite(new.packages,
+  	           suppressUpdates=T,
+  	           suppressAutoUpdate=T,
+  	           ask=F)
 	}
 
   #Loading the needed packagge
