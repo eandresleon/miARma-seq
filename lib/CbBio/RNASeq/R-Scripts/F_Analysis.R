@@ -42,7 +42,7 @@ Mandatory arguments:
 
   Example:
     
-    F_Analysis(projectdir=\"./Project\",up=\"up\",down=\"down\",universe=\"universe\",organism=\"human\",method=\"edger\")", stderr())
+    F_Analysis(projectdir=\"./Project\",up=\"up\",down=\"down\",universe=\"universe\",organism=\"human\",method=\"edger\",seq_id=\"transcript_id\")", stderr())
   
 }
 
