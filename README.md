@@ -44,19 +44,18 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 
 ### How do I get set up? ###
 
-* [miARma can be installed using the following guide](http://miarmaseq.cbbio.es/PreRequisites.html)
+* [miARma can be installed using the following guide](http://miarmaseq.cbbio.es/installation)
 
 
 ### Guidelines/How to ###
 
-* [miRNAs guide](http://miarmaseq.cbbio.es/Guide/miRNAs_miARma_doc_def.htm)
-* [mRNAs guide](http://miarmaseq.cbbio.es/Guide/mRNA_miARma_doc_def.htm)
-* [circRNAs guide](http://miarmaseq.cbbio.es/Guide/circRNA_miARma_doc_def.htm)
+* [miRNAs guide](http://miarmaseq.cbbio.es/Documentation)
+* [mRNAs guide](http://miarmaseq.cbbio.es/Documentation)
+* [circRNAs guide](http://miarmaseq.cbbio.es/Documentation)
 
 ### Code Documentation ####
-* [Perldoc](http://miarmaseq.cbbio.es/Doc/)
+* [Perldoc](http://miarmaseq.cbbio.es/PDoc/)
 
 ### Who do I talk to? ###
 
 * miARma-devel@cbbio.es
-
