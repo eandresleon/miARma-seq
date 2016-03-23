@@ -30,13 +30,15 @@ an HTML report for each file you process.
 
 FastQC is a cross-platform application, written in java.  In theory it
 should run on any platform which has a suitable java runtime environment.
-Having said that we've only tested in on Windows, MacOSX 10.6 and Linux
-running the Sun v1.5 and 1.6 JREs.  Please let us know what happened if
-you try running it on other platforms / JREs.
+Having said that we've only tested in on Windows, MacOSX and Linux
+running the Oracle v1.6 to 1.8 JREs.  Please let us know what happened if
+you try running it on other platforms / JREs.  Please see the detailed
+instructions in the INSTALL.txt document to tell you how to get a 
+suitable java version to run FastQC on your system.
 
 If you have any comments about FastQC we would like to hear them.  You
 can either enter them in our bug tracking system at:
 
-http://www.bioinformatics.bbsrc.ac.uk/bugzilla/
+http://www.bioinformatics.babraham.ac.uk/bugzilla/
 
-..or send them directly to simon.andrews@bbsrc.ac.uk.
+..or send them directly to simon.andrews@babraham.ac.uk.

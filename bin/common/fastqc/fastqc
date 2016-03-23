@@ -4,6 +4,27 @@ use strict;
 use FindBin qw($RealBin);
 use Getopt::Long;
 
+#####################################################################################
+# Copyright Copyright 2010-15 Simon Andrews                                         #
+#                                                                                   #
+#    This file is part of FastQC.                                                   #
+#                                                                                   #
+#    FastQC is free software; you can redistribute it and/or modify                 #
+#    it under the terms of the GNU General Public License as published by           #
+#    the Free Software Foundation; either version 3 of the License, or              #
+#    (at your option) any later version.                                            #
+#                                                                                   #
+#    FastQC is distributed in the hope that it will be useful,                      #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
+#    GNU General Public License for more details.                                   #
+#                                                                                   #
+#    You should have received a copy of the GNU General Public License              #
+#    along with FastQC; if not, write to the Free Software                          #
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA     #
+#####################################################################################
+
+
 # Check to see if they've mistakenly downloaded the source distribution
 # since several people have made this mistake
 
@@ -18,14 +39,25 @@ if ($^O =~ /Win/) {
 }
 
 if ($ENV{CLASSPATH}) {
-	$ENV{CLASSPATH} .= "$delimiter$RealBin$delimiter$RealBin/sam-1.32.jar$delimiter$RealBin/jbzip2-0.9.jar";
+	$ENV{CLASSPATH} .= "$delimiter$RealBin$delimiter$RealBin/sam-1.103.jar$delimiter$RealBin/jbzip2-0.9.jar$delimiter$RealBin/cisd-jhdf5.jar";
 }
 else {
-	$ENV{CLASSPATH} = "$RealBin$delimiter$RealBin/sam-1.32.jar$delimiter$RealBin/jbzip2-0.9.jar";
+	$ENV{CLASSPATH} = "$RealBin$delimiter$RealBin/sam-1.103.jar$delimiter$RealBin/jbzip2-0.9.jar$delimiter$RealBin/cisd-jhdf5.jar";
 }
 
 my @java_args;
 my @files;
+
+if ($^O =~/darwin/) {
+		
+	# Add the OSX specific options to use a standard OSX menu bar
+	# and set the program name to something sensible.
+				
+	push @java_args, '-Xdock:name=FastQC';
+	push @java_args, "-Xdock:icon=$RealBin/../Resources/seqmonk.icns";
+	push @java_args, '-Dapple.laf.useScreenMenuBar=true';
+	
+}
 
 # We now need to scan the command line for switches which we're going
 # to pass on to the main java program.
@@ -36,24 +68,36 @@ my $outdir;
 my $unzip;
 my $format;
 my $contaminant;
+my $adapter;
+my $limits;
 my $threads;
 my $quiet;
 my $nogroup;
+my $expgroup;
 my $casava;
+my $nano;
+my $nofilter;
 my $kmer_size;
+my $temp_directory;
 my $java_bin = 'java';
 
 my $result = GetOptions('version' => \$version,
 						'help' => \$help,
 						'quiet' => \$quiet,
 						'nogroup' => \$nogroup,
+						'expgroup' => \$expgroup,
 						'outdir=s' => \$outdir,
 						'extract!' => \$unzip,
 						'format=s' => \$format,
 						'threads=i' => \$threads,
 						'kmers=i' => \$kmer_size,
 						'casava' => \$casava,
+						'nano' => \$nano,
+						'nofilter' => \$nofilter,
 						'contaminants=s' => \$contaminant,
+						'adapters=s' => \$adapter,
+						'limits=s' => \$limits,
+						'dir=s' => \$temp_directory,
 						'java=s' => \$java_bin,
 						 );
 
@@ -83,6 +127,28 @@ if ($contaminant)  {
 		die "Contaminant file '$contaminant' did not exist, or could not be read\n";
 	}
 	push @java_args ,"-Dfastqc.contaminant_file=$contaminant";
+}
+
+if ($adapter)  {
+	unless (-e $adapter and -r $adapter) {
+		die "Adapters file '$adapter' did not exist, or could not be read\n";
+	}
+	push @java_args ,"-Dfastqc.adapter_file=$adapter";
+}
+
+if ($limits)  {
+	unless (-e $limits and -r $limits) {
+		die "Limits file '$limits' did not exist, or could not be read\n";
+	}
+	push @java_args ,"-Dfastqc.limits_file=$limits";
+}
+
+if ($temp_directory) {
+	unless (-e $temp_directory and -d $temp_directory and -w $temp_directory) {
+		die "Temp directory '$temp_directory' doesn't exist, or can't be written to\n";
+	}
+	push @java_args, "-Djava.io.tmpdir=$temp_directory";
+
 }
 
 if ($threads) {
@@ -118,8 +184,25 @@ if ($casava) {
 	push @java_args ,"-Dfastqc.casava=true";		
 }
 
+if ($nano) {
+	push @java_args ,"-Dfastqc.nano=true";		
+}
+
+
+if ($nofilter) {
+	push @java_args ,"-Dfastqc.nofilter=true";		
+}
+
+
 if ($nogroup) {
 	push @java_args ,"-Dfastqc.nogroup=true";	
+}
+
+if ($expgroup) {
+	if ($nogroup) {
+		die "You can't specify both --expgroup and --nogroup in the same run\n";
+	}	
+	push @java_args ,"-Dfastqc.expgroup=true";
 }
 
 if (defined $unzip) {
@@ -157,6 +240,15 @@ if ($java_bin ne 'java') {
 }
 
 
+# We've found that on systems with large numbers of CPUs, and especially on systems
+# where IO contention can occur, that the program can consume large amounts of CPU
+# during parallel garbage collection.  Since interactive performance isn't really
+# important when running non-interactively we'll limit the GC to using only a single
+# thread if running with a list of filenames
+
+if (@ARGV) {
+	push @java_args,"-XX:ParallelGCThreads=1";
+}
 
 
 foreach (@ARGV) {
@@ -174,6 +266,8 @@ foreach (@ARGV) {
 if (@files or $version or $help) {
 	push @java_args, "-Djava.awt.headless=true";
 }
+
+#warn "Running 'exec $java_bin,@java_args, \"uk.ac.babraham.FastQC.FastQCApplication\", @files, CLASSPATH is $ENV{CLASSPATH}";
 
 
 if ($java_bin ne 'java') {
@@ -226,6 +320,14 @@ DESCRIPTION
                     Files must have the same names given to them by casava
                     (including being gzipped and ending with .gz) otherwise they
                     won't be grouped together correctly.
+                    
+    --nano          Files come from naopore sequences and are in fast5 format. In
+                    this mode you can pass in directories to process and the program
+                    will take in all fast5 files within those directories and produce
+                    a single output file from the sequences found in all files.                    
+                    
+    --nofilter      If running with --casava then don't remove read flagged by
+                    casava as poor quality when performing the QC analysis.
                    
     --extract       If set then the zipped output file will be uncompressed in
                     the same directory after it has been created.  By default
@@ -261,12 +363,29 @@ DESCRIPTION
                     The file must contain sets of named contaminants in the
                     form name[tab]sequence.  Lines prefixed with a hash will
                     be ignored.
+
+    -a              Specifies a non-default file which contains the list of
+    --adapters      adapter sequences which will be explicity searched against
+                    the library. The file must contain sets of named adapters
+                    in the form name[tab]sequence.  Lines prefixed with a hash
+                    will be ignored.
+                    
+    -l              Specifies a non-default file which contains a set of criteria
+    --limits        which will be used to determine the warn/error limits for the
+                    various modules.  This file can also be used to selectively 
+                    remove some modules from the output all together.  The format
+                    needs to mirror the default limits.txt file found in the
+                    Configuration folder.
                     
    -k --kmers       Specifies the length of Kmer to look for in the Kmer content
                     module. Specified Kmer length must be between 2 and 10. Default
-                    length is 5 if not specified.
+                    length is 7 if not specified.
                     
    -q --quiet       Supress all progress messages on stdout and only report errors.
+   
+   -d --dir         Selects a directory to be used for temporary files written when
+                    generating report images. Defaults to system temp directory if
+                    not specified.
                     
 BUGS
 
