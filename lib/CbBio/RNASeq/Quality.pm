@@ -256,8 +256,10 @@ sub FastQCStats{
 			my $gc;
 			#Selecting the results directory
 			if ($fileres !~ /\.zip$/ and $fileres !~ /^\./){
+				my $fileres_2_print=$fileres;
+				$fileres_2_print=~s/\.html$//g;
 				#Opening the report file of each directory
-				open(HTML, $dir.$fileres) || die "FASTQCSTATS ERROR :: Can't open $dir/$fileres/fastqc_report.html : $!";;
+				open(HTML, $dir.$fileres) || die "FASTQCSTATS ERROR :: Can't open $dir/$fileres : $!";;
 				#Declaring the line counters. These counters are used because the 
 				#data appears in a different lines than the regular expression. When the
 				#regular expression is found the counter changes and in the next line 
@@ -287,17 +289,17 @@ sub FastQCStats{
 				#The statistical data is printed on logfile provided by user. Opening the log file.
 				open(STATS, ">> ".$statsfile) || die "FASTQCSTATS ERROR :: Can't open $statsfile : $!";
 				#Printing the previous variables in logfile
-				print STATS "FASTQCSTATS :: ".date()."\n Name\t $fileres\n 
+				print STATS "FASTQCSTATS :: ".date()."\n Name\t $fileres_2_print\n 
 				Total Sequences:\t $seqnumber\t Sequence length:\t $seqlength\n 
 				Encoding:\t $encoding\t GCcontent:\t $gc%\n";
 				close STATS;
 				
 				
-				print SUMM "$fileres\t$seqnumber\t$gc%\t$seqlength\t$encoding\n";
+				print SUMM "$fileres_2_print\t$seqnumber\t$gc%\t$seqlength\t$encoding\n";
 				#If verbose option has been provided program will print the previous variables
 				# on screen too. 
 				if($verbose){
-					print STDOUT "FASTQCSTATS :: ".date()."\n Name\t $fileres\n 
+					print STDOUT "FASTQCSTATS :: ".date()."\n Name\t $fileres_2_print\n 
 					Total Sequences:\t $seqnumber\t Sequence length:\t $seqlength\n 
 					Encoding:\t $encoding\t GCcontent:\t $gc%\n";
 				}
