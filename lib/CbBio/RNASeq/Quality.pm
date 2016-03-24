@@ -257,7 +257,7 @@ sub FastQCStats{
 			#Selecting the results directory
 			if ($fileres !~ /\.zip$/ and $fileres !~ /^\./){
 				#Opening the report file of each directory
-				open(HTML, $dir.$fileres."/fastqc_report.html") || die "FASTQCSTATS ERROR :: Can't open $dir/$fileres/fastqc_report.html : $!";;
+				open(HTML, $dir.$fileres) || die "FASTQCSTATS ERROR :: Can't open $dir/$fileres/fastqc_report.html : $!";;
 				#Declaring the line counters. These counters are used because the 
 				#data appears in a different lines than the regular expression. When the
 				#regular expression is found the counter changes and in the next line 
@@ -271,57 +271,17 @@ sub FastQCStats{
 					chomp;
 					#If the line contains Total Sequences the counter increases and enter
 					#in the next clause obtaining the number of total sequences 
-					if($_ =~ /Total Sequences/){
-						$linebeftseq=1;
-					}
-					elsif($linebeftseq == 1)
-					{
-						$_ =~s/<td>(\d+)<\/td>//;
+					if( $_ =~ /<td>Total Sequences<\/td><td>(\d+)<\/td>/){
 						$seqnumber=$1;
-						$linebeftseq=0;
 					}
-					#If the line contains Sequence length the counter increases and enter
-					#in the next clause obtaining the lenght of the Sequence
-					elsif($_ =~ /Sequence length</){
-						$linebefseqlen=1;
-					}
-					elsif($linebefseqlen == 1)
-					{
-						$_ =~s/<td>(.+)<\/td>//;
-						$seqlength=$1;
-						$linebefseqlen=0;
-					}
-					#If the line contains Encoding the counter increases and enter
-					#in the next clause obtaining the encoding system
-					elsif($_ =~ /Encoding/){
-						$linebefenc=1;
-					}
-					elsif($linebefenc == 1)
-					{
-						$_ =~s/<td>(.+)<\/td>//;
+					if( $_ =~ /<td>Encoding<\/td><td>(.+)<\/td><\/tr><tr><td>Total Sequences<\/td>/){
 						$encoding=$1;
-						$linebefenc=0;
 					}
-					#If the line contains %GC the counter increases and enter
-					#in the next clause obtaining the GC content
-					elsif($_ =~ /%GC/){
-						$linebefgc=1;
-						
+					if( $_ =~ /<tr><td>Sequence length<\/td><td>(.+)<\/td><\/tr><tr><td>\%GC/){
+						$seqlength=$1;
 					}
-					elsif($linebefgc == 1)
-					{
-						$_ =~s/<td>(\d+)<\/td>//;
+					if( $_ =~ /\%GC<\/td><td>(\d+)<\/td><\/tr><\/tbody><\/table>/){
 						$gc=$1;
-						$linebefgc=0;
-					}
-					#If the line don´t contain any of the regular expressions the counters
-					# will keep the 0 value.
-					else
-					{
-						$linebeftseq=0;
-						$linebefseqlen=0;
-						$linebefenc=0;
-						$linebefgc=0;
 					}
 				}
 				#The statistical data is printed on logfile provided by user. Opening the log file.
