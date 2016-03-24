@@ -528,7 +528,7 @@ sub CIRICount{
 	}
 
 	#First, check that CIRI is in path:
-	my @ciri_bin=`which CIRI_v1.2.pl`;
+	my @ciri_bin=`which CIRI_v2.0.1.pl`;
 	#Executing the command
 	if(scalar(@ciri_bin)<1){
 		die "CIRICount ERROR :: system args failed: $? : Is CIRI installed and exported to \$PATH ?";
@@ -541,10 +541,15 @@ sub CIRICount{
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Input directory where results directory will be created
 	my $fasta=$args{"fasta"}; #Input directory where results directory will be created
-
+	my $htseqpardef;
 	#Variable declaration
 	my $command;
 	my $commanddef;
+	
+	if(defined($args{"threads"})){
+		my $threads=$args{"threads"};
+		$htseqpardef.=" -T $threads";
+	}
 	
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $database and $logfile and $fasta and $Seqtype){
@@ -556,7 +561,7 @@ sub CIRICount{
 				print STDOUT "CIRI :: ".date()." Checking $file for a circRNA analysis (Paired End)\n" if($verbose);
 				#CIRI execution command
 				#perl CIRI.pl -P -I test.sam -O outfile -F chr1.fa -A chr1.gtf
-				$command="CIRI_v1.2.pl -P -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta . " -G " . $logfile;
+				$command="CIRI_v2.0.1.pl $htseqpardef -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta . " -G " . $logfile;
 				#commandef is the command will be executed by system composed of the results directory creation 
 				#and the htseq_count execution. The error data will be printed on the run.log file
 				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." > ".$logfile ." 2>&1";
@@ -564,7 +569,7 @@ sub CIRICount{
 			else{
 				#CIRI execution command
 				print STDOUT "CIRI :: ".date()." Checking $file for a circRNA analysis (Single End)\n" if($verbose);
-				$command="CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta  . " -G " . $logfile;
+				$command="CIRI_v2.0.1.pl $htseqpardef -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta  . " -G " . $logfile;
 				#commandef is the command will be executed by system composed of the results directory creation 
 				#and the htseq_count execution. The error data will be printed on the run.log file
 				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." >".$logfile ." 2>&1";
