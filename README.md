@@ -20,6 +20,7 @@ Copyright (c) 2016 IBIS. All rights reserved.
 * [BWA v0.7.13](http://bio-bwa.sourceforge.net/)
 #### Entity Quantification####
 * [feactureCounts v1.5.0-p1](http://bioinf.wehi.edu.au/featureCounts/)
+* [Ciri v1.2](http://sourceforge.net/projects/ciri/files/?source=navbar)
 * [Ciri v2.0.1](http://sourceforge.net/projects/ciri/files/?source=navbar)
 * [miRDeep v2](https://www.mdc-berlin.de/8551903/en/)
 #### Others ####
