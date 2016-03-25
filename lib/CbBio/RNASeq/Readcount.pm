@@ -11,7 +11,7 @@ package CbBio::RNASeq::Readcount;
 require Exporter;
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(featureCount featureFormat CIRICount CIRIFormat miRDeepCount miRDeepFormat featureSummary miRDeepSummary);
+@EXPORT=qw(featureCount featureFormat CIRICount1 CIRICount2 CIRIFormat miRDeepCount miRDeepFormat featureSummary miRDeepSummary);
 
 use strict;
 use File::Basename;
