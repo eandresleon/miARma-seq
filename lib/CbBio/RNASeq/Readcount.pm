@@ -107,6 +107,7 @@ sub featureCount{
 	my $verbose=$args{"verbose"}; #Optional arguments to show the execution data on screen
 	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
+	
 	#Variable declaration
 	my $command;
 	my $commanddef;
@@ -512,11 +513,127 @@ sub FromBam2Sam{
 
 =cut
 
-sub CIRICount{
+sub CIRICount1{
+    #Arguments provided by user are collected by %args. File, dir, adapter, projectdir and logfile
+    # are mandatory arguments while verbose is optional. 
+    my %args=@_;
+    my $miARmaPath=$args{"miARmaPath"};
+    my $arch=`uname`;
+    chomp($arch);
+
+    if ($ENV{PATH}) {
+            $ENV{PATH} .= ":$miARmaPath/bin/common/CIRI/";
+    }
+    else {
+            $ENV{PATH} = "$miARmaPath/bin/common/CIRI/";
+    }
+
+    #First, check that CIRI is in path:
+    my @ciri_bin=`which CIRI_v1.2.pl`;
+    #Executing the command
+    if(scalar(@ciri_bin)<1){
+            die "CIRICount ERROR :: system args failed: $? : Is CIRI installed and exported to \$PATH ?";
+    }
+
+    my $file=$args{"file"}; #Path of the BAM file which is going to be processed
+    my $database=$args{"database"}; #gtf file used as reference to count the reads
+    my $verbose=$args{"verbose"}; #Optional arguments to show the execution data on screen
+    my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
+    my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
+    my $Seqtype=$args{"Seqtype"}; #Input directory where results directory will be created
+    my $fasta=$args{"fasta"}; #Input directory where results directory will be created
+
+    #Variable declaration
+    my $command;
+    my $commanddef;
+
+    #Checking the mandatory parameters
+    if ($file and $projectdir and $database and $logfile and $fasta and $Seqtype){
+            if($file =~ /.*\.sam$/){
+                    my $output_dir="/"."circRNAs_results/";
+                    my($filename) = fileparse($file);
+                    $filename=~s/\.sam//g;
+                    if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
+                            print STDOUT "CIRI :: ".date()." Checking $file for a circRNA analysis (Paired End)\n" if($verbose);
+                            #CIRI execution command
+                            #perl CIRI.pl -P -I test.sam -O outfile -F chr1.fa -A chr1.gtf
+                            $command="CIRI_v1.2.pl -P -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta . " -G " . $logfile;
+                            #commandef is the command will be executed by system composed of the results directory creation 
+                            #and the htseq_count execution. The error data will be printed on the run.log file
+                            $commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." > ".$logfile ." 2>&1";
+                    }
+                    else{
+                            #CIRI execution command
+                            print STDOUT "CIRI :: ".date()." Checking $file for a circRNA analysis (Single End)\n" if($verbose);
+                            $command="CIRI_v1.2.pl -S -I $file -O ".$projectdir.$output_dir.$filename.".ciri -A " . $database ." -F " . $fasta  . " -G " . $logfile;
+                            #commandef is the command will be executed by system composed of the results directory creation 
+                            #and the htseq_count execution. The error data will be printed on the run.log file
+                            $commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command." >".$logfile ." 2>&1";
+                    }
+                    #Opening the run.log and printing the execution data
+                    open (LOG,">> ".$logfile) || die $!;
+                    print LOG "CIRICount :: ".date()." Executing $commanddef\n";
+                    close LOG;
+                    #If verbose option has been provided program will print execution data on the screen too.
+                    if($verbose){
+                            print STDOUT "CIRICount :: ".date()." Executing $commanddef\n";
+                    }
+                    #Executing the command or if system can't be executed die showing the error.
+                    system($commanddef) == 0
+                    or die "CIRICount ERROR :: system args failed: $? ($commanddef)";
+
+                    #After counting redas, we are going to conver the sam file into a sorted BAM file (a smaller file)
+                    #The path of the output file is returned to the main program
+                    if($file){
+                            return($projectdir.$output_dir.$filename.".ciri");
+                    }
+                    else{
+                            next;
+                    }
+            }
+    }
+	else{
+		#Registering the error
+		open(LOG,">> ".$logfile) || die "CIRICount ERROR :: ".date()."Can't open '$logfile': $!";
+		print LOG "CIRICount ERROR :: ".date()." Projectdir ($projectdir), file ($file), logfile ($logfile) and/or database($database) have not been provided";
+		close LOG;
+			#If mandatory parameters have not been provided program dies and shows error message
+		warn("CIRICount ERROR :: Projectdir ($projectdir), file ($file), logfile ($logfile), bwa index (fasta), sequencing type ($Seqtype) and/or database($database) have not been provided");
+		help_CIRICount();
+	}
+	sub help_CIRICount{
+	    my $usage = qq{
+		  	$0 
+
+			Mandatory parameters:
+	 		[file] Path of the file which is going to be processed (bam format)
+	 		[logfile] Path of run.log file where execution data will be saved
+	 		[fasta] fasta file used to calculate the number of reads in CIRI analysis
+	 		[projectdir] Directory where htseq_results directory will be created
+
+	 		Optional parameters:
+	 		[seqid] GFF attribute to be used as feature ID (default: gene_id) for CIRI analysis
+	 		[parameters] Other CIRI parameters to perform the analysis using the CIRI recommended syntaxis		  
+	 		[strand] Whether the data is from a strand-specific assay (yes, no or reverse, yes by default) for CIRI analysis
+	 		[featuretype] Feature type (3rd column in GFF file) to be used, all features of other type are ignored (default:exon) for CIRI analysis
+	 		[inputformat] Format of the input file : sam or bam (default:sam)
+	 		[verbose] Option to show the execution data on the screen   
+
+			Examples:
+			CIRICount(file=>"file.bam", database=>"db.gtf", seqid=>"transcript_id", parameters=>" -a 5", strand=>"no", featuretype=>"miRNA", logfile=>"run.log", inputformat=>"bam", verbose=>"verbose", projectdir=>".");
+	};
+
+	print STDERR $usage;
+	exit(); 
+	}
+}
+
+sub CIRICount2{
 	#Arguments provided by user are collected by %args. File, dir, adapter, projectdir and logfile
 	# are mandatory arguments while verbose is optional. 
 	my %args=@_;
 	my $miARmaPath=$args{"miARmaPath"};
+	
 	my $arch=`uname`;
 	chomp($arch);
 
@@ -526,7 +643,6 @@ sub CIRICount{
 	else {
 		$ENV{PATH} = "$miARmaPath/bin/common/CIRI/";
 	}
-
 	#First, check that CIRI is in path:
 	my @ciri_bin=`which CIRI_v2.0.1.pl`;
 	#Executing the command
@@ -631,7 +747,6 @@ sub CIRICount{
 	exit(); 
 	}
 }
-
 
 =head2 CIRIFormat
 
