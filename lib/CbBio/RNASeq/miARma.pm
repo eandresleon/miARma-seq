@@ -740,7 +740,7 @@ sub run_miARma{
 						$cfg->RewriteConfig;
 					}
 					if(lc($cfg->val("ReadCount","method")) ne "ciri1" and lc($cfg->val("ReadCount","method")) ne "ciri2"){
-						print STDERR "\nWARN ".  date() . " Method for identifying circrNAs is not valid. Ucing CIRI1.2 as default\n";
+						print STDERR date() . " WARN :: Method for identifying circRNAs is not valid. Using CIRI1.2 as default\n";
 						$cfg->newval("ReadCount", "method", "CIRI1");
 						$cfg->RewriteConfig;
 					}
