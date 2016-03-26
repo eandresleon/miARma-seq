@@ -32,7 +32,7 @@ BEGIN{
 	$projectdir="."; #Directory to save the results
 	$threads=4; #Optional number of threads to perform the analysis
 	$GTF="../../../../data/Homo_sapiens_CHR_.GRCh37.74.gtf";
-	$bowtie1index="../../../../Genomes/Indexes/bowtie1/human/hg19"; #Indexed genome to align your reads in format .bt2 (Mandatory for analysis with bowtie2)
+	$bowtie1index="../../../../Genomes/Indexes/bowtie1/human/bw1_homo_sapiens19"; #Indexed genome to align your reads in format .bt2 (Mandatory for analysis with bowtie2)
 	$verbose="1"; #Option to show the execution data on the screen   
 	$logfile="/run_".$$.".log"; #Run.log file where execution data will be saved
 	$tophat_multihits=5; #Max # mismatches in seed alignment in bowtie analysis (0-1)

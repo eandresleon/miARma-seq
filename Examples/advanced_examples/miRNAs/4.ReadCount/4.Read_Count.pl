@@ -21,8 +21,8 @@ my $threads; #Optional number of threads to perform the analysis
 my $miARmaPath;#Path to software
 
 BEGIN{
-	$miARmaPath="../../";#Path to software. Full path is recommended
-	$database="./miRBase_Annotation_20_for_hsa_mature_miRNA.gtf"; #GFF file used to calculate the number of reads in featureCounts analysis
+	$miARmaPath="../../../../"; #Path to software: Full path is recommended
+	$database="../../miRNAs/data/miRBase_Annotation_20_for_hsa_mature_miRNA.gtf"; #GFF file used to calculate the number of reads in featureCounts analysis
 	$seqid="transcript_id"; #GFF attribute to be used as feature ID (default: gene_id) for featureCounts analysis
 	$parameters=" -Q 10"; #Other featureCounts parameters to perform the analysis using the featureCounts recommended syntaxis
 	$strand="no"; #Whether the data is from a strand-specific assay (yes, no or reverse, yes by default) for featureCounts analysis
@@ -34,6 +34,8 @@ BEGIN{
 	$bw1_dir="../4.Read_alignment/Bowtie1_results/"; #Path of the directory with the bowtie1 results
 	$bw2_dir="../4.Read_alignment/Bowtie2_results/"; #Path of the directory with the bowtie2 results
 	$threads=4; #Optional number of threads to perform the analysis
+	$summary_file="Summary_result.xls"; #Variable to save output directory from FastQC function to be use by FastQCStats function
+	
 }
 
 use lib "$miARmaPath/lib/";
@@ -73,7 +75,9 @@ foreach my $file(@files){
 		verbose=>$verbose, 
 	  	projectdir=>$projectdir,
 		threads=>$threads,
-		miARmaPath=>$miARmaPath
+		miARmaPath=>$miARmaPath,
+		summary=>$summary_file,
+		
 	);
 	push(@htseqfiles, $result);
 }
@@ -83,4 +87,6 @@ featureFormat(
   	input=>\@htseqfiles, 
   	projectdir=>$projectdir,
   	logfile=>$projectdir.$logfile
+	summary=>$summary_file,
+	
   );

@@ -18,10 +18,10 @@ my $min; #Minimun length of the sequence read to keep with Cutadapt and Reaper S
 my $max; #Maximun length of the sequence read to use with Cutadapt Software
 my $min_quality; #Minimun quality of the sequence read to use with Cutadapt Software
 my $miARmaPath;#Path to software
-
+my $summary_file;
 BEGIN{
-	$miARmaPath="../../";#PAth to software. Full path is recommended
-	$dir="../reads"; #Path of the directory with th input files
+	$miARmaPath="../../../../"; #Path to software: Full path is recommended
+	$dir="$miARmaPath/Examples/basic_examples/miRNAs/reads/"; #Path of the directory with the input files
 	$projectdir="."; #Directory to save the results
 	$logfile="/run_".$$.".log"; #Log file where execution data will be saved
 	$statsfile="/stats_".$$.".log"; #Stats file where stats data will be saved
@@ -32,6 +32,7 @@ BEGIN{
 	$min="18"; #Minimun length of the sequence read to keep with Cutadapt and Reaper Software 
 	$max="26"; #Maximun length of the sequence read to use with Cutadapt Software
 	$min_quality="25"; #Minimun quality of the sequence read to use with Cutadapt Software
+	$summary_file="Summary_result.xls"; #Variable to save output directory from FastQC function to be use by FastQCStats function
 }
 
 use lib "$miARmaPath/lib/";
@@ -60,5 +61,6 @@ AdapterRemoval(
 	max=>$max,
 	min_quality=>$min_quality,
 	reaperparameters=>$reaperparameters,
-	miARmaPath=>$miARmaPath
+	miARmaPath=>$miARmaPath,
+	summary=>$summary_file,
 );

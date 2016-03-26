@@ -24,7 +24,7 @@ my $miARmaPath;#Path to software
 
 BEGIN{
 	$miARmaPath="../../";#Path to software. Full path is recommended
-	$dir="../5.Read_count/HtseqFormat_results/"; #Path of the directory with the tab files
+	$dir="../5.ReadCunt/ReadCount_results/"; #Path of the directory with the tab files
 	$projectdir="."; #Path of the directory where the output files will be saved.
 	$targetfile="targets.txt"; #Path of the target file.
 	$contrastfile="contrast.txt"; #Path of the contrast file.
