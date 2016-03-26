@@ -664,7 +664,7 @@ sub CIRICount2{
 	
 	if(defined($args{"threads"})){
 		my $threads=$args{"threads"};
-		$htseqpardef.=" -T $threads";
+		$htseqpardef.=" -0 -T $threads";
 	}
 	
 	#Checking the mandatory parameters
