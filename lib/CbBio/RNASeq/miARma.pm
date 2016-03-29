@@ -297,7 +297,7 @@ sub run_miARma{
 			if($cfg->exists("Adapter","adaptersoft") eq "" or ($cfg->val("Adapter","adaptersoft") eq "")){
 				if(lc($cfg->val("General","type")) eq "mirna"){
 					$cfg->newval("Adapter", "adaptersoft", "CutAdapt");
-					$cfg->newval("Adapter", "adaptpredictionnumber", "4");
+					$cfg->newval("Adapter", "adaptpredictionnumber", "12");
 					$cfg->RewriteConfig;
 				}
 				else{
@@ -347,7 +347,7 @@ sub run_miARma{
 				organism=>$cfg->val("General","organism")|| undef,
 				trimmingnumber=>$cfg->val("Adapter","trimmingnumber")|| undef,
 				readposition=>$cfg->val("Adapter","readposition")|| undef,
-				adaptpredictionnumber=>$cfg->val("Adapter","adaptpredictionnumber")|| undef,
+				adaptpredictionnumber=>$cfg->val("Adapter","adaptpredictionnumber")|| 12,
 				minionadaptersequence=>$cfg->val("Adapter","minionadaptersequence")|| undef,
 				cutadaptparameters=>$cfg->val("Adapter","cutadaptparameters")|| undef,
 				metafile=>$cfg->val("Adapter","metafile")|| undef,
