@@ -230,7 +230,7 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   
   #3.1 PCA plot
   data.PC = prcomp(t(as.matrix(dgenorm)))
-  plot(data.PC$x,col=boxcol,main=paste("PCA plot of ",label, " samples",sep=""))
+  plot.default(data.PC$x,col=boxcol,main=paste("PCA plot of ",label, " samples",sep=""))
   text(data.PC$x[,1],data.PC$x[,2],labels=samplenames, cex=0.7, pos=1)
   
   #########################################################################
