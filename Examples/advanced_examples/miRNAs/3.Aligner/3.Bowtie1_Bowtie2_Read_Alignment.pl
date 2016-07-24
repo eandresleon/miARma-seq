@@ -20,15 +20,16 @@ my $statsfile; #Stats.log file where stats data will be saved
 my $bowtie1parameters; #Other bowtie parameters to perform the analysis using the bowtie1 recommended syntaxis
 my $aligner; #Aligner which will be use in the analysis (Allowed values: Bowtie1, Bowtie2 and Bowtie1-Bowtie2/Bowtie2-Bowtie1)
 my $miARmaPath;#Path to software
+my $summary_file;
 
 BEGIN{
-	$miARmaPath="../../";#Path to software. Full path is recommended
-	$cut_dir="../2.Adapter_removal/cutadapt_results/"; #Path of the directory with the cutadapt results
-	$rea_dir="../2.Adapter_removal/Reaper_results/"; #Path of the directory with the reaper results
+	$miARmaPath="../../../../"; #Path to software: Full path is recommended
+	$cut_dir="../2.Adapter/cutadapt_results/"; #Path of the directory with the cutadapt results
+	$rea_dir="../2.Adapter/Reaper_results/"; #Path of the directory with the reaper results
 	$projectdir="."; #Directory to save the results
 	$threads="2"; #Optional number of threads to perform the analysis
-	$bowtie1index="../../Genomes/Indexes/bowtie1/human/hg19"; #Indexed genome to align your reads in format .ebwt (Mandatory for analysis with bowtie1)
-	$bowtie2index="../../Genomes/Indexes/bowtie2/human/hg19"; #Indexed genome to align your reads in format .bt2 (Mandatory for analysis with bowtie2)
+	$bowtie1index="../../../Genomes/Indexes/bowtie1/human/bw1_homo_sapiens19"; #Indexed genome to align your reads in format .ebwt (Mandatory for analysis with bowtie1)
+	$bowtie2index="../../../Genomes/Indexes/bowtie2/human/bw2_homo_sapiens19"; #Indexed genome to align your reads in format .bt2 (Mandatory for analysis with bowtie2)
 	$verbose=""; #Option to show the execution data on the screen   
 	$logfile="/run_".$$.".log"; #Run.log file where execution data will be saved
 	$bowtiemiss="0"; #Max # mismatches in seed alignment in bowtie analysis (0-1)
@@ -36,6 +37,7 @@ BEGIN{
 	$statsfile="/stats_".$$.".log"; #Stats.log file where stats data will be saved
 	$bowtie1parameters=" --best --nomaqround -e 70 -k 1"; #Other bowtie parameters to perform the analysis using the bowtie1 recommended syntaxis
 	$aligner="Bowtie1-Bowtie2"; #Aligner which will be use in the analysis (Allowed values: Bowtie1, Bowtie2 and Bowtie1-Bowtie2/Bowtie2-Bowtie1)
+	$summary_file="Summary_result.xls"; #Variable to save output directory from FastQC function to be use by FastQCStats function
 }
 
 use lib "$miARmaPath/lib/";
@@ -75,6 +77,7 @@ foreach my $file(@files){
 		bowtieleng=>$bowtieleng,
 		projectdir=>$projectdir,
 		bowtie1parameters=>$bowtie1parameters,
-		miARmaPath=>$miARmaPath
+		miARmaPath=>$miARmaPath,
+		summary=>$summary_file,
 	);
 }

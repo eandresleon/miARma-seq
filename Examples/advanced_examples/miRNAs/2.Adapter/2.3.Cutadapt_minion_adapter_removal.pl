@@ -20,8 +20,8 @@ my $min_quality; #Minimun quality of the sequence read to use with Cutadapt Soft
 my $miARmaPath;#Path to software
 
 BEGIN{
-	$miARmaPath="../../"; #Path to software. Full path is recommended
-	$dir="../reads"; #Path of the directory with th input files
+	$miARmaPath="../../../../"; #Path to software: Full path is recommended
+	$dir="$miARmaPath/Examples/basic_examples/miRNAs/reads/"; #Path of the directory with the input files
 	$projectdir="."; #Directory to save the results
 	$logfile="/run_".$$.".log"; #Log file where execution data will be saved
 	$statsfile="/stats_".$$.".log"; #Stats file where stats data will be saved

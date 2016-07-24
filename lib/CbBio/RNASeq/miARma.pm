@@ -213,11 +213,13 @@ sub run_miARma{
 	if($cfg->SectionExists("Quality")==1){
 		#Mandatory parameters: label
 		if($cfg->exists("Quality","prefix") eq ""){ 
-			print STDERR "\nERROR " . date() . " prefix parameter in Section [Quality] is missing. Please check documentation\n";
-			help_check_quality();
+			#print STDERR "\nERROR " . date() . " prefix parameter in Section [Quality] is missing. Please check documentation\n";
+			#help_check_quality();
+			$cfg->newval("Quality", "prefix", "pre");
+			$cfg->RewriteConfig;
 		}
 		
-		else{
+		#else{
 			
 			my $dir=undef;
 			if(lc($cfg->val("Quality","prefix")) eq "pre"){
@@ -286,17 +288,23 @@ sub run_miARma{
 				 	print "ERROR :: Please check that your reads are saved in: ($dir)\n";
 				 	help_check_quality();
 				}
-			}
+			#}
 		}
 	}
 	#Adapter removal
 	if($cfg->SectionExists("Adapter")==1){
 		#Mandatory parameters: read folder
-		if($cfg->exists("Adapter","adaptersoft") eq "" or ($cfg->val("Adapter","adaptersoft") eq "")){
-			print STDERR "\nERROR " . date() . " adaptersoft parameter in Section [Adapter] is missing/unfilled. Please check documentation\n";
-			help_check_adapter();
-		}
-		else{
+			if($cfg->exists("Adapter","adaptersoft") eq "" or ($cfg->val("Adapter","adaptersoft") eq "")){
+				if(lc($cfg->val("General","type")) eq "mirna"){
+					$cfg->newval("Adapter", "adaptersoft", "CutAdapt");
+					$cfg->newval("Adapter", "adaptpredictionnumber", "12");
+					$cfg->RewriteConfig;
+				}
+				else{
+					print STDERR "\nERROR " . date() . " adaptersoft parameter in Section [Adapter] is missing/unfilled. Please check documentation\n";
+					help_check_adapter();
+				}
+			}
 			#run Adapter
 			use CbBio::RNASeq::Adapt;
 			# Reading the directory collecting the files and completing with the path
@@ -339,7 +347,7 @@ sub run_miARma{
 				organism=>$cfg->val("General","organism")|| undef,
 				trimmingnumber=>$cfg->val("Adapter","trimmingnumber")|| undef,
 				readposition=>$cfg->val("Adapter","readposition")|| undef,
-				adaptpredictionnumber=>$cfg->val("Adapter","adaptpredictionnumber")|| undef,
+				adaptpredictionnumber=>$cfg->val("Adapter","adaptpredictionnumber")|| 12,
 				minionadaptersequence=>$cfg->val("Adapter","minionadaptersequence")|| undef,
 				cutadaptparameters=>$cfg->val("Adapter","cutadaptparameters")|| undef,
 				metafile=>$cfg->val("Adapter","metafile")|| undef,
@@ -379,7 +387,7 @@ sub run_miARma{
 					summary=>$summary_file
 				);
 				print date()." Post Quality Analysis finished.\n";
-			}
+			#}
 		}
 	}
 	#Alignment
@@ -659,7 +667,6 @@ sub run_miARma{
 			
 			my @files;
 			if(lc($cfg->val("General","type")) ne "circrna"){
-				#Reading CutAdapt results directory, collecting the files and completing with the path
 				my $bw1_dir=$cfg->val("General","output_dir")."/Bowtie1_results/";
 				if(-e $bw1_dir){
 					opendir(BW1DIR, $bw1_dir) || warn "3 Aligner:: Folder $bw1_dir is not found\n"; 
@@ -727,6 +734,18 @@ sub run_miARma{
 					help_check_count();
 				}
 				else{
+					#Reading CutAdapt results directory, collecting the files and completing with the path
+					if($cfg->exists("ReadCount","method") eq ""){
+						$cfg->newval("ReadCount", "method", "CIRI1");
+						$cfg->RewriteConfig;
+					}
+					if(lc($cfg->val("ReadCount","method")) ne "ciri1" and lc($cfg->val("ReadCount","method")) ne "ciri2"){
+						print STDERR date() . " WARN :: Method for identifying circRNAs is not valid. Using CIRI1.2 as default\n";
+						$cfg->newval("ReadCount", "method", "CIRI1");
+						$cfg->RewriteConfig;
+					}
+					my $method=$cfg->val("ReadCount","method");
+					
 					my $bw2_dir=$cfg->val("General","output_dir")."/bwa_results/";
 					if($bw2_dir){
 						opendir(BW2DIR, $bw2_dir) || warn "5 Aligner:: Folder $bw2_dir is not found\n"; 
@@ -737,22 +756,43 @@ sub run_miARma{
 						my @circRNAfiles;
 						print STDERR date()." Starting a Readcount Analysis\n";
 						
-						foreach my $file(@files){
-							#Selecting only the sam files for their processing
-							my $result=CIRICount(
-							  	file=>$file,
-								database=>$cfg->val("ReadCount","database")|| undef,
-								logfile=>$log_file || $cfg->val("General","logfile"),
-								verbose=>$cfg->val("General","verbose") || 0,
-								projectdir=>$cfg->val("General","output_dir")|| undef,
-								threads=>$cfg->val("General","threads") || 1,
-								miARmaPath=>$miARmaPath,
-								Seqtype=>$cfg->val("General","seqtype") || "Single",
-								fasta=>$cfg->val("ReadCount","fasta") || undef,
-							);
-							push(@circRNAfiles, $result);
+						if(lc($method) eq "ciri1"){
+							foreach my $file(@files){
+								#Selecting only the sam files for their processing
+								my $result=CIRICount1(
+								  	file=>$file,
+									database=>$cfg->val("ReadCount","database")|| undef,
+									logfile=>$log_file || $cfg->val("General","logfile"),
+									verbose=>$cfg->val("General","verbose") || 0,
+									projectdir=>$cfg->val("General","output_dir")|| undef,
+									threads=>$cfg->val("General","threads") || 1,
+									miARmaPath=>$miARmaPath,
+									Seqtype=>$cfg->val("General","seqtype") || "Single",
+									fasta=>$cfg->val("ReadCount","fasta") || undef,
+									method=>"CIRI1"
+								);
+								push(@circRNAfiles, $result);
+							}
 						}
-
+						if(lc($method) eq "ciri2"){
+							foreach my $file(@files){
+								#Selecting only the sam files for their processing
+								my $result=CIRICount2(
+								  	file=>$file,
+									database=>$cfg->val("ReadCount","database")|| undef,
+									logfile=>$log_file || $cfg->val("General","logfile"),
+									verbose=>$cfg->val("General","verbose") || 0,
+									projectdir=>$cfg->val("General","output_dir")|| undef,
+									threads=>$cfg->val("General","threads") || 1,
+									miARmaPath=>$miARmaPath,
+									Seqtype=>$cfg->val("General","seqtype") || "Single",
+									fasta=>$cfg->val("ReadCount","fasta") || undef,
+									method=>"CIRI2"
+								);
+								push(@circRNAfiles, $result);
+							}
+						}
+						
 						CIRIFormat( 
 						  	input=>\@circRNAfiles, 
 							projectdir=>$cfg->val("General","output_dir")|| undef,
@@ -775,7 +815,6 @@ sub run_miARma{
 	}
 	#Denovo
 	if($cfg->SectionExists("DeNovo")==1){
-		
 		
 		if($cfg->exists("DeNovo","bowtie1index") eq "" or ($cfg->val("DeNovo","bowtie1index") eq "")){
 			print STDERR "\nERROR " . date() . " bowtie1index parameter in Section [DeNovo] is missing/unfilled. Please check documentation\n";
@@ -885,11 +924,16 @@ sub run_miARma{
 		# 	print STDERR "\nERROR " . date() . " filter parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
 		# 	help_check_aligner();
 		# }
-		elsif( lc($cfg->val("DEAnalysis","desoft")) eq "" and ($cfg->val("DEAnalysis","desoft") eq "")){
-			print STDERR "\nERROR " . date() . " desoft parameter in Section [DEAnalysis] is missing/unfilled. Please check documentation\n";
-			help_check_deanalysis();
-		}
+		# elsif( lc($cfg->val("DEAnalysis","desoft")) eq "" and ($cfg->val("DEAnalysis","desoft") eq "")){
+		# 	$cfg->newval("DEAnalysis", "desoft", "edgeR");
+		# 	$cfg->RewriteConfig;
+		# }
 		else{
+			
+			if( lc($cfg->val("DEAnalysis","desoft")) eq "" and ($cfg->val("DEAnalysis","desoft") eq "")){
+				$cfg->newval("DEAnalysis", "desoft", "edgeR");
+				$cfg->RewriteConfig;
+			}
 			#run DEAnalysis
 			use CbBio::RNASeq::DEAnalysis;
 			print STDERR date()." Starting a differential expression analysis using ".$cfg->val("DEAnalysis","desoft") ." software(s)\n";
@@ -972,13 +1016,14 @@ sub run_miARma{
 	}
 	#Functional Analysis
 	if($cfg->SectionExists("FAnalysis")==1){
-		 use CbBio::RNASeq::FAnalysis;
+		 
+		use CbBio::RNASeq::FAnalysis;
 		 F_Analysis(
 		 			projectdir=>$cfg->val("General","output_dir"),
 		 			verbose=>$cfg->val("General","verbose") || 0,
 		 			logfile=>$log_file || $cfg->val("General","logfile"),
-		 			organism=>$cfg->val("General","organism")|| undef,
-		 			seqid=>$cfg->val("FAnalysis","seqid") || undef,
+		 			organism=>$cfg->val("General","organism")|| "human",
+		 			seqid=>$cfg->val("FAnalysis","seqid") || $cfg->val("Readcount","seqid") ,
 		 			edger_cutoff=>$cfg->val("FAnalysis","edger_cutoff") || 0.05,
 		 			noiseq_cutoff=>$cfg->val("FAnalysis","noiseq_cutoff") || 0.8,
 		 );
@@ -1183,7 +1228,7 @@ sub check_input_format{
 	}
 	my $exit=0;
 	if(scalar(@fastq_files)>0){
-		print date() . " Checking if files in \"$dir_fastq\" are in the correct fastq format.\n" if($dir_fastq);
+		print date() . " Checking if files in folder: \"$dir_fastq\" are in the correct fastq format.\n" if($dir_fastq);
 		#print date() . " Checking if files are in the correct fastq format\n" if(!$dir_fastq and $cfg->SectionExists("Adapter")!=1);
 		my @wrong_file;
 		foreach my $file(@fastq_files){
@@ -1424,11 +1469,11 @@ sub print_header{
 	system("clear");
 	print "#########################################################################	
 #   miARma, miRNA and RNASeq Multiprocess Analysis			#
-#                miARma v 1.1.3 (Dec-2015)                              #
+#                miARma v 1.5 (Apr-2016)                                #
 #               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
-#   Copyright (c) 2015 IBIS. All rights reserved.                       #
+#   Copyright (c) 2016 IBIS. All rights reserved.                       #
 #   mail : miARma-devel\@cbbio.es                                        #
 #########################################################################\n\n";
 }

@@ -15,17 +15,18 @@ my $prefix;
 my $logfile;
 my $statsfile;
 my $output_dir;
-
+my $summary_file;
 BEGIN { 
-	$miARmaPath="../../"; #Path to software: Full path is recommended
-	$dir="$miARmaPath/miARma_miRNA_examples/reads/"; #Path of the directory with the input files
+	$miARmaPath="../../../../"; #Path to software: Full path is recommended
+	$dir="$miARmaPath/Examples/basic_examples/miRNAs/reads/"; #Path of the directory with the input files
 	$projectdir="."; #Directory to save the results
 	$threads="4"; #Optional number of threads to perform the analysis faster
 	$verbose=""; #Optional argument to show the execution data on screen
 	$prefix="Pre"; #prefix to write in the directory results name
 	$logfile="/run_".$$.".log"; #Log file where execution data will be saved
 	$statsfile="/stats_".$$.".log"; #Stats file where stats data will be saved
-	$output_dir; #Variable to save output directory from FastQC function to be use by FastQCStats function
+	$output_dir="."; #Variable to save output directory from FastQC function to be use by FastQCStats function
+	$summary_file="Summary_result.xls"; #Variable to save output directory from FastQC function to be use by FastQCStats function
 }
 ##################################################################################
 #2. Reading the input directory and executing FastQC and FastQCStats functions 
@@ -62,6 +63,7 @@ FastQCStats(
 	dir=>$output_dir, 
 	verbose=>$verbose,
 	statsfile=>$projectdir.$statsfile,
-	logfile=>$projectdir.$logfile
+	logfile=>$projectdir.$logfile,
+	summary=>$summary_file
 );
 

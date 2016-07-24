@@ -3,7 +3,7 @@
 #																		                                    #
 #	Created at Computational Biology and Bioinformatics Group (CbBio)	    #
 #	Institute of Biomedicine of Seville. IBIS (Spain)					            #
-#	Copyright (c) 2014 IBIS. All rights reserved.						              #
+#	Copyright (c) 2016 IBIS. All rights reserved.						              #
 #	mail : miarmaseq-devel@cbbio.es 								                      #
 #########################################################################
 
@@ -16,7 +16,7 @@ write("
 																		                                    
 	Created at Computational Biology and Bioinformatics Group (CbBio)	    
 	Institute of Biomedicine of Seville. IBIS (Spain)					            
-	Copyright (c) 2014 IBIS. All rights reserved.						              
+	Copyright (c) 2016 IBIS. All rights reserved.						              
 	mail : miarmaseq-devel@cbbio.es 								                      
 #########################################################################
       
