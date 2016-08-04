@@ -1170,7 +1170,7 @@ sub DE_AnalysisSummary{
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
 		print SUMM "\nDifferential Expression Analysis by NoiSeq [".$projectdir ."/Noiseq_results/]\n";
 		print SUMM "Comparison\tFile\tNumber of DE elements (Prob >=0.8)\n";
-		foreach my $comp (sort keys $summary_noi){
+		foreach my $comp (sort keys %{$summary_noi}){
 			foreach my $file (sort keys %{$summary_noi->{$comp}}){
 				print SUMM $comparisons->{$comp}  ."\t$file\t". $summary_noi->{$comp}->{$file}."\n";
 			}
