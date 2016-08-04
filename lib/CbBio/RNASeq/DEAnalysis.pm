@@ -1086,7 +1086,7 @@ sub DE_AnalysisSummary{
 		my @edgeR_files= readdir(EGDER);
 		foreach my $edge_files (sort @edgeR_files){
 			if($edge_files =~ /\.xls$/){				
-				foreach my $comp (sort keys $comparisons){
+				foreach my $comp (sort keys %{$comparisons}){
 					if($edge_files =~ /$comp/){
 						open(EDGEFILE,$projectdir ."/EdgeR_results/$edge_files") || die "$! $projectdir/EdgeR_results/$edge_files";
 						my $cont_pval=0;
@@ -1117,7 +1117,7 @@ sub DE_AnalysisSummary{
 		my @Noiseq_files= readdir(NOISEQ);
 		foreach my $Noiseq_files (sort @Noiseq_files){
 			if($Noiseq_files =~ /\.xls$/){
-				foreach my $comp (sort keys $comparisons){
+				foreach my $comp (sort keys %{$comparisons}){
 					if($Noiseq_files =~ /$comp/){
 						open(NOIFILE,$projectdir ."/Noiseq_results/$Noiseq_files");
 						my $cont_pval=0;
@@ -1153,11 +1153,11 @@ sub DE_AnalysisSummary{
 		);
 	}
 
-	if(scalar(keys %$summary_edger)>0){
+	if(scalar(keys %{$summary_edger})>0){
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
 		print SUMM "\nDifferential Expression Analysis by edgeR [".$projectdir ."/EdgeR_results/]\n";
 		print SUMM "Comparison\tFile\tNumber of DE elements (Pval <=0.05)\tNumber of DE elements (FDR <=0.05)\n";
-		foreach my $comp (sort keys $summary_edger){
+		foreach my $comp (sort keys %{$summary_edger}){
 			foreach my $file (sort keys %{$summary_edger->{$comp}}){
 				foreach my $pval (sort keys %{$summary_edger->{$comp}->{$file}}){
 					print SUMM $comparisons->{$comp} ."\t$file\t$pval\t". $summary_edger->{$comp}->{$file}->{$pval}."\n";
