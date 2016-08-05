@@ -15,7 +15,6 @@ $|=1;
 @EXPORT=qw(FastQC FastQCStats QC_EdgeR);
 
 use strict;
-use warnings;
 use Cwd;
 use Cwd 'abs_path';
 use DateTime;

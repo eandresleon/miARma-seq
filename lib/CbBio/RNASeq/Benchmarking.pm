@@ -14,7 +14,6 @@ $|=1;
 @EXPORT=qw(mergehtseqcount);
 
 use strict;
-use warnings;
 use DateTime;
 use File::Basename;
 

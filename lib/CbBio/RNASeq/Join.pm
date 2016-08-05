@@ -14,7 +14,6 @@ $|=1;
 @EXPORT=qw(htseqJoin);
 
 use strict;
-use warnings;
 
 =head1 NAME
 

@@ -13,7 +13,6 @@ $|=1;
 @EXPORT=qw(htseqJoin);
 
 use strict;
-use warnings;
 use DateTime;
 
 =head1 NAME
