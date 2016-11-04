@@ -259,19 +259,17 @@ sub run_miARma{
 					# # FASTQC EXECUTION
 					# # Reading the array with the names of the files
 					print date()." Starting Quality Analysis.\n";
-					foreach my $file(sort @files){
-						#Calling FastQC subroutine of Quality.pm package.
-						$processed_files->{$file}++;
-						$output_dir=FastQC(
-							miARmaPath=>$miARmaPath,
-							file=>$file,
-							projectdir=>$cfg->val("General","output_dir"),
-							threads=>$cfg->val("General","threads") || 1,
-							verbose=>$cfg->val("General","verbose") || 0,
-							logfile=>$log_file || $cfg->val("General","logfile"),
-							prefix=>"Pre",
-						);
-					}
+					#$processed_files->{$file}++;
+					#Calling FastQC subroutine of Quality.pm package.
+					$output_dir=FastQC(
+						miARmaPath=>$miARmaPath,
+						files=>\@files,
+						projectdir=>$cfg->val("General","output_dir"),
+						threads=>$cfg->val("General","threads") || 1,
+						verbose=>$cfg->val("General","verbose") || 0,
+						logfile=>$log_file || $cfg->val("General","logfile"),
+						prefix=>"Pre",
+					);
 					
 					# # FASTQCSTATS EXECUTION
 					# # Calling FastQCStats sobroutine of Quality.pm package. 
@@ -366,17 +364,17 @@ sub run_miARma{
 				open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
 				print SUMM "\nQuality [".$dir."/Post_fastqc_results]\n";
 				close SUMM;
-				foreach my $processed_files(@files_adapter){
+				#foreach my $processed_files(@files_adapter){
 					$output_dir_post=FastQC(
 						miARmaPath=>$miARmaPath,
-						file=>$processed_files,
+						files=>\@files_adapter,
 						projectdir=>$cfg->val("General","output_dir"),
 						threads=>$cfg->val("General","threads")|| 1,
 						verbose=>$cfg->val("General","verbose")|| 0,
 						logfile=>$log_file || $cfg->val("General","logfile"),
 						prefix=>"Post",
 					);
-				}
+				#}
 				# # FASTQCSTATS EXECUTION
 				# # Calling FastQCStats sobroutine of Quality.pm package. 
 				FastQCStats(
@@ -965,37 +963,41 @@ sub run_miARma{
 			
 			if(scalar(@files)>0){
 				foreach my $file(  sort @files){
-					DE_Analysis(
-						projectdir=>$cfg->val("General","output_dir")|| undef,
-						file=>$file,
-						targetfile=>$cfg->val("DEAnalysis","targetfile"),
-						label=>$cfg->val("General","label"),
-						filter=>$cfg->val("DEAnalysis","filter")|| "yes",
-						edger_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
-						noiseq_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
-						DEsoft=>$cfg->val("DEAnalysis","desoft")|| undef,
-						filtermethod=>$cfg->val("DEAnalysis","filtermethod")|| undef,
-						logfile=>$log_file || $cfg->val("General","logfile"),
-						verbose=>$cfg->val("General","verbose") || 0,
-						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue")|| undef,
-						repthreshold=>$cfg->val("DEAnalysis","repthreshold")|| undef,
-						edger_normethod=>$cfg->val("DEAnalysis","edger_normethod")|| undef,
-						noiseq_normethod=>$cfg->val("DEAnalysis","noiseq_normethod")|| undef,
-						replicates=>$cfg->val("DEAnalysis","replicates") || undef,
-						miARmaPath=>$miARmaPath,
-						repthreshold=>$cfg->val("DEAnalysis","repthreshold") || undef,
-						bcvvalue=>$cfg->val("DEAnalysis","bcvvalue") || undef,
-						cpmvalue=>$cfg->val("DEAnalysis","cpmvalue") || undef,
-						cutoffvalue=>$cfg->val("DEAnalysis","cutoffvalue") || undef,
-						Rdir=>$cfg->val("DEAnalysis","rdir") || undef,
-				     	replicatevalue=>$cfg->val("DEAnalysis","replicatevalue") || undef,
-						kvalue=>$cfg->val("DEAnalysis","kvalue") || undef,
-						lcvalue=>$cfg->val("DEAnalysis","lcvalue") || undef,
-						pnrvalue=>$cfg->val("DEAnalysis","pnrvalue") || undef,
-						nssvalue=>$cfg->val("DEAnalysis","nssvalue") || undef,
-						vvalue=>$cfg->val("DEAnalysis","vvalue") || undef,
-						qvalue=>$cfg->val("DEAnalysis","qvalue") || undef,						
-					);
+					if($file !~ /Size/){
+						DE_Analysis(
+							projectdir=>$cfg->val("General","output_dir")|| undef,
+							file=>$file,
+							targetfile=>$cfg->val("DEAnalysis","targetfile"),
+							label=>$cfg->val("General","label"),
+							filter=>$cfg->val("DEAnalysis","filter")|| "yes",
+							edger_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
+							noiseq_contrastfile=>$cfg->val("DEAnalysis","contrastfile")|| undef,
+							DEsoft=>$cfg->val("DEAnalysis","desoft")|| undef,
+							filtermethod=>$cfg->val("DEAnalysis","filtermethod")|| undef,
+							logfile=>$log_file || $cfg->val("General","logfile"),
+							verbose=>$cfg->val("General","verbose") || 0,
+							cpmvalue=>$cfg->val("DEAnalysis","cpmvalue")|| undef,
+							repthreshold=>$cfg->val("DEAnalysis","repthreshold")|| undef,
+							edger_normethod=>$cfg->val("DEAnalysis","edger_normethod")|| undef,
+							noiseq_normethod=>$cfg->val("DEAnalysis","noiseq_normethod")|| undef,
+							replicates=>$cfg->val("DEAnalysis","replicates") || undef,
+							miARmaPath=>$miARmaPath,
+							repthreshold=>$cfg->val("DEAnalysis","repthreshold") || undef,
+							bcvvalue=>$cfg->val("DEAnalysis","bcvvalue") || undef,
+							cpmvalue=>$cfg->val("DEAnalysis","cpmvalue") || undef,
+							cutoffvalue=>$cfg->val("DEAnalysis","cutoffvalue") || undef,
+							Rdir=>$cfg->val("DEAnalysis","rdir") || undef,
+					     	replicatevalue=>$cfg->val("DEAnalysis","replicatevalue") || undef,
+							kvalue=>$cfg->val("DEAnalysis","kvalue") || undef,
+							lcvalue=>$cfg->val("DEAnalysis","lcvalue") || undef,
+							pnrvalue=>$cfg->val("DEAnalysis","pnrvalue") || undef,
+							nssvalue=>$cfg->val("DEAnalysis","nssvalue") || undef,
+							vvalue=>$cfg->val("DEAnalysis","vvalue") || undef,
+							qvalue=>$cfg->val("DEAnalysis","qvalue") || undef,
+							rpkm=>$cfg->val("DEAnalysis","rpkm") || undef,
+							cpm=>$cfg->val("DEAnalysis","cpm") || undef
+						);
+					}
 				}
 				#print STDERR date()." Differential expression Summary.\n";
 				DE_AnalysisSummary(
@@ -1469,7 +1471,7 @@ sub print_header{
 	system("clear");
 	print "#########################################################################	
 #   miARma, miRNA and RNASeq Multiprocess Analysis			#
-#                miARma v 1.5.1 (Aug-2016)                              #
+#                miARma v 1.6 (Nov-2016)                              #
 #               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
