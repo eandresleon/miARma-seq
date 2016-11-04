@@ -126,6 +126,7 @@ sub DE_Analysis{
 	my $edger_normethod=$args{"edger_normethod"}; #Specific software to perform the Differential Expression Analysis
 	my $rpkm=$args{"rpkm"}; #create a file with RPKM values
 	my $cpm=$args{"cpm"}; #create a file with normalized CPM values
+	my $miARmaPath=$args{"miARmaPath"};
 	
   	my (undef,$dir) = fileparse($file);
 	$dir=abs_path($dir);
@@ -196,6 +197,7 @@ sub DE_Analysis{
 				cpmvalue=>$cpmvalue,
 				repthreshold=>$repthreshold,
 				normethod=>$edger_normethod,
+				miARmaPath=>$miARmaPath
 			);
 			
 			#EdgeR analysis will be performed when user provides DEsoft with EdgeR value
@@ -244,7 +246,9 @@ sub DE_Analysis{
 					replicates=>$replicates,
 					bcvvalue=>$bcvvalue,
 					rpkm=>$rpkm,
-					cpm=>$cpm
+					cpm=>$cpm,
+					miARmaPath=>$miARmaPath
+					
 				);
 			}
 
@@ -346,7 +350,9 @@ sub DE_Analysis{
 					vvalue=>$vvalue,
 					qvalue=>$qvalue,
 					rpkm=>$rpkm,
-					cpm=>$cpm
+					cpm=>$cpm,
+					miARmaPath=>$miARmaPath
+					
 				);
 			}
 
@@ -491,6 +497,7 @@ sub QC_EdgeR{
 	my $label=$args{"label"}; #Character string that will appear in the name the results file
 	my $filter=$args{"filter"}; #This value refers to filter processing in the reads (Should be "yes" or "no").
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
+	my $miARmaPath=$args{"miARmaPath"};
 	
 	if($file and $dir and $projectdir and $targetfile and $label and $filter and $logfile){
 
@@ -552,7 +559,7 @@ sub QC_EdgeR{
 		#Declaring R instructions for the differential expression analysis. DE_noiseq R function is needed 
 		my $cmds = <<EOF;
 		setwd("$dir")
-		source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/QC_EdgeR.R")
+		source("$miARmaPath/lib/CbBio/RNASeq/R-Scripts/QC_EdgeR.R")
 		resultsfiles<-QC_EdgeR($Rcommand)
 EOF
 		
@@ -711,6 +718,7 @@ sub DE_noiseq{
 	my $rpkm=$args{"rpkm"}; #create a file with RPKM values
 	my $cpm=$args{"cpm"}; #create a file with normalized CPM values
 	my $file_size=$args{"size_file"}|| undef; #file with gene/tr/miRNA lengths
+	my $miARmaPath=$args{"miARmaPath"};
 	
 	if($file and $dir and $projectdir and $targetfile and $label and $filter and $contrastfile and $logfile){
 		#Optional parameters
@@ -804,7 +812,7 @@ sub DE_noiseq{
 		#Declaring R instructions for the differential expression analysis. DE_noiseq R function is needed 
 		my $cmds = <<EOF;
 		setwd("$dir")
-		source("/Users/eandres/Proyectos/miARma/lib/CbBio/RNASeq/R-Scripts/DE_noiseq.R")
+		source("$miARmaPath/lib/CbBio/RNASeq/R-Scripts/DE_noiseq.R")
 		resultsfiles<-DE_noiseq($Rcommand)
 EOF
 		#For testing : 	source("/Users/eandres/Proyectos/miARma/lib/CbBio/RNASeq/R-Scripts/DE_noiseq.R")
@@ -963,6 +971,7 @@ sub DE_EdgeR{
 	my $contrastfile=$args{"contrastfile"}; #Path of the contrast file.
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
 	my $file_size=$args{"size_file"}; #file with gene/tr/miRNA lengths
+	my $miARmaPath=$args{"miARmaPath"};
 	
 	if($file and $dir and $projectdir and $targetfile and $label and $filter and $contrastfile and $logfile){
 
@@ -1031,7 +1040,7 @@ sub DE_EdgeR{
 		#Declaring R instructions for the differential expression analysis. DE_noiseq R function is needed 
 		my $cmds = <<EOF;
 		setwd("$dir")
-		source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/DE_EdgeR.R")
+		source("$miARmaPath/lib/CbBio/RNASeq/R-Scripts/DE_EdgeR.R")
 		resultsfiles<-DE_EdgeR($Rcommand)
 EOF
 		#For testing : source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/DE_EdgeR.R")

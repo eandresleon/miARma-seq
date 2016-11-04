@@ -253,7 +253,8 @@ sub AdapterRemoval{
 		  			#Calling AdapterGraph to plot the number of reads with different sizes after adapter removal
 		  			AdapterGraph(
 						file=>$stats_path,
-						dir=>$abs_path."/cutadapt_results/"
+						dir=>$abs_path."/cutadapt_results/",
+						miARmaPath=>$miARmaPath
 		  			);
 
 		  			#Calling CutAdaptStats to count the number of the reads before and after the adapter removal
@@ -379,7 +380,8 @@ sub AdapterRemoval{
 		  			#Calling AdapterGraph to plot the number of reads with different sizes after adapter removal
 		  			AdapterGraph(
 						file=>$stats_path,
-						dir=>$abs_path."/Reaper_results/"
+						dir=>$abs_path."/Reaper_results/",
+						miARmaPath=>$miARmaPath
 		  			);
 					print STDERR date()." Please check $dir for results.\nA summary can be consulted in $statsfile\n" if($verbose);
 					
@@ -564,6 +566,7 @@ sub AdapterGraph{
 	my %args=@_;
 	my $file=$args{"file"}; #Path of the file with the stats of the adapter removal from reaper
 	my $dir= $args{"dir"}; #Directory where the results plot will be generated
+	my $miARmaPath=$args{"miARmaPath"};
 
 	if($dir and $file){
 		if($file =~ /.lane.report.clean.len$/){
@@ -589,7 +592,7 @@ sub AdapterGraph{
 
 			#Declaring R instructions for the quality control analysis. QC_EdgeR R function is needed 
 			my $cmds = <<EOF;
-			source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/AdapterGraph.R") 
+			source("$miARmaPath/lib/CbBio/RNASeq/R-Scripts/AdapterGraph.R") 
 			AdapterGraph("$dir", "$file", "$name")
 EOF
 
