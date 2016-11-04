@@ -96,7 +96,7 @@ sub FastQC{
 	}
 	
 	#my $fastqc_bin="$miARmaPath/bin/common/fastqc/fastqc";
-	my $file=$args{"file"}; #Name of the file to perform the analysis
+	my @files=@{$args{"files"}}; #Name of the file to perform the analysis
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
 	my $threads=$args{"threads"} || 1; #Optional number of threads to perform the analysis faster
 	my $verbose=$args{"verbose"} || 0; #Optional argument to show the execution data on screen
@@ -105,57 +105,51 @@ sub FastQC{
 	#Describing results directory 
 	my $output_dir= "/".$label."_fastqc_results/";
 	
+	my @good_files;
 	#Checking the mandatory arguments 	
-	if($file and $logfile and $label and $projectdir){
+	if(@files and $logfile and $label and $projectdir){
+		
 		#Obtaining the absolute path of the file
-		if($file =~ /.*\.fastq$/ or $file =~ /.*\.fastq\.gz$/ or $file=~ /.*\.fq$/ or $file=~ /.*\.fq\.gz$/ or $file=~ /.*\.fastq\.lane\.clean$/ or $file=~ /.*\.fq\.bz2$/ or $file=~ /.*\.fastq\.bz2$/){
-			#Printing process data on screen and in log file
-
-			if($verbose){
-				print STDOUT "\t". date()." Checking $file for FastQC analysis\n";
-			}
-			$file = abs_path($file);
-		  	system("mkdir -p $projectdir.$output_dir/");
-
-			#Variable declarations
-			my $command;
-			my $commanddef;
-
-			#Checking if user has defined the number of threads to perform the analysis.
-			if($threads>0){
-				#Fastqc execution command with a defined number of threads and the output directory
-				$command="fastqc -f fastq -t ".$threads." ".$file." -o ".$projectdir.$output_dir ;
-				#commandef is the command will be executed by system composed of the results directory creation 
-				#and the fastqc execution. The error data will be redirected to the run.log file
-				$commanddef="mkdir -p ".$projectdir.$output_dir." ; ".$command." >> ".$logfile." 2>&1";
-			}
-			else{
-				#Fastqc execution command with the default number of threads (1) and the output directory 
-				$command="fastqc -f fastq ".$file." -o ".$projectdir.$output_dir;
-				#commandef is the command that will be executed by system composed of the results directory creation
-				#and the fastqc execution. The error data will be redirected to the run.log file 
-				$commanddef="mkdir -p ".$projectdir.$output_dir." ;".$command ." >> ".$logfile." 2>&1";
-			}
-			
-			#Execution data will be register on the run.log file. Opening the run.log file 
-			open(LOG,">> ".$logfile) || die "FASTQC ERROR :: Can't open [$logfile]: $!";
-			# Printing the date and command execution on the run.log file
-			print LOG "FASTQC :: ".date()." Checking $file for FastQC analysis\n";
-			print LOG "FASTQC :: ".date()." Executing $commanddef\n";
-			#Executing the command or if system can't be executed die showing the error.
-			system($commanddef) == 0
-	   	    or die "FASTQC ERROR :: system args failed: $? ($commanddef)";
-	   	    #If verbose option has been provided by user print the data on screen
-			if($verbose){
-				print STDOUT "FASTQC :: ".date()." Executing $commanddef\n" if($verbose);
-			}
-			#The path of output results is returned to main program
-		}
-		else{
-			if($verbose and -e($file)){
-				#warn("FASTQC ERROR :: ".date()." File($file) has an invalid format.");
+		foreach my $file (sort @files){
+			if($file =~ /.*\.fastq$/ or $file =~ /.*\.fastq\.gz$/ or $file=~ /.*\.fq$/ or $file=~ /.*\.fq\.gz$/ or $file=~ /.*\.fastq\.lane\.clean$/ or $file=~ /.*\.fq\.bz2$/ or $file=~ /.*\.fastq\.bz2$/){
+				#Printing process data on screen and in log file	
+				push(@good_files,$file);
 			}
 		}
+
+		#print
+		if($verbose){
+			print STDOUT "\t". date()." Checking ".join(", ",@good_files)." for FastQC analysis\n";
+		}
+
+		system("mkdir -p $projectdir.$output_dir/");
+		#
+		#Variable declarations
+		my $command;
+		my $commanddef;
+		#
+		#Checking if user has defined the number of threads to perform the analysis.
+		#Fastqc execution command with a defined number of threads and the output directory
+		$command="fastqc -f fastq -t ".$threads." ".join(" ",@good_files)." -o ".$projectdir.$output_dir ;
+		#commandef is the command will be executed by system composed of the results directory creation
+		#and the fastqc execution. The error data will be redirected to the run.log file
+		$commanddef="mkdir -p ".$projectdir.$output_dir." ; ".$command." >> ".$logfile." 2>&1";
+
+		#
+		#Execution data will be register on the run.log file. Opening the run.log file
+		open(LOG,">> ".$logfile) || die "FASTQC ERROR :: Can't open [$logfile]: $!";
+		# Printing the date and command execution on the run.log file
+		print LOG "FASTQC :: ".date()." Checking $projectdir for FastQC analysis\n";
+		print LOG "FASTQC :: ".date()." Executing $commanddef\n";
+	
+		#Executing the command or if system can't be executed die showing the error.
+		system($commanddef) == 0
+		    or die "FASTQC ERROR :: system args failed: $? ($commanddef)";
+		    #If verbose option has been provided by user print the data on screen
+		if($verbose){
+			print STDOUT "FASTQC :: ".date()." Executing $commanddef\n" if($verbose);
+		}
+		#The path of output results is returned to main program	
 		return($projectdir.$output_dir);
 		
 	}
@@ -163,11 +157,11 @@ sub FastQC{
 	{
 		#Registering the error in run.log file
    		open(LOG,">> ".$logfile) || die "FASTQC ERROR :: Can't open $logfile: $!";
-    	print LOG "FASTQC ERROR :: ".date()." Projectdir($projectdir), file($file), label($label) and/or logfile($logfile) have not been provided";
+    	print LOG "FASTQC ERROR :: ".date()." Projectdir($projectdir), files(".join(" ",@good_files)."), label($label) and/or logfile($logfile) have not been provided";
     	close LOG;
 
 		#If mandatory parameters have not been provided program will die and show error message
-		warn ("FASTQC ERROR :: ".date()." Projectdir($projectdir), file($file), label($label) and/or logfile($logfile) have not been provided.");
+		warn ("FASTQC ERROR :: ".date()." Projectdir($projectdir), files(".join(" ",@good_files)."), label($label) and/or logfile($logfile) have not been provided.");
 		help_FastQC();
 	}
 
