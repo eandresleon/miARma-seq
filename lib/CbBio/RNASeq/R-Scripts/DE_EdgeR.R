@@ -51,6 +51,8 @@ Optional arguments:
   [replicates] Value to indicate if replicates samples are present in the analysis. It can be \"yes\" (by default) or \"no\".
   [bcvvalue] Value for the common BCV (square- root-dispersion) in experiments without replicates. Standard values from well-controlled 
   experiments are 0.4 for human data (by default), 0.1 for data on genetically identical model organisms or 0.01 for technical replicates.
+  [rpkm] Value to indicate if a file with RPKM values should be created. It can be \"yes\" (by default) or \"no\".
+  [cpm] Value to indicate if a file with CPM values should be created. It can be \"yes\" (by default) or \"no\".
 
   Example:
     
@@ -59,7 +61,7 @@ Optional arguments:
 }
 
 
-DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cpmvalue=1, repthreshold=2, normethod="TMM", replicates="yes", bcvvalue=0.4){
+DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cpmvalue=1, repthreshold=2, normethod="TMM", replicates="yes", bcvvalue=0.4,rpkm=F,cpm=F,file_size=F){
   
   #Checking the mandatory parameters
   if(missing(projectdir) | missing(dir) | missing(file) | missing(targetfile) | missing(label) | missing(filter) | missing(contrastfile)){
@@ -99,11 +101,12 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   data <- read.table(file, header=TRUE, sep="\t")
   data<-data[,sort(colnames(data))]
   
+
   #Importing targets
   targets<-readTargets(targetfile,row.names="Filename")
   targets<-targets[order(targets$Filename),]
 
-    #########################################################################
+  #########################################################################
   #2- FILTERING AND NORMALIZATION
   #########################################################################
    
@@ -120,7 +123,18 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   cbind(targets,group=group)
   
   #DGEList element creation
-  dge<-DGEList(counts=data,group=group)
+  dge<-NULL
+  if(rpkm == "yes"){
+    gene.length<-read.table(file_size,header=T)
+    idx<-match(rownames(data),gene.length$Gene)
+    results_counts<-gene.length[idx,]
+    results_counts[is.na(results_counts$Length),"Length"]<-0
+    
+    dge<-DGEList(counts=data,genes=results_counts,group = group)
+    
+  }else{
+   dge<-DGEList(counts=data,group=group)
+  }
   
   #Filtering the counts
   if(filter=="yes"){
@@ -132,7 +146,20 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   
   #Normalization of the samples
   dgenorm<-calcNormFactors(dge, method=normethod)
-  
+  if(cpm=="yes"){
+    write(paste("[",Sys.time(),"]"," Calculating normalized CPMs",sep=""), stderr())
+    mycpm<-cpm(dge,normalized.lib.sizes=T,log=F)
+    results_cpm<-file.path(projectdir,paste(label,"_EdgeR_normalized_reads.tsv", sep=""))
+    write.table(mycpm,file=results_cpm,sep="\t",col.names = NA,row.names = T)
+  }
+  if(rpkm=="yes"){
+    write(paste("[",Sys.time(),"]"," Calculating RPKMs",sep=""), stderr())
+    y_rpkm<-rpkm(dge,dge$genes$Length)
+    write(paste("[",Sys.time(),"]"," RPKMs done!",sep=""), stderr())
+    
+    results_rpkm<-file.path(projectdir,paste(label,"_EdgeR_RPKM.tsv", sep=""))
+    write.table(y_rpkm,results_rpkm,col.names=NA,row.names=T,sep="\t")
+  }
   #########################################################################
   #3. DISPERSION ESTIMATION AND DIFFERENTIAL EXPRESSION (DE) ANALYSIS
   ######################################################################### 
@@ -175,7 +202,7 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         top<-topTags(et, n=nrow(et))
         #Writting the data in a tab file with xls extension
         resultsfile<-file.path(projectdir,paste(label,"_EdgeR_results_",contrastsname[1],".xls", sep=""))
-        write.table(top, file=resultsfile, sep = "\t", col.names = NA , row.names = TRUE, qmethod = "double")
+        write.table(top, file=resultsfile, sep = "\t", col.names = T , row.names = F, qmethod = "double")
         #Plotting the tagwise log-fold-changes against log-cpm
         de <- decideTestsDGE(et, p=0.05, adjust="BH")
         detags <- rownames(dgenorm)[as.logical(de)]
@@ -223,7 +250,7 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         top<-topTags(lrt, n=nrow(lrt))
         #Saving the data in a xls file
         resultsfile<-file.path(projectdir,paste(label,"_EdgeR_results_",contrastsname[1],".xls", sep=""))
-        write.table(top, file=resultsfile, sep = "\t", col.names = NA , row.names = TRUE, qmethod = "double")
+        write.table(top, file=resultsfile, sep = "\t", col.names = T , row.names = F, qmethod = "double")
         filepaths[a]<- resultsfile
         #Plotting the tagwise log-fold-changes against log-cpm
         de <- decideTestsDGE(lrt, p=0.05, adjust="BH")

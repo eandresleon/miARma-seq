@@ -39,17 +39,18 @@ Mandatory arguments:
   [organism] Path of the tabulated file which contains the experimental condiction of each sample. 
   [method] Path of the tabulated file which contains the experimental condiction of each sample. 
   [seq_id] Type of entitie: gene_id or transcript_id
+  [label] label
 
   Example:
     
-    F_Analysis(projectdir=\"./Project\",up=\"up\",down=\"down\",universe=\"universe\",organism=\"human\",method=\"edger\",seq_id=\"transcript_id\")", stderr())
+    F_Analysis(projectdir=\"./Project\",up=\"up\",down=\"down\",universe=\"universe\",organism=\"human\",method=\"edger\",seq_id=\"transcript_id\",label=\"TSA\")", stderr())
   
 }
 
-F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydataset="hsapiens_gene_ensembl"){
+F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydataset="hsapiens_gene_ensembl",label){
   
   #Checking the mandatory parameters
-  if(missing(projectdir) | missing(up) | missing(down) | missing(universe) | missing(organism) | missing(method) | missing(seq_id)){
+  if(missing(projectdir) | missing(up) | missing(down) | missing(universe) | missing(organism) | missing(method) | missing(seq_id) | missing(label)){
     F_Analysis_help()
     stop("F_Analysis Error: Missing mandatory argument")
   }
@@ -165,11 +166,12 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	
 	pwf_up=try(nullp(genes_up,mybuild,"ensGene",plot.fit=F),silent=T)
 	go_up<-try(goseq(pwf_up,mybuild,'ensGene',method="Wallenius",test.cats=c("GO:CC", "GO:BP", "GO:MF","KEGG")),silent=T)
-	file_up<-paste( method, "_resultado-Functional_Analysis_Up.xls",sep="")
+	file_up<-paste(method,"_", label, "_FAnalysys_Up.xls",sep="")
 	
 	pwf_dw=try(nullp(genes_down,mybuild,"ensGene",plot.fit=F),silent=T)
 	go_dw<-try(goseq(pwf_dw,mybuild,'ensGene',method="Wallenius",test.cats=c("GO:CC", "GO:BP", "GO:MF","KEGG")),silent=T)
-	file_down<-paste( method, "_resultado-Functional_Analysis_Down.xls",sep="")
+	file_down<-paste(method,"_", label, "_FAnalysys_Down.xls",sep="")
+	
 	
 	pathways<-mapPathwayToName()
 	#up

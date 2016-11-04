@@ -66,7 +66,7 @@ Optional arguments
 DE_noiseq(projectdir=\"/Project\",dir=\"/Project/htseq-results\",file=\"htseqresults.tab\",targetsfile=\"/Project/target.txt\",label=\"Hypoxia\",filter=\"yes\", contrastfile=\"/Project/contrast.txt\", filtermethod=3, cpmvalue=5, normethod=\"rpkm\", qvalue=0.9)", stderr())
 }
 
-DE_noiseq<-function(projectdir,dir,file,targetsfile,label,filter,contrastfile,lenghtfile=NULL, gcfile=NULL, biotypefile=NULL, chromsfile=NULL, filtermethod=1,cpmvalue=1,cutoffvalue=100, normethod="rpkm",replicatevalue="technical",kvalue=0.5,lcvalue=0,pnrvalue=0.2,nssvalue=5,vvalue=0.02,qvalue=0.8){
+DE_noiseq<-function(projectdir,dir,file,targetsfile,label,filter,contrastfile,lenghtfile=NULL, gcfile=NULL, biotypefile=NULL, chromsfile=NULL, filtermethod=1,cpmvalue=1,cutoffvalue=100, normethod="rpkm",replicatevalue="technical",kvalue=0.5,lcvalue=0,pnrvalue=0.2,nssvalue=5,vvalue=0.02,qvalue=0.8,rpkm=F,cpm=F,file_size=F){
   
   #Checking the mandatory parameters
   if(missing(projectdir) | missing(dir) |  missing(file) | missing(targetsfile) | missing(label) | missing(filter) | missing(contrastfile)){
@@ -108,6 +108,24 @@ DE_noiseq<-function(projectdir,dir,file,targetsfile,label,filter,contrastfile,le
     mychroms<-NULL
   }
   
+  if(cpm=="yes"){
+    write(paste("[",Sys.time(),"]"," Calculating normalized CPMs",sep=""), stderr())
+    mycpm<-tmm(data,long=1000,lc=0,k=0)
+    results_cpm<-file.path(projectdir,paste(label,"_NOISeq_normalized_reads.tsv", sep=""))
+    write.table(mycpm,file=results_cpm,sep="\t",col.names = NA,row.names = T)
+  }
+  if(rpkm=="yes"){
+    gene.length<-read.table(file_size,header=T)
+    idx<-match(rownames(data),gene.length$Gene)
+    results_counts<-gene.length[idx,]
+    results_counts[is.na(results_counts$Length),"Length"]<-0
+    
+    write(paste("[",Sys.time(),"]"," Calculating RPKMs",sep=""), stderr())
+    mycpm<-rpkm(data,long=results_counts$Length,lc=1,k=0)
+    
+    results_cpm<-file.path(projectdir,paste(label,"_NOISeq_RPKM.tsv", sep=""))
+    write.table(mycpm,file=results_cpm,sep="\t",col.names = NA,row.names = T)
+  }
   #Generating factors for experimental conditions
   target<-read.table(file=targetsfile, sep="\t", header=T,row.names=1)
   #Generating factors using targets. Only one factor is allowed
@@ -151,21 +169,21 @@ DE_noiseq<-function(projectdir,dir,file,targetsfile,label,filter,contrastfile,le
     contrastsname<-strsplit(as.character(contrast[a,1]), "=")[[1]]
     contrastval<-strsplit(as.character(contrastsname[2]), "-")[[1]]
     #Generating the QCReport for these conditions
-    QCname<-file.path(projectdir,paste(label,"_QCReport_Noiseq_",contrastsname[1],".pdf", sep=""))
+    QCname<-file.path(projectdir,paste(label,"_QCReport_NOISeq_",contrastsname[1],".pdf", sep=""))
     filepaths[counta]<-QCname
     #QCreport(mydata, file=QCname, samples=c(contrastval[1],contrastval[2]), factor="Factor1")
     #Computation of differential expression between two experimental conditions from read count data
     mynoiseq <- noiseq(mydata, norm = normethod, factor = "Factor1", conditions=c(contrastval[1],contrastval[2]),  replicates = replicatevalue, k=kvalue, pnr = pnrvalue, nss = nssvalue, v = vvalue, lc = lcvalue)
-    mynoiseqname<-file.path(projectdir,paste(label,"_Noiseq_results_",contrastsname[1],".xls", sep=""))
+    mynoiseqname<-file.path(projectdir,paste(label,"_NOISeq_results_",contrastsname[1],".xls", sep=""))
     filepaths[counta+1]<-mynoiseqname
     write.table(mynoiseq@results, file=mynoiseqname, sep = "\t", col.names = NA , row.names = TRUE, qmethod = "double")
     #Obtaining the Differentially expressed elements with q probability
     mynoiseq.deg = degenes(mynoiseq, q = qvalue, M = NULL)
-    mynoiseq.degname<-file.path(projectdir,paste(label,"_Noiseq_DE_of_",contrastsname[1],"_with_q_", qvalue,".xls", sep=""))
+    mynoiseq.degname<-file.path(projectdir,paste(label,"_NOISeq_DE_of_",contrastsname[1],"_with_q_", qvalue,".xls", sep=""))
     filepaths[counta+2]<-mynoiseq.degname
     #write.table(mynoiseq.deg, file=mynoiseq.degname, sep = "\t", col.names = NA , row.names = TRUE, qmethod = "double")
     #Generating the DE plots for the condition analyzed
-    plotsname<-file.path(projectdir,paste(label, "_Noiseq_DE_plots_",contrastsname[1],".pdf", sep=""))
+    plotsname<-file.path(projectdir,paste(label, "_NOISeq_DE_plots_",contrastsname[1],".pdf", sep=""))
     filepaths[counta+3]<-plotsname  
     pdf(file=plotsname, paper="a4")
     par(mfrow=c(1,1), col.main="midnightblue", col.lab="midnightblue", col.axis="midnightblue", bg="white", fg="midnightblue", font=2, cex.axis=0.8, cex.main=1.2)
