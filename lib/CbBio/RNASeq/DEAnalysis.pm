@@ -124,6 +124,9 @@ sub DE_Analysis{
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
 	my $DEsoft=$args{"DEsoft"}; #Specific software to perform the Differential Expression Analysis
 	my $edger_normethod=$args{"edger_normethod"}; #Specific software to perform the Differential Expression Analysis
+	my $rpkm=$args{"rpkm"}; #create a file with RPKM values
+	my $cpm=$args{"cpm"}; #create a file with normalized CPM values
+	
   	my (undef,$dir) = fileparse($file);
 	$dir=abs_path($dir);
 	
@@ -218,10 +221,16 @@ sub DE_Analysis{
 				if(defined $args{"bcvvalue"}){
 					$bcvvalue=$args{"bcvvalue"}; #Value for the common BCV (square- root-dispersion) in experiments without replicates.(0.4 by default)
 				}
-
+				my $size_file=$file;
+				$size_file=~s/ReadCount/Size/g;
+				if(!-e $size_file or $size_file =~ "circRNAs.tab"){
+					#if size file is not found. Dont di the RPKM calculation
+					$rpkm="no";
+				}
 				DE_EdgeR(
 					projectdir=>$projectdir,
 					dir=>$dir,
+					size_file=>$size_file,
 					file=>$file,
 					targetfile=>$targetfile,
 					label=>$label ."_". $addtofile,
@@ -233,7 +242,9 @@ sub DE_Analysis{
 					repthreshold=>$repthreshold,
 					normethod=>$edger_normethod,
 					replicates=>$replicates,
-					bcvvalue=>$bcvvalue
+					bcvvalue=>$bcvvalue,
+					rpkm=>$rpkm,
+					cpm=>$cpm
 				);
 			}
 
@@ -301,10 +312,18 @@ sub DE_Analysis{
 					$qvalue=$args{"qvalue"}; #Probability of differential expression.
 				}
 
+				my $size_file=$file;
+				$size_file=~s/ReadCount/Size/g;
+				if(!-e $size_file or $size_file =~ "circRNAs.tab"){
+					#if size file is not found. Dont do the RPKM calculation
+					$rpkm="no";
+				}
+				
 				DE_noiseq(
 					projectdir=>$projectdir,
 					dir=>$dir,
 					file=>$file,
+					size_file=>$size_file,
 					targetfile=>$targetfile,
 					label=>$label ."_". $addtofile,
 					filter=>$filter,
@@ -325,7 +344,9 @@ sub DE_Analysis{
 					pnrvalue=>$pnrvalue,
 					nssvalue=>$nssvalue,
 					vvalue=>$vvalue,
-					qvalue=>$qvalue
+					qvalue=>$qvalue,
+					rpkm=>$rpkm,
+					cpm=>$cpm
 				);
 			}
 
@@ -687,6 +708,9 @@ sub DE_noiseq{
 	my $filter=$args{"filter"}; #This value refers to filter processing in the reads (Should be "yes" or "no").
 	my $contrastfile=$args{"contrastfile"}; #Path of the contrast file.
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
+	my $rpkm=$args{"rpkm"}; #create a file with RPKM values
+	my $cpm=$args{"cpm"}; #create a file with normalized CPM values
+	my $file_size=$args{"size_file"}|| undef; #file with gene/tr/miRNA lengths
 	
 	if($file and $dir and $projectdir and $targetfile and $label and $filter and $contrastfile and $logfile){
 		#Optional parameters
@@ -743,7 +767,16 @@ sub DE_noiseq{
 			my $qvalue=$args{"qvalue"}; #Probability of differential expression.
 			$Rcommand.=", qvalue=".$qvalue;
 		}
-
+		if(defined $args{"rpkm"}){
+			my $rpkm=$args{"rpkm"}; #RPKM
+			$Rcommand.=", rpkm=\"".$rpkm."\"";
+			$Rcommand.=", file_size=\"".$file_size."\"";
+		}
+		if(defined $args{"cpm"}){
+			my $cpm=$args{"cpm"}; #normalized CPM
+			$Rcommand.=", cpm=\"".$cpm."\"";
+		}
+		
 		# Printing the date and command execution on screen
 		print STDOUT "DE_NOISEQ :: ".date()." Starting Differential Expression Analysis of $file with NOISeq\n" if($verbose);
 
@@ -771,10 +804,11 @@ sub DE_noiseq{
 		#Declaring R instructions for the differential expression analysis. DE_noiseq R function is needed 
 		my $cmds = <<EOF;
 		setwd("$dir")
-		source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/DE_noiseq.R")
+		source("/Users/eandres/Proyectos/miARma/lib/CbBio/RNASeq/R-Scripts/DE_noiseq.R")
 		resultsfiles<-DE_noiseq($Rcommand)
 EOF
-		
+		#For testing : 	source("/Users/eandres/Proyectos/miARma/lib/CbBio/RNASeq/R-Scripts/DE_noiseq.R")
+		#For testing: source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/DE_noiseq.R")
 		#Printing the execution data on log file and on the screen if verbose parameter is defined 
 		open (LOG,">> ".$logfile) || die $!;
 		print LOG "DE_NOISEQ :: ".date()." Executing $cmds\n";
@@ -928,6 +962,7 @@ sub DE_EdgeR{
 	my $filter=$args{"filter"}; #This value refers to filter processing in the reads (Should be "yes" or "no").
 	my $contrastfile=$args{"contrastfile"}; #Path of the contrast file.
 	my $logfile=$args{"logfile"}; #Path of run.log file where execution data will be saved
+	my $file_size=$args{"size_file"}; #file with gene/tr/miRNA lengths
 	
 	if($file and $dir and $projectdir and $targetfile and $label and $filter and $contrastfile and $logfile){
 
@@ -961,7 +996,15 @@ sub DE_EdgeR{
 			my $bcvvalue=$args{"bcvvalue"}; #Value for the common BCV (square- root-dispersion) in experiments without replicates.(0.4 by default)
 			$Rcommand.=", bcvvalue=".$bcvvalue;
 		}
-
+		if(defined $args{"rpkm"}){
+			my $rpkm=$args{"rpkm"}; #RPKM
+			$Rcommand.=", rpkm=\"".$rpkm."\"";
+			$Rcommand.=", file_size=\"".$file_size."\"";
+		}
+		if(defined $args{"cpm"}){
+			my $cpm=$args{"cpm"}; #normalized CPM
+			$Rcommand.=", cpm=\"".$cpm."\"";
+		}
 		# Printing the date and command execution on screen
 		print STDOUT "DE_EDGER :: ".date()." Starting Differential Expression Analysis of $file with EdgeR\n" if($verbose);
 
@@ -991,7 +1034,7 @@ sub DE_EdgeR{
 		source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/DE_EdgeR.R")
 		resultsfiles<-DE_EdgeR($Rcommand)
 EOF
-		
+		#For testing : source("http://valkyrie.us.es/CbBio/RNASeq/R-Scripts/DE_EdgeR.R")
 		#Printing the execution data on log file and on the screen if verbose parameter is defined 
 		open (LOG,">> ".$logfile) || die "DE_EDGER ERROR :: ".date()."Can't open '$logfile': $!";
 		print LOG "DE_EDGER :: ".date()." Executing $cmds\n";
