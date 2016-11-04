@@ -294,6 +294,7 @@ sub featureFormat{
 	my $files;
 	my $process;
 	my @results;	
+	my $size;
 
 	if($input and $projectdir and $logfile){
 		#Declaration of the output path 
@@ -316,7 +317,6 @@ sub featureFormat{
 				#Saving the Suffix with process information in a hash
 				$process->{$suffix}++;
 				$files->{$originalname}++;
-			
 				#Opening each file of the array
 				open (FILE, $file) or die "SEQCOUNTFORMAT ERROR :: ".date()."Can't open '$file': $!";
 				#Reading the file. Each line contains the number of the miRNA, a tab and the number of reads
@@ -329,6 +329,7 @@ sub featureFormat{
 						my ($miRNAs,$chr,$start,$end,$strand,$length,$reads)=split(/\t/);
 						#Creating a hash with the names of miRNAs
 						$hashref->{$miRNAs}++;
+						$size->{$suffix}->{$miRNAs}=$length;
 						#Creating a hash with all the data, the first dimension contains the miRNA name,
 						#the second the name of the file and the third is the number of reads 
 						$data->{$suffix}->{$miRNAs}->{$originalname}=$reads;	
@@ -373,7 +374,22 @@ sub featureFormat{
 			close LOG;
 			push(@results, $fileresults) if($fileresults);
 		}
-		#Returning the path of the results file
+		
+		#Saving length file for RPKM calculation
+		
+
+		foreach my $suffix (keys %{$size}){
+			my $fileSize= $projectdir.$output_dir.$suffix."-Size.tab"; 
+			open(SIZE,">$fileSize") || warn "Cant create $fileSize for RPKM calculation\n";
+			print SIZE "Gene\tLength\n";
+
+			foreach my $element (keys %{$size->{$suffix}}){
+				print SIZE $element."\t". $size->{$suffix}->{$element} ."\n";
+			}
+			close SIZE;
+		}
+		
+		#Returning the path of the results files
 		open(LOG,">> ".$logfile) || die "SEQCOUNTFORMAT ERROR :: ".date()."Can't open '$logfile': $!";
 		print LOG "SEQCOUNT :: ".date()." Please check the folder: $projectdir"."$output_dir.\n";
 		close LOG;
