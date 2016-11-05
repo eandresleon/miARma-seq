@@ -86,6 +86,7 @@ sub F_Analysis{
 	my $organism=$args{"organism"}; #Specific software to perform the functional analysis Analysis
 	my $verbose=$args{"verbose"};
 	my $seq_id=$args{"seqid"}; #Type of entities used in differential expresion, genes (gene_id) or transcripts (transcript_id)
+	my $miARmaPath=$args{"miARmaPath"};
 	
 	my $dataset;
 	if(defined($args{"dataset"})){
@@ -176,7 +177,8 @@ sub F_Analysis{
 							cut_off=>$edger_cutoff,
 							seq_id=>$seq_id,
 							dataset=>$dataset,
-							label=>$label
+							label=>$label,
+							miARmaPath=>$miARmaPath
 						);
 					}
 					else{
@@ -256,7 +258,8 @@ sub F_Analysis{
 							cut_off=>$noiseq_cutoff,
 							seq_id=>$seq_id,
 							dataset=>$dataset,
-							label=>$label
+							label=>$label,
+							miARmaPath=>$miARmaPath
 						);
 					}
 					else{
@@ -318,6 +321,7 @@ sub goseq{
 	my $cut_off=$args{"cut_off"};
 	my $seq_id;
 	my $label=$args{"label"}; #label for saving files
+	my $miARmaPath=$args{"miARmaPath"};
 	
 	if(defined($args{"seq_id"})){
 		$seq_id=$args{"seq_id"};
@@ -383,8 +387,8 @@ sub goseq{
 		#source("/Users/eandres/Proyectos/EduardoAndres/miARma/New/lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
 
 		my $cmds = <<EOF;
+		source("$miARmaPath/lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
 		setwd("$output_dir")
-		source("/Users/eandres/Proyectos/miARma/lib/CbBio/RNASeq/R-Scripts/F_Analysis.R")
 		resultsfiles<-NA
 		resultsfiles<-F_Analysis($Rcommand)
 EOF

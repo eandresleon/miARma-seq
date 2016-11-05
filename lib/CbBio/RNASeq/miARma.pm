@@ -1028,6 +1028,8 @@ sub run_miARma{
 		 			seqid=>$cfg->val("FAnalysis","seqid") || $cfg->val("Readcount","seqid") ,
 		 			edger_cutoff=>$cfg->val("FAnalysis","edger_cutoff") || 0.05,
 		 			noiseq_cutoff=>$cfg->val("FAnalysis","noiseq_cutoff") || 0.8,
+					miARmaPath=>$miARmaPath,
+					
 		 );
 		 
 		 F_AnalysisSummary(
