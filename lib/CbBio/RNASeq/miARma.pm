@@ -194,6 +194,16 @@ sub run_miARma{
 				$cfg->RewriteConfig;
 				system("touch $log_file");
 			}
+			if($cfg->val("General","read_dir") !~ /\/$/){
+				my $real_dir=$cfg->val("General","read_dir"). "/";
+				$cfg->newval("General", "read_dir", $real_dir);
+				$cfg->RewriteConfig;
+			}
+			if($cfg->val("General","output_dir") !~ /\/$/){
+				my $real_dir=$cfg->val("General","output_dir"). "/";
+				$cfg->newval("General", "output_dir", $real_dir);
+				$cfg->RewriteConfig;
+			}
 		}
 	}
 	else{
