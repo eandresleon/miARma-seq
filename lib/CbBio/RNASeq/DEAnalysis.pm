@@ -1149,10 +1149,10 @@ sub DE_AnalysisSummary{
 							$_=~s/\"//g;
 							if($_ !~ /logFC/){
 								my @data=split(/\t/);
-								if($data[4]<=0.05){
+								if($data[($#data-1)]<=0.05){
 									$cont_pval++;
 								}
-								if($data[5]<=0.05){
+								if($data[($#data)]<=0.05){
 									$cont_fdr++;
 								}
 							}

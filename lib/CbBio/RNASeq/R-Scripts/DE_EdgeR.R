@@ -200,9 +200,13 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         et <- exactTest(dgenorm,pair=c(contrastval[2],contrastval[1]))
         #Extracting the statistical data order by p-value
         top<-topTags(et, n=nrow(et))
+        if(rpkm=="yes"){
+          rownames(top$table)<-top$table$Gene
+          top$table<-top$table[,grep("Gene",colnames(top$table),invert = T)]
+        }
         #Writting the data in a tab file with xls extension
         resultsfile<-file.path(projectdir,paste(label,"_EdgeR_results_",contrastsname[1],".xls", sep=""))
-        write.table(top, file=resultsfile, sep = "\t", col.names = T , row.names = F, qmethod = "double")
+        write.table(top, file=resultsfile, sep = "\t", col.names = NA , qmethod = "double")
         #Plotting the tagwise log-fold-changes against log-cpm
         de <- decideTestsDGE(et, p=0.05, adjust="BH")
         detags <- rownames(dgenorm)[as.logical(de)]
@@ -248,9 +252,13 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         lrt<-glmLRT(fit, contrast=my.contrasts)
         #Estadistical data extraction
         top<-topTags(lrt, n=nrow(lrt))
+        if(rpkm=="yes"){
+          rownames(top$table)<-top$table$Gene
+          top$table<-top$table[,grep("Gene",colnames(top$table),invert = T)]
+        }
         #Saving the data in a xls file
         resultsfile<-file.path(projectdir,paste(label,"_EdgeR_results_",contrastsname[1],".xls", sep=""))
-        write.table(top, file=resultsfile, sep = "\t", col.names = T , row.names = F, qmethod = "double")
+        write.table(top, file=resultsfile, sep = "\t", col.names = NA, qmethod = "double")
         filepaths[a]<- resultsfile
         #Plotting the tagwise log-fold-changes against log-cpm
         de <- decideTestsDGE(lrt, p=0.05, adjust="BH")
