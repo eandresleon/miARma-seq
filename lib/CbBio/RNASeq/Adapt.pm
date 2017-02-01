@@ -1589,7 +1589,7 @@ sub Minion{
 			return($adapter);
 		}
 		else{
-			print STDERR "MINION ERROR :: None of the minion predictions (total : $number_possible_results) were valid\nClosing\n\n";
+			print STDERR "MINION WARN :: None of the minion predictions (total : $number_possible_results) were valid. Asumming already trimmed (use adapter=no in ini file for trimmed input)\n";
 			return();
 		}
 		
