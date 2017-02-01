@@ -674,7 +674,7 @@ sub ReadAligment{
 					close ADAPT_FILE;
 				}
 				
-				if($bowtie1index and $adapter and $mature and $precursors and $genome and $organism){
+				if($bowtie1index and $mature and $precursors and $genome and $organism){
 					#Calling Bowtie1 function
 					$output_file1=miRDeep( 
 						file=>$file,
@@ -685,7 +685,7 @@ sub ReadAligment{
 						statsfile=>$statsfile, 
 						projectdir=>$projectdir,
 						miARmaPath=>$miARmaPath,
-						adapter=>$adapter,
+						adapter=>$adapter || undef,
 						mature=>$mature,
 						precursors=>$precursors,
 						genome=>$genome,
@@ -2131,7 +2131,7 @@ sub miRDeep{
 	}
 	
 	#Checking the mandatory parameters
-	if ($file and $projectdir and $bowtieindex and $logfile and $statsfile and $adapter and $genome and $mature_miRNA_file and $precursor_miRNA_file){
+	if ($file and $projectdir and $bowtieindex and $logfile and $statsfile and $genome and $mature_miRNA_file and $precursor_miRNA_file){
 		if($file =~ /\.gz$/){
 			print STDOUT "\tmiRDeep :: ".date()." Uncompressing $file\n" if($verbose);
 			#In case gzip
@@ -2155,7 +2155,7 @@ sub miRDeep{
 		if(!defined $adapter){
 			use CbBio::RNASeq::Adapt;
 			$adapter=Minion(
-				dir=>$projectdir,
+				dir=>".",
 				file=>$file,
 				logfile=>$logfile,
 				statsfile=>$statsfile,
@@ -2168,14 +2168,16 @@ sub miRDeep{
 		#miRDeep execution command
 		
 		my $command_mapper;
-		if($adapter){
+		if(defined($adapter) and lc($adapter) ne "no"){
 			$command_mapper="export PERL5LIB=$miARmaPath/lib/Perl/; mapper.pl ".$file." -e -h -i -j -n -m -k ".$adapter ." -o ". $threads ." -p " . $bowtieindex." -s ". $projectdir.$output_dir.$name.".fa -t ".$projectdir.$output_dir.$name."_vs_genome.arf";
 		}
 		#if no adaptder is provided or found by minion, try without adapter
+		elsif(defined($adapter) and lc($adapter) eq "no"){
+			$command_mapper="export PERL5LIB=$miARmaPath/lib/Perl/; mapper.pl ".$file." -e -h -i -j -n -m -o ". $threads ." -p " . $bowtieindex." -s ". $projectdir.$output_dir.$name.".fa -t ".$projectdir.$output_dir.$name."_vs_genome.arf";
+		}
 		else{
 			$command_mapper="export PERL5LIB=$miARmaPath/lib/Perl/; mapper.pl ".$file." -e -h -i -j -n -m -o ". $threads ." -p " . $bowtieindex." -s ". $projectdir.$output_dir.$name.".fa -t ".$projectdir.$output_dir.$name."_vs_genome.arf";
 		}
-		
 		my $command_novo=" export PERL5LIB=$miARmaPath/lib/Perl/;miRDeep2.pl ".$projectdir.$output_dir.$name.".fa ".$genome. " ". $projectdir.$output_dir.$name."_vs_genome.arf $mature_miRNA_file none $precursor_miRNA_file -r $name -P -d -c -v";
 		#Bowtie execution with verbose option
 		if($verbose){
