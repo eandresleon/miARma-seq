@@ -122,7 +122,7 @@ sub FastQC{
 			print STDOUT "\t". date()." Checking ".join(", ",@good_files)." for FastQC analysis\n";
 		}
 
-		system("mkdir -p $projectdir.$output_dir/");
+		#system("mkdir -p $projectdir.$output_dir/");
 		#
 		#Variable declarations
 		my $command;
