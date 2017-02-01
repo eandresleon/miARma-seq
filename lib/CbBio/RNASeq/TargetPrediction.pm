@@ -409,7 +409,10 @@ sub get_edgeR_data{
 		chomp;
 		if($_ !~/logCPM/){
 			$_=~s/\"//g;
-			my($feature,$fc,$cpm,$pvalue,$fdr)=split(/\t/);
+			my @data=split(/\t/);
+			my $feature=$data[0];
+			my $fc=$data[($#data)-3];
+			my $fdr=$data[$#data];
 			#filtering over-expressed
 			if($fdr<=$edger_cutoff and $fc>=$fc_threshold){
 				$data->{$feature}->{UP}="$fc\t$fdr";
