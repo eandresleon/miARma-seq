@@ -1473,7 +1473,7 @@ sub print_header{
 	system("clear");
 	print "#########################################################################	
 #   miARma, miRNA and RNASeq Multiprocess Analysis			#
-#                miARma v 1.6.1 (Feb-2017)                            #
+#                miARma v 1.6.1 (Feb-2017)                              #
 #               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
