@@ -148,13 +148,13 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   dgenorm<-calcNormFactors(dge, method=normethod)
   if(cpm=="yes"){
     write(paste("[",Sys.time(),"]"," Calculating normalized CPMs",sep=""), stderr())
-    mycpm<-cpm(dge,normalized.lib.sizes=T,log=F)
+    mycpm<-cpm(dgenorm,normalized.lib.sizes=T,log=F)
     results_cpm<-file.path(projectdir,paste(label,"_EdgeR_normalized_reads.tsv", sep=""))
     write.table(mycpm,file=results_cpm,sep="\t",col.names = NA,row.names = T)
   }
   if(rpkm=="yes"){
     write(paste("[",Sys.time(),"]"," Calculating RPKMs",sep=""), stderr())
-    y_rpkm<-rpkm(dge,dge$genes$Length)
+    y_rpkm<-rpkm(dgenorm,dge$genes$Length)
     write(paste("[",Sys.time(),"]"," RPKMs done!",sep=""), stderr())
     
     results_rpkm<-file.path(projectdir,paste(label,"_EdgeR_RPKM.tsv", sep=""))
