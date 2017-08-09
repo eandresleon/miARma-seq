@@ -7,7 +7,7 @@ Modified and Updated at Bioinformatics Unit at IPBLN-CSIC (Institue for Parasito
 Granada (Spain). 
 Copyright (c) 2017 IBIS & IPBLN. All rights reserved.
 
-### miArma 1.7.0 release 9/Aug/17 ###
+### miARma 1.7.0 release (09/Aug/17) ###
  * [Hisat 2.1.0](https://ccb.jhu.edu/software/hisat2/index.shtml) has been included as a mRNA aligner.
  * [STAR 020201](https://github.com/alexdobin/STAR/) has been included as a mRNA aligner.
 
