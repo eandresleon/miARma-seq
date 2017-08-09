@@ -8,8 +8,8 @@ Granada (Spain).
 Copyright (c) 2017 IBIS & IPBLN. All rights reserved.
 
 ### miARma 1.7.0 release (09/Aug/17) ###
- * [Hisat 2.1.0](https://ccb.jhu.edu/software/hisat2/index.shtml) has been included as a mRNA aligner.
- * [STAR 020201](https://github.com/alexdobin/STAR/) has been included as a mRNA aligner.
+ * [Hisat v2.1.0](https://ccb.jhu.edu/software/hisat2/index.shtml) has been included as a mRNA aligner.
+ * [STAR v020201](https://github.com/alexdobin/STAR/) has been included as a mRNA aligner.
 
 ### 1. Included in miARma ###
 
@@ -24,8 +24,8 @@ Copyright (c) 2017 IBIS & IPBLN. All rights reserved.
 * [Bowtie v2.2.8](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml)
 * [TopHat v2.1.1](http://ccb.jhu.edu/software/tophat/index.shtml)
 * [BWA v0.7.13](http://bio-bwa.sourceforge.net/)
-* [Hisat 2.1.0](https://ccb.jhu.edu/software/hisat2/index.shtml)
-* [STAR 020201](https://github.com/alexdobin/STAR/)
+* [Hisat v2.1.0](https://ccb.jhu.edu/software/hisat2/index.shtml)
+* [STAR v020201](https://github.com/alexdobin/STAR/)
 #### Entity Quantification####
 * [feactureCounts v1.5.0-p1](http://bioinf.wehi.edu.au/featureCounts/)
 * [Ciri v1.2](http://sourceforge.net/projects/ciri/files/?source=navbar)
