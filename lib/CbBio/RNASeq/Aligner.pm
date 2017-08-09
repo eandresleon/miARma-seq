@@ -12,7 +12,7 @@ require Exporter;
 #Export package system
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(bowtie1_index bowtie1 bowtie2_index bowtie2 IndexGeneration ReadAligment bwa tophat ReadSummary);
+@EXPORT=qw(bowtie1_index bowtie1 bowtie2_index bowtie2 IndexGeneration ReadAligment bwa tophat ReadSummary hisat2 hisat2_index star star_index);
 
 use strict;
 use DateTime;
@@ -75,7 +75,10 @@ sub IndexGeneration{
 	my $logfile=$args{"logfile"}; #path of the logfile to write the execution data
 	my $indexname=$args{"indexname"}; #name to write in the index files
 	my $aligner=$args{"aligner"}; #Aligner which will be use in the analysis to generate the corresponding index
-	my $miARmaPath=$args{"miARmaPath"};
+	my $miARmaPath=$args{"miARmaPath"}; #path to miARma stuff
+	my $threads=$args{"threads"}; # number of threads to use (for new aligners such us hisat2 and star)
+	my $gtf=$args{"gtf"}; # GTF file to create a trasncriptme in star
+	
 	
 	#Declaring the variables to collect the path of the new index
 	my $bowtie1index;
@@ -105,7 +108,8 @@ sub IndexGeneration{
 	  			dir=>$dir,
 	  			logfile=>$logfile,
 	  			indexname=>$indexname,
-				miARmaPath=>$miARmaPath
+				miARmaPath=>$miARmaPath,
+				threads=>$threads
 				
 	  		);
 	  		#Saving the path of the new bowtie2 index
@@ -130,7 +134,8 @@ sub IndexGeneration{
 	  			dir=>$dir,
 	  			logfile=>$logfile,
 	  			indexname=>$indexname,
-				miARmaPath=>$miARmaPath
+				miARmaPath=>$miARmaPath,
+				threads=>$threads
 				
 	  		);
 	  		#Saving the path of the Bowtie2 index in an array
@@ -144,6 +149,35 @@ sub IndexGeneration{
 	  			logfile=>$logfile,
 	  			indexname=>$indexname,
 				miARmaPath=>$miARmaPath
+				
+	  		);
+	  		#Saving the path of the new bowtie2 index
+	  		push(@index, $bwaindex);
+		}
+		elsif(lc($aligner) eq "hisat2"){
+			#Calling bowtie2_index function
+			$bwaindex=hisat2_index(
+	  			fasta=>$fasta,
+	  			dir=>$dir,
+	  			logfile=>$logfile,
+	  			indexname=>$indexname,
+				miARmaPath=>$miARmaPath,
+				threads=>$threads
+				
+	  		);
+	  		#Saving the path of the new bowtie2 index
+	  		push(@index, $bwaindex);
+		}
+		elsif(lc($aligner) eq "star"){
+			#Calling bowtie2_index function
+			$bwaindex=star_index(
+	  			fasta=>$fasta,
+	  			dir=>$dir,
+	  			logfile=>$logfile,
+	  			indexname=>$indexname,
+				miARmaPath=>$miARmaPath,
+				threads=>$threads,
+				gtf=>$gtf
 				
 	  		);
 	  		#Saving the path of the new bowtie2 index
@@ -697,6 +731,78 @@ sub ReadAligment{
 			  		die("READALIGNMENT ERROR:: ".date()."Index argument ($bowtie1index) , adapter ($adapter), mature fasta file ($mature), organism($organism), precursor fasta file ($precursors) or fasta genome ($genome) has not been provided");
 			  	}
 			}
+			elsif(lc($aligner) eq "hisat2"){
+				#Collecting specific hisat2 index
+				my $hisat2index=$args{"hisat2index"}; #Genome index to align your reads in .bt2 format
+				#Optional parameters are predefined as undef
+				my $threads=undef;
+				my $hisat2parameters=undef;
+				my $Seqtype;
+				#If any optional parameter is provided by the user will be collected
+				if(defined($args{"threads"})){
+					$threads=$args{"threads"}; 
+				}
+				if(defined($args{"hisat2parameters"})){
+					$hisat2parameters=$args{"hisat2parameters"};
+				}
+				if(defined($args{"Seqtype"})){
+					$Seqtype=$args{"Seqtype"};
+				}else{
+					$Seqtype="SingleEnd";
+				}
+				#Calling hisat2 function
+				$output_file2=hisat2( 
+					file=>$file,
+					threads=>$threads,
+					hisat2index=>$hisat2index,
+					verbose=>$verbose, 
+					logfile=>$logfile, 
+					statsfile=>$statsfile, 
+					hisat2parameters=>$hisat2parameters,
+					projectdir=>$projectdir,
+					miARmaPath=>$miARmaPath,
+					adapter=>$adapter,	
+					Seqtype=>$Seqtype
+								
+		  		);
+		  		return($output_file2);
+			}
+			elsif(lc($aligner) eq "star"){
+				#Collecting specific star2 index
+				my $starindex=$args{"starindex"}; #Genome index to align your reads in .bt2 format
+				#Optional parameters are predefined as undef
+				my $threads=undef;
+				my $starparameters=undef;
+				my $Seqtype;
+				#If any optional parameter is provided by the user will be collected
+				if(defined($args{"threads"})){
+					$threads=$args{"threads"}; 
+				}
+				if(defined($args{"starparameters"})){
+					$starparameters=$args{"starparameters"};
+				}
+				if(defined($args{"Seqtype"})){
+					$Seqtype=$args{"Seqtype"};
+				}else{
+					$Seqtype="SingleEnd";
+				}
+				#Calling star function
+				$output_file2=star( 
+					file=>$file,
+					threads=>$threads,
+					starindex=>$starindex,
+					verbose=>$verbose, 
+					logfile=>$logfile, 
+					statsfile=>$statsfile, 
+					starparameters=>$starparameters,
+					projectdir=>$projectdir,
+					miARmaPath=>$miARmaPath,
+					adapter=>$adapter,	
+					Seqtype=>$Seqtype
+								
+		  		);
+		  		return($output_file2);
+			}
 			else{
 				die("READALIGNMENT ERROR :: ".date()." Provided aligner argument ($aligner) has an invalid value. Allowed values for this parameters: Bowtie1, Bowtie2 and Bowtie1-Bowtie2/Bowtie2-Bowtie1, tophat and bwa");
 			}
@@ -815,7 +921,7 @@ sub bowtie1_index{
 	
 	#Checking the mandatory arguments
 	if ($fasta and $dir and $indexname and $logfile){
-		print STDERR date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
+		print STDERR date()." Generating the index genome $indexname from $fasta. This process could take some hours.\n";
 		#bowtie-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex1 directory with the name index 
 		my $command="bowtie-build -f ".$fasta." ".$dir."/Bowtie1_index/".$indexname;
@@ -988,9 +1094,15 @@ sub bowtie1{
 		
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			#Check if the file is a paired-end file
-			if($file =~ /.*_1.*/){
+			if($file =~ /.*_R?1.*/){
 				#it contains the _1 label
-				$mate_file=~s/_1/_2/g;
+				my $mate_file=$file;
+				if($file =~  /.*_R1.*/){
+					$mate_file=~s/_R1(.+)/_R2$1/g;
+				}
+				else{
+					$mate_file=~s/_1(.+)/_2$1/g;
+				}
 				if(-e $mate_file){
 					if($file ne $mate_file){
 						print STDERR date()." Checking $file for bowtie1 (Paired-End) analysis\n" if($verbose);
@@ -1029,7 +1141,7 @@ sub bowtie1{
 					last;
 				}
 			}
-			elsif($file =~ /.*_2.*/){
+			elsif($file =~ /.*_R?2.*/){
 				#The mate pair
 			}else{
 				print STDERR "ERROR :: Your input file ($file) does not seem to be a paired end. Check bowtie naming files for paired end analysis\n";
@@ -1168,6 +1280,7 @@ sub bowtie2_index{
 	# are mandatory arguments.
 	my %args=@_;
 	my $miARmaPath=$args{"miARmaPath"};
+	my $threads=$args{"threads"};
 	my $arch=`uname`;
 	chomp($arch);
 	
@@ -1200,7 +1313,7 @@ sub bowtie2_index{
 		print STDERR date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
 		#bowtie2-build execution command from a fasta file. The output index will be saved
 		#in the genomeindex2 directory with the name index 
-		$command= "bowtie2-build -f ".$fasta." ".$dir."/Bowtie2_index/".$indexname;
+		$command= "bowtie2-build --threads $threads -f ".$fasta." ".$dir."/Bowtie2_index/".$indexname;
 		#commandef is the command that will be executed by system composed of the index
 		#directory creation, the module loading, and the bowtie2-build execution. The error 
 		#data will be redirected to the run.log file
@@ -1236,9 +1349,9 @@ sub bowtie2_index{
   	 		[fasta] Path of the genomic fasta sequence to build the index
   	 		[logfile] Path of run.log file where execution data will be saved
   	 		[indexname] Name to write in the index files
-						             
+			[threads] Number of threads to use			             
 			Examples:
-			bowtie2_index(fasta=>"genome.fasta", dir=>".", logfile=>"run.log", indexname=>"hg19");
+			bowtie2_index(fasta=>"genome.fasta", dir=>".", logfile=>"run.log", indexname=>"hg19", threads=>4);
 
 	};
 
@@ -1367,10 +1480,15 @@ sub bowtie2{
 			print STDOUT "\tBOWTIE 2 :: ".date()." Checking $file for bowtie2 (paired-end) analysis\n" if($verbose);
 			
 			#Check if the file is a paired-end file
-			if($file =~ /.*_1.*/){
+			if($file =~ /.*_R?1.*/){
 				#it contains the _1 label
 				my $mate_file=$file;
-				$mate_file=~s/_1/_2/g;
+				if($file =~  /.*_R1.*/){
+					$mate_file=~s/_R1(.+)/_R2$1/g;
+				}
+				else{
+					$mate_file=~s/_1(.+)/_2$1/g;
+				}
 				if(-e $mate_file){
 					if($file ne $mate_file){
 						$command="bowtie2 ".$bowtiepardef." -x ".$bowtieindex." -1 ".$file." -2 ". $mate_file ." --met-file ".$projectdir.$output_dir.$name.".metrics -S --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
@@ -1598,10 +1716,15 @@ sub TopHat{
 		my $command;
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			#Check if the file is a paired-end file
-			if($file =~ /.*_1.*/){
+			if($file =~ /.*_R?1.*/){
 				#it contains the _1 label
 				my $mate_file=$file;
-				$mate_file=~s/_1/_2/g;
+				if($file =~  /.*_R1.*/){
+					$mate_file=~s/_R1(.+)/_R2$1/g;
+				}
+				else{
+					$mate_file=~s/_1(.+)/_2$1/g;
+				}
 				if(-e $mate_file){
 					if($file ne $mate_file){
 						print STDOUT "\tTOPHAT :: ".date()." Checking $file for TopHat analysis using $tophat_aligner\n" if($verbose);
@@ -1651,8 +1774,8 @@ sub TopHat{
 		
 		#Renaming
 		my $name=fileparse($file, qr{\..*$});
-		$name=~s/_1//;
-		$name=~s/_2//;
+		$name=~s/_R?1//;
+		$name=~s/_R?2//;
 		if(-e "$projectdir/$output_dir/accepted_hits.bam"){
 			my $output_file_mapped;
 			my $output_file_unmapped;
@@ -1912,10 +2035,15 @@ sub bwa{
 			print LOG "BWA :: ".date()." Checking $file for bwa analysis (Paired End)\n";
 			
 			#Check if the file is a paired-end file
-			if($file =~ /.*_1.*/){
+			if($file =~ /.*_R?1.*/){
 				#it contains the _1 label
 				my $mate_file=$file;
-				$mate_file=~s/_1(.+)/_2$1/g;
+				if($file =~  /.*_R1.*/){
+					$mate_file=~s/_R1(.+)/_R2$1/g;
+				}
+				else{
+					$mate_file=~s/_1(.+)/_2$1/g;
+				}
 				if(-e $mate_file){
 					if($file ne $mate_file){						
 						my $real_name=$projectdir.$output_dir.$name."_bwa.sam";
@@ -2270,6 +2398,679 @@ sub miRDeep{
 	exit(); 
 	}	
 }
+
+=head2 hisat2_index
+
+  Example    : 
+  hisat2_index(
+  	fasta=>"genome.fasta",
+  	dir=>".",
+  	logfile=>"run.log",
+  	indexname=>"hg19"
+  );
+  Description: This function collects the directory and the path of genome sequence in fasta
+  format to build a new index. This index can be used to perform a hisat2 analysis. The 
+  execution data will be printed on run.log file. This fuction returns the path of the new 
+  hisat2 index and saves the new index on the directory named Bowtie1_index at directory 
+  provided by the user.
+  Input parameters: 
+	Mandatory parameters:
+  	 [dir] Input directory where new index will be saved
+  	 [fasta] Path of the genomic fasta sequence to build the index
+  	 [logfile] Path of run.log file where execution data will be saved
+  	 [indexname] Name to write in the index files
+  Returntype : Directory named Bowtie1_index with index genome. hisat2_index also returns the path of the new hisat2 index 
+  Requeriments: hisat2_index function requires for a correct analysis:
+  	- Perl v5.10.0 or higher software correctly installed
+  	- Bowtie v1.0.0 or higher software correctly installed
+  	- Input genomic sequence on fasta format  
+  Exceptions : none
+  Caller     : web drawing code
+  Status     : Stable
+
+=cut
+
+sub hisat2_index{
+
+	#Arguments provided by user are collected by %args. Dir, path of fasta file, indexname and logfile
+	# are mandatory arguments.
+	my %args=@_;
+	my $miARmaPath=$args{"miARmaPath"};
+	my $threads=$args{"threads"};
+	
+	my $arch=`uname`;
+	chomp($arch);
+	
+	if ($ENV{PATH}) {
+		$ENV{PATH} .= ":$miARmaPath/bin/".$arch."/hisat2/";
+	}
+	else {
+		$ENV{PATH} = "$miARmaPath/bin/".$arch."/hisat2/";
+	}
+	#First, check that hisat2 is in path:
+	my @hisat2_bin=`which hisat2`;
+	#Executing the command
+	if(scalar(@hisat2_bin)<1){
+		die "HISAT2_INDEX ERROR :: system args failed: $? : Is hisat2 installed and exported to \$PATH ?";
+	}
+	my $fasta=$args{"fasta"}; #the path of genome sequence in fasta format
+	my $dir=$args{"dir"}; #directory to create the genomeindex directory where new index will be saved
+	my $logfile=$args{"logfile"}; #path of the logfile to write the execution data
+	my $indexname=$args{"indexname"}; #name to write in the index files
+	
+	#Variable declaration
+	my $index_output;
+	my $command;
+	my $commanddef;
+	
+	#Checking the mandatory arguments
+	if ($fasta and $dir and $indexname and $logfile){
+		print STDERR date()." Generating the index genome $indexname from $fasta. This process could take some hours\n";
+		#bowtie-build execution command from a fasta file. The output index will be saved
+		#in the genomeindex1 directory with the name index 
+		my $command="hisat2-build -p $threads -f ".$fasta." ".$dir."/hisat2_index/".$indexname;
+		#commandef is the command that will be executed by system composed of the index
+		#directory creation, the module loading, and the bowtie-build execution. The error 
+		#data will be redirected to the run.log file
+		$commanddef="mkdir -p ".$dir."/hisat2_index ; ".$command ." >> ".$logfile." 2>&1";
+		#Printing the date and command execution on the run.log file
+		open (LOG,">> ".$logfile) || die "HISAT2_INDEX ERROR :: Can't open $logfile: $!";
+		print LOG "HISAT2_INDEX :: ".date()." Executing $commanddef\n";
+		#Executing the command or if system can't be executed die showing the error.
+		system($commanddef) == 0
+		or die "HISAT2_INDEX ERROR :: system args failed: $? ($commanddef)";
+		close LOG;
+		#Returning the path of the new hisat2 index 
+		return($dir."/hisat2_index/".$indexname);
+	}
+	else
+	{
+		#Registering the error
+   		open(LOG,">> ".$logfile) || die "HISAT2_INDEX ERROR :: Can't open $logfile: $!";
+    	print LOG "HISAT2_INDEX ERROR :: ".date()." Directory ($dir), indexname ($indexname), logfile($logfile) and/or fasta file($fasta) have not been provided";
+    	close LOG;
+
+		#If mandatory parameters have not been provided program will die and show error message
+		warn ("HISAT2_INDEX ERROR:: ".date()." Directory ($dir), indexname ($indexname), logfile($logfile) and/or fasta file($fasta) have not been provided");
+		help_hisat2_index();
+	}	
+
+	sub help_hisat2_index{
+	    my $usage = qq{
+		  	$0 
+
+			Needed parameters:
+			[dir] Input directory where new index will be saved
+  	 		[fasta] Path of the genomic fasta sequence to build the index
+  	 		[logfile] Path of run.log file where execution data will be saved
+  	 		[indexname] Name to write in the index files
+			[threads] Number of threads
+						             
+			Examples:
+			hisat2_index(fasta=>"genome.fasta", dir=>".", logfile=>"run.log", indexname=>"hg19");
+
+	};
+
+	print STDERR $usage;
+	exit(); 
+	}
+}
+
+
+=head2 hisat2
+
+  Example    : 
+  hisat2( 
+	file=>"./file.fastq",
+	threads=>"4",
+	bowtieindex=>"./hg19",
+	verbose=>"verbose", 
+	logfile=>"run.log", 
+	bowtiemiss=>"0", 
+	bowtieleng=>"19",
+	statsfile=>"stats.log", 
+	bowtieparameters=>" -I 50 -X 200",
+	projectdir=>"."
+  )
+  Description: Bowtie2 takes the reads and align them with the bowtie index to generate a sam file which 
+  will be saved on Bowtie2_results on the project directory. Execution and stats data will be saved on directory stats.log 
+  file and will show on screen if verbose option is selected. In this case the bowtieindex 
+  has to be built with hisat2_index 
+  function. 
+  Input parameters: 
+	Mandatory parameters:
+  	 [file] Name of the file which is going to be align (fasta/fastq format)
+  	 [logfile] Path of run.log file where execution data will be saved
+  	 [statsfile] Path of stats.log file where stats data will be saved
+  	 [bowtieindex]  Indexed genome to align your files in format .bt2
+  	 [projectdir] Directory where hisat2_results directory will be created
+  	 Optional parameters:
+  	 [threads] Optional number of threads to perform the analysis
+  	 [bowtiemiss] Max # mismatches in seed alignment in bowtie analysis (0-1)
+  	 [bowtielength] Length of seed substrings in bowtie analysis (>3, <32)
+  	 [bowtieparameters] Other bowtie parameters to perform the analysis using the bowtie recommended syntaxis
+  	 [verbose] Option to show the execution data on the screen   
+  Returntype : File at directory Bowtie2_results. Also returns the path of the output file
+  Requeriments: hisat2 function requires for a correct analysis:
+  	- Perl v5.10.0 or higher software correctly installed
+  	- Bowtie v2.2.0 or higher software correctly installed
+  	- Input files on fastq format on the provided directory 
+  Exceptions : none
+  Caller     : web drawing code
+  Status     : Stable
+
+=cut
+
+sub hisat2{
+	#Arguments provided by user are collected by %args. Dir, path of fasta file, indexname and logfile
+	# are mandatory arguments.
+	my %args=@_;
+	my $miARmaPath=$args{"miARmaPath"};
+	my $arch=`uname`;
+	chomp($arch);
+	
+	if ($ENV{PATH}) {
+		$ENV{PATH} .= ":$miARmaPath/bin/".$arch."/hisat2/";
+	}
+	else {
+		$ENV{PATH} = "$miARmaPath/bin/".$arch."/hisat2/";
+	}
+	
+	#First, check that hisat2 is in path:
+	my @hisat2_bin=`which hisat2`;
+	#Executing the command
+	if(scalar(@hisat2_bin)<1){
+		die "HISAT2 ERROR ::system args failed: $? : Is hisat2 installed and exported to \$PATH (".$ENV{PATH}.") ?";
+	}
+
+	my $file=$args{"file"}; #File which is going to be aligned
+	my $hisat2index=$args{"hisat2index"}; #Genome index in format .bt2
+	my $threads=$args{"threads"}; #Optional number of threads to perform the analysis faster
+	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
+	my $verbose=$args{"verbose"}; #Optional arguments to show the execution data on screen
+	my $statsfile=$args{"statsfile"}; #path of the statsfile to write the stats data
+	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
+	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
+	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
+	
+	#Variable declaration and describing results directory 
+	my $commanddef;
+	my $output_dir="/hisat2_results/";
+	my $hisatpardef;
+	#Collecting hisat2 parameters provided by the user
+	if(defined($args{"hisat2parameters"})){
+		my $hisatparameters=$args{"hisat2parameters"};
+		$hisatpardef.=" hisat2parameters";
+	}
+	#Number of threads can be provided by the user
+	if($threads>0){
+		$hisatpardef.= " -p $threads";
+	}
+	
+	#Checking the mandatory parameters
+	if ($file and $projectdir and $hisat2index and $logfile and $statsfile){ 
+		#Extracting the name of the file
+		my $name=fileparse($file, qr{\.f.*});
+		my $output_file_bw2;
+		if($adapter){
+			$output_file_bw2=$projectdir.$output_dir.$name."_his";
+			$output_file_bw2=~s/_R1(.+)/$1/g;
+			$output_file_bw2=~s/_1(.+)/$1/g;
+		}
+		else{
+			$output_file_bw2=$projectdir.$output_dir.$name."_nat_his";
+			$output_file_bw2=~s/_R1(.+)/$1/g;
+			$output_file_bw2=~s/_1(.+)/$1/g;
+		}
+		#Bowtie2 execution command
+		my $command;
+		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
+			print STDOUT "\tHISAT 2 :: ".date()." Checking $file for hisat2 (paired-end) analysis\n" if($verbose);
+			
+			#Check if the file is a paired-end file
+			if($file =~ /.*_R?1.*/){
+				#it contains the _1 label
+				my $mate_file=$file;
+				if($file =~  /.*_R1.*/){
+					$mate_file=~s/_R1(.+)/_R2$1/g;
+				}
+				else{
+					$mate_file=~s/_1(.+)/_2$1/g;
+				}
+				if(-e $mate_file){
+					if($file ne $mate_file){
+						$command="hisat2 -q ".$hisatpardef." -x ".$hisat2index." -1 ".$file." -2 ". $mate_file ." --met-file ".$output_file_bw2.".metrics --un ".$output_file_bw2."_no_aligned.fastq -S ". $output_file_bw2 . ".sam";
+					}
+				}
+				else{
+					print STDERR "ERROR:: You have requested a Paired-End analysis, so for the file $file a $mate_file file is needed\n";
+					last;
+				}
+			}
+			else{
+				return();
+			}
+		}
+		else{
+			print STDOUT "\tHISAT 2 :: ".date()." Checking $file for hisat2 (single-end) analysis\n" if($verbose);
+			$command="hisat2 -q ".$hisatpardef." -x ".$hisat2index." -U ".$file." --met-file ". $output_file_bw2.".metrics --un ".$output_file_bw2."_no_aligned.fastq -S ". $output_file_bw2.".sam";
+		}
+		
+		#Bowtie execution with verbose option
+		if($verbose){
+			#commandef is the command will be executed by system composed of the results directory 
+			#creation and the hisat2 execution. The stats data will be printed on the screen
+			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command;
+			#Printing on the screen the date and the execution data
+			print STDOUT "\tHISAT2 :: ".date()." Executing $commanddef\n";
+		}   
+		#Bowtie execution printing stats on stats file	
+		else{
+			#Opening and printing stats on statsfile
+			open (STATS,">> ".$statsfile) || die "HISAT2 ERROR :: Can't open $statsfile: $!";
+			print STATS "HISAT2 :: File:".$file."\n";
+			#commandef is the command will be executed by system composed of the results directory creation
+			#and the hisat execution. The stats data will be redirected to the stats.log file
+			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command." 2>> ".$statsfile;
+		}
+		#Opening the run.log and printing the execution data
+		open (LOG,">> ".$logfile) || die "HISAT2 ERROR :: Can't open $logfile: $!";
+		print LOG "HISAT2 :: ".date()." Executing $commanddef\n";
+		close LOG;
+
+		#print STDERR "$command\n";
+		#Executing the command or if system can't be executed die showing the error.
+		system($commanddef) == 0
+		 or die "HISAT2 ERROR :: system args failed: $? ($commanddef)";
+		close STATS;
+		#The path of the output file is returned to the main program
+		return ($output_file_bw2);		
+	}
+	else
+	{
+		#Registering the error
+   		open(LOG,">> ".$logfile) || die "HISAT2 ERROR :: Can't open $logfile: $!";
+    	print LOG "HISAT2 :: ".date()." File($file), logfile($logfile), projectdir ($projectdir), statsfile($statsfile) and/or index($hisat2index) have not been provided";
+    	close LOG;
+
+		#If mandatory parameters have not been provided program dies and shows error message
+		warn ("HISAT2 :: ".date()." File($file), logfile($logfile), projectdir ($projectdir), statsfile($statsfile) and/or index($hisat2index) have not been provided");
+		help_hisat2();
+	}
+	sub help_hisat2{
+	    my $usage = qq{
+		  	$0 
+
+			Needed parameters:
+  	 		[file] Name of the file which is going to be align (fasta/fastq format)
+  	 		[logfile] Path of run.log file where execution data will be saved
+  	 		[statsfile] Path of stats.log file where stats data will be saved
+  	 		[hisatindex]  Indexed genome to align your files in format .bt2
+  	 		[projectdir] Directory where hisat2_results directory will be created
+
+  	 		Optional parameters:
+  	 		[threads] Optional number of threads to perform the analysis
+  	 		[hisatmiss] Max # mismatches in seed alignment in hisat analysis (0-1)
+  	 		[hisatlength] Length of seed substrings in hisat analysis (>3, <32)
+  	 		[hisatparameters] Other hisat parameters to perform the analysis using the hisat recommended syntaxis
+  	 		[verbose] Option to show the execution data on the screen   
+						             
+			Examples:
+			hisat2(file=>"file.fastq", threads=>"4", hisatindex=>"./hg19", verbose=>"verbose", logfile=>"run.log", hisatmiss=>"0", hisatleng=>"19",statsfile=>"stats.log", hisatparameters=>" -I 50 -X 200", projectdir=>".");
+	};
+
+	print STDERR $usage;
+	exit(); 
+	}	
+}
+
+=head2 star_index
+
+  Example    : 
+  star_index(
+  	fasta=>"genome.fasta",
+  	dir=>".",
+  	logfile=>"run.log",
+  	indexname=>"hg19"
+  );
+  Description: This function collects the directory and the path of genome sequence in fasta
+  format to build a new index. This index can be used to perform a star analysis. The 
+  execution data will be printed on run.log file. This fuction returns the path of the new 
+  star index and saves the new index on the directory named Bowtie1_index at directory 
+  provided by the user.
+  Input parameters: 
+	Mandatory parameters:
+  	 [dir] Input directory where new index will be saved
+  	 [fasta] Path of the genomic fasta sequence to build the index
+  	 [logfile] Path of run.log file where execution data will be saved
+  	 [indexname] Name to write in the index files
+  Returntype : Directory named Bowtie1_index with index genome. star_index also returns the path of the new star index 
+  Requeriments: star_index function requires for a correct analysis:
+  	- Perl v5.10.0 or higher software correctly installed
+  	- Bowtie v1.0.0 or higher software correctly installed
+  	- Input genomic sequence on fasta format  
+  Exceptions : none
+  Caller     : web drawing code
+  Status     : Stable
+
+=cut
+
+sub star_index{
+
+	#Arguments provided by user are collected by %args. Dir, path of fasta file, indexname and logfile
+	# are mandatory arguments.
+	my %args=@_;
+	my $miARmaPath=$args{"miARmaPath"};
+	my $threads=$args{"threads"};
+	
+	my $arch=`uname`;
+	chomp($arch);
+	
+	if ($ENV{PATH}) {
+		$ENV{PATH} .= ":$miARmaPath/bin/".$arch."/STAR/";
+	}
+	else {
+		$ENV{PATH} = "$miARmaPath/bin/".$arch."/STAR/";
+	}
+	#First, check that star is in path:
+	my @star_bin=`which STAR`;
+	#Executing the command
+	if(scalar(@star_bin)<1){
+		die "STAR_INDEX ERROR :: system args failed: $? : Is star installed and exported to \$PATH ?";
+	}
+	my $fasta=$args{"fasta"}; #the path of genome sequence in fasta format
+	my $dir=$args{"dir"}; #directory to create the genomeindex directory where new index will be saved
+	my $logfile=$args{"logfile"}; #path of the logfile to write the execution data
+	my $gtf=$args{"gtf"}; #name to write in the index files
+	
+	#Variable declaration
+	my $index_output;
+	my $command;
+	my $commanddef;
+	
+	#Checking the mandatory arguments
+	if ($fasta and $dir and $gtf and $logfile){
+		print STDERR date()." Generating the index genome from $fasta. This process could take some hours and it could need >=32 GB of RAM memory\n";
+		#bowtie-build execution command from a fasta file. The output index will be saved
+		#in the genomeindex1 directory with the name index 
+		my $command="STAR --runThreadN $threads --runMode genomeGenerate --genomeDir $dir/star_index/ --genomeFastaFiles $fasta --sjdbGTFfile $gtf";
+		#commandef is the command that will be executed by system composed of the index
+		#directory creation, the module loading, and the bowtie-build execution. The error 
+		#data will be redirected to the run.log file
+		$commanddef="mkdir -p ".$dir."/star_index ; ".$command ." >> ".$logfile." 2>&1";
+		#Printing the date and command execution on the run.log file
+		open (LOG,">> ".$logfile) || die "STAR_INDEX ERROR :: Can't open $logfile: $!";
+		print LOG "STAR_INDEX :: ".date()." Executing $commanddef\n";
+		#Executing the command or if system can't be executed die showing the error.
+		system($commanddef) == 0
+		or die "STAR_INDEX ERROR :: system args failed: $? ($commanddef)";
+		close LOG;
+		#Returning the path of the new star index 
+		return($dir."/star_index/");
+	}
+	else
+	{
+		#Registering the error
+   		open(LOG,">> ".$logfile) || die "STAR_INDEX ERROR :: Can't open $logfile: $!";
+    	print LOG "STAR_INDEX ERROR :: ".date()." Directory ($dir), GTF ($gtf), logfile($logfile) and/or fasta file($fasta) have not been provided";
+    	close LOG;
+
+		#If mandatory parameters have not been provided program will die and show error message
+		warn ("STAR_INDEX ERROR:: ".date()." Directory ($dir), GTF ($gtf), logfile($logfile) and/or fasta file($fasta) have not been provided");
+		help_star_index();
+	}	
+
+	sub help_star_index{
+	    my $usage = qq{
+		  	$0 
+
+			Needed parameters:
+			[dir] Input directory where new index will be saved
+  	 		[fasta] Path of the genomic fasta sequence to build the index
+  	 		[logfile] Path of run.log file where execution data will be saved
+  	 		[indexname] Name to write in the index files
+			[threads] Number of threads
+						             
+			Examples:
+			star_index(fasta=>"genome.fasta", dir=>".", logfile=>"run.log", indexname=>"hg19");
+
+	};
+
+	print STDERR $usage;
+	exit(); 
+	}
+}
+
+
+=head2 star
+
+  Example    : 
+  star( 
+	file=>"./file.fastq",
+	threads=>"4",
+	bowtieindex=>"./hg19",
+	verbose=>"verbose", 
+	logfile=>"run.log", 
+	bowtiemiss=>"0", 
+	bowtieleng=>"19",
+	statsfile=>"stats.log", 
+	bowtieparameters=>" -I 50 -X 200",
+	projectdir=>"."
+  )
+  Description: Bowtie2 takes the reads and align them with the bowtie index to generate a sam file which 
+  will be saved on Bowtie2_results on the project directory. Execution and stats data will be saved on directory stats.log 
+  file and will show on screen if verbose option is selected. In this case the bowtieindex 
+  has to be built with star_index 
+  function. 
+  Input parameters: 
+	Mandatory parameters:
+  	 [file] Name of the file which is going to be align (fasta/fastq format)
+  	 [logfile] Path of run.log file where execution data will be saved
+  	 [statsfile] Path of stats.log file where stats data will be saved
+  	 [bowtieindex]  Indexed genome to align your files in format .bt2
+  	 [projectdir] Directory where star_results directory will be created
+  	 Optional parameters:
+  	 [threads] Optional number of threads to perform the analysis
+  	 [bowtiemiss] Max # mismatches in seed alignment in bowtie analysis (0-1)
+  	 [bowtielength] Length of seed substrings in bowtie analysis (>3, <32)
+  	 [bowtieparameters] Other bowtie parameters to perform the analysis using the bowtie recommended syntaxis
+  	 [verbose] Option to show the execution data on the screen   
+  Returntype : File at directory Bowtie2_results. Also returns the path of the output file
+  Requeriments: star function requires for a correct analysis:
+  	- Perl v5.10.0 or higher software correctly installed
+  	- Bowtie v2.2.0 or higher software correctly installed
+  	- Input files on fastq format on the provided directory 
+  Exceptions : none
+  Caller     : web drawing code
+  Status     : Stable
+
+=cut
+
+sub star{
+	#Arguments provided by user are collected by %args. Dir, path of fasta file, indexname and logfile
+	# are mandatory arguments.
+	my %args=@_;
+	my $miARmaPath=$args{"miARmaPath"};
+	my $arch=`uname`;
+	chomp($arch);
+	
+	if ($ENV{PATH}) {
+		$ENV{PATH} .= ":$miARmaPath/bin/".$arch."/STAR/";
+	}
+	else {
+		$ENV{PATH} = "$miARmaPath/bin/".$arch."/STAR/";
+	}
+	
+	#First, check that star is in path:
+	my @star_bin=`which STAR`;
+	#Executing the command
+	if(scalar(@star_bin)<1){
+		die "STAR ERROR ::system args failed: $? : Is star installed and exported to \$PATH (".$ENV{PATH}.") ?";
+	}
+
+	my $file=$args{"file"}; #File which is going to be aligned
+	my $starindex=$args{"starindex"}; #Genome index in format .bt2
+	my $threads=$args{"threads"}; #Optional number of threads to perform the analysis faster
+	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
+	my $verbose=$args{"verbose"}; #Optional arguments to show the execution data on screen
+	my $statsfile=$args{"statsfile"}; #path of the statsfile to write the stats data
+	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
+	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
+	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
+	
+	#Variable declaration and describing results directory 
+	my $commanddef;
+	my $output_dir="/star_results/";
+	my $starpardef;
+	#Collecting star parameters provided by the user
+	if(defined($args{"starparameters"})){
+		my $hisatparameters=$args{"starparameters"};
+		$starpardef.=" starparameters";
+	}
+	#Number of threads can be provided by the user
+	if($threads>0){
+		$starpardef.= " --runThreadN $threads";
+	}
+	
+	#Checking the mandatory parameters
+	if ($file and $projectdir and $starindex and $logfile and $statsfile){ 
+		#Extracting the name of the file
+		my $name=fileparse($file, qr{\.f.*});
+		my $output_file_bw2;
+		if($adapter){
+			$output_file_bw2=$projectdir.$output_dir.$name."_str_";
+			$output_file_bw2=~s/_R1(.+)/$1/g;
+			$output_file_bw2=~s/_1(.+)/$1/g;
+		}
+		else{
+			$output_file_bw2=$projectdir.$output_dir.$name."_nat_str_";
+			$output_file_bw2=~s/_R1(.+)/$1/g;
+			$output_file_bw2=~s/_1(.+)/$1/g;
+		}
+		#Bowtie2 execution command
+		my $command;
+		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
+			print STDOUT "\tSTAR :: ".date()." Checking $file for star (paired-end) analysis\n" if($verbose);
+			
+			#Check if the file is a paired-end file
+			if($file =~ /.*_R?1.*/){
+				#it contains the _1 label
+				my $mate_file=$file;
+				if($file =~  /.*_R1.*/){
+					$mate_file=~s/_R1(.+)/_R2$1/g;
+				}
+				else{
+					$mate_file=~s/_1(.+)/_2$1/g;
+				}
+				if(-e $mate_file){
+					if($file ne $mate_file){
+						if($file =~ /\.gz$/){
+							$starpardef.= " --readFilesCommand gunzip -c ";
+						}
+						elsif($file =~ /\.bz2$/){
+							$starpardef.= " --readFilesCommand bunzip2 -c ";
+						}
+						else{
+							#none
+						}
+						#$command="star -q ".$starpardef." -x ".$starindex." -1 ".$file." -2 ". $mate_file ." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
+						$command="STAR --runMode alignReads --genomeDir $starindex --readFilesIn $file $mate_file  --outFileNamePrefix $output_file_bw2 $starpardef --outSAMtype BAM SortedByCoordinate"
+					}
+				}
+				else{
+					print STDERR "ERROR:: You have requested a Paired-End analysis, so for the file $file a $mate_file file is needed\n";
+					last;
+				}
+			}
+			else{
+				return();
+			}
+		}
+		else{
+			print STDOUT "\tSTAR :: ".date()." Checking $file for star (single-end) analysis\n" if($verbose);
+			if($file =~ /\.gz$/){
+				$starpardef.= " --readFilesCommand gunzip -c ";
+			}
+			elsif($file =~ /\.bz2$/){
+				$starpardef.= " --readFilesCommand bunzip2 -c ";
+			}
+			else{
+				#none
+			}
+			#$command="star -q ".$starpardef." -x ".$starindex." -U ".$file." --met-file ".$projectdir.$output_dir.$name.".metrics --un ".$projectdir.$output_dir.$name."_no_aligned.fastq -S ". $output_file_bw2;
+			$command="STAR --runMode alignReads --genomeDir $starindex --readFilesIn $file  --outFileNamePrefix $output_file_bw2 $starpardef --outSAMtype BAM SortedByCoordinate"
+			
+		}
+		
+		#Bowtie execution with verbose option
+		if($verbose){
+			#commandef is the command will be executed by system composed of the results directory 
+			#creation and the star execution. The stats data will be printed on the screen
+			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command;
+			#Printing on the screen the date and the execution data
+			print STDOUT "\tSTAR :: ".date()." Executing $commanddef\n";
+		}   
+		#Bowtie execution printing stats on stats file	
+		else{
+			#Opening and printing stats on statsfile
+			open (STATS,">> ".$statsfile) || die "STAR ERROR :: Can't open $statsfile: $!";
+			print STATS "STAR :: File:".$file."\n";
+			#commandef is the command will be executed by system composed of the results directory creation
+			#and the hisat execution. The stats data will be redirected to the stats.log file
+			$commanddef= "mkdir -p ".$projectdir.$output_dir." ;".$command." >> ".$logfile." 2>&1";
+		}
+		#Opening the run.log and printing the execution data
+		open (LOG,">> ".$logfile) || die "STAR ERROR :: Can't open $logfile: $!";
+		print LOG "STAR :: ".date()." Executing $commanddef\n";
+		close LOG;
+
+		#print STDERR "$command\n";
+		#Executing the command or if system can't be executed die showing the error.
+		system($commanddef) == 0
+		 or die "STAR ERROR :: system args failed: $? ($commanddef)";
+		close STATS;
+		#The path of the output file is returned to the main program
+		return ($output_file_bw2);		
+	}
+	else
+	{
+		#Registering the error
+   		open(LOG,">> ".$logfile) || die "STAR ERROR :: Can't open $logfile: $!";
+    	print LOG "STAR :: ".date()." File($file), logfile($logfile), projectdir ($projectdir), statsfile($statsfile) and/or index($starindex) have not been provided";
+    	close LOG;
+
+		#If mandatory parameters have not been provided program dies and shows error message
+		warn ("STAR :: ".date()." File($file), logfile($logfile), projectdir ($projectdir), statsfile($statsfile) and/or index($starindex) have not been provided");
+		help_star();
+	}
+	sub help_star{
+	    my $usage = qq{
+		  	$0 
+
+			Needed parameters:
+  	 		[file] Name of the file which is going to be align (fasta/fastq format)
+  	 		[logfile] Path of run.log file where execution data will be saved
+  	 		[statsfile] Path of stats.log file where stats data will be saved
+  	 		[hisatindex]  Indexed genome to align your files in format .bt2
+  	 		[projectdir] Directory where star_results directory will be created
+
+  	 		Optional parameters:
+  	 		[threads] Optional number of threads to perform the analysis
+  	 		[hisatmiss] Max # mismatches in seed alignment in hisat analysis (0-1)
+  	 		[hisatlength] Length of seed substrings in hisat analysis (>3, <32)
+  	 		[hisatparameters] Other hisat parameters to perform the analysis using the hisat recommended syntaxis
+  	 		[verbose] Option to show the execution data on the screen   
+						             
+			Examples:
+			star(file=>"file.fastq", threads=>"4", hisatindex=>"./hg19", verbose=>"verbose", logfile=>"run.log", hisatmiss=>"0", hisatleng=>"19",statsfile=>"stats.log", hisatparameters=>" -I 50 -X 200", projectdir=>".");
+	};
+
+	print STDERR $usage;
+	exit(); 
+	}	
+}
+
+
 sub ReadSummary{
 	use File::Basename;
 	#Arguments provided by user are collected by %args. Dir, file, aligner, statsfile, projectdir 
@@ -2493,6 +3294,100 @@ sub ReadSummary{
 			}
 		}
 	}
+	if(lc($aligner) eq "hisat2" ){
+		$summary_path->{$aligner}=$projectdir ."/hisat2_results/";
+		open(STAT,$statsfile);
+		my $real_file;
+		my $processed;
+		my $aligned;
+		my $failed;
+		my $multimapping;
+		my $overall;
+		while(<STAT>){
+			chomp;
+			if($_ =~/^HISAT2/){
+				my $file=$_;
+				$file=~s/HISAT2 :: File://g;
+				$real_file=fileparse($file);
+				$processed=0;
+				$aligned=0;
+				$failed=0;
+				$multimapping=0;
+				$overall=0;
+			}
+			if($_ =~/reads; of these:/){
+				$processed=$_;
+				$processed=~s/^(\d+) reads; of these:/$1/g;
+			}
+			if($_ =~/ aligned 0 times/){
+				$failed=$_;
+				$failed=~s/\s+(\d+) .*/$1/g;
+			}
+			if($_ =~/aligned exactly 1 time/){
+				$aligned=$_;
+				$aligned=~s/\s+(\d+) .*/$1/g;
+			}
+			if($_ =~/aligned >1 times/){
+				$multimapping=$_;
+				$multimapping=~s/\s+(\d+) .*/$1/g;
+			}
+			if($_ =~/overall alignment rate/){
+				$overall=$_;
+				$overall=~s/^(\d+\.\d+)% .*/$1%/g;
+			}
+			if($real_file and $failed){
+				$summary_bw2->{$real_file}="$processed\t$aligned\t$multimapping\t$overall\t$failed";
+			}
+		}
+	}
+	if(lc($aligner) eq "star" ){
+		$summary_path->{$aligner}=$projectdir ."/star_results/";
+
+		opendir ( DIR, $summary_path->{$aligner} ) || die "Error in opening dir ".$summary_path->{$aligner} ."\n";
+		while( (my $real_file = readdir(DIR))){
+		    if($real_file =~/_Log\.final\.out$/){
+			   open(STAT,$summary_path->{$aligner} ."/". $real_file) || die "$! Can't find ".$summary_path->{$aligner}."/$real_file\n";
+			   my $processed;
+			   my $aligned;
+			   my $failed;
+			   my $multimapping;
+			   my $overall;
+			   while(<STAT>){
+				   chomp;
+				   if($_ =~/Number of input reads/){
+			   			$processed=$_;
+			   			$processed=~s/\s+Number of input reads\s+\|\s+(\d+)/$1/g;
+			   	   }
+				   if($_ =~/Uniquely mapped reads %/){
+			   			$overall=$_;
+			   			$overall=~s/\s+Uniquely mapped reads %\s+\|\s+(\d+)/$1/g;
+			   	   }
+				   if($_ =~/Uniquely mapped reads number/){
+						$aligned=$_;
+				   		$aligned=~s/\s+Uniquely mapped reads number\s+\|\s+(\d+)/$1/g;
+				   }
+				   if($_ =~/Number of reads mapped to multiple loci/){
+						$multimapping=$_;
+						$multimapping=~s/\s+Number of reads mapped to multiple loci\s+\|\s+(\d+)/$1/g;
+				    }
+		 		   if($_ =~/% of reads unmapped: other/){
+		 				$failed=$_;
+		 				$failed=~s/\s+% of reads unmapped: other\s+\|\s+(\d+)/$1/g;
+		 		    }
+					if($real_file and $failed){
+						my $used_file=$real_file;
+						$used_file=~s/_Log.*//g;
+						$summary_bw2->{$used_file}="$processed\t$aligned\t$multimapping\t$overall\t$failed";
+					}
+				}
+			   
+		   }
+		}
+		close STAT;
+		closedir(DIR);
+	}
+	
+	#saving stats
 	if(scalar(keys %$summary)>0){
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
 		print SUMM "\nAlignment [".$summary_path->{$aligner}."]\n";

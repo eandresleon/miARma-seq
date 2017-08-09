@@ -95,7 +95,7 @@ sub F_Analysis{
 	else{
 		$dataset=undef;
 	}
-	open(LOG,">$logfile") || warn "Cant create logfile ($logfile)\n";
+	open(LOG,">>$logfile") || warn "Cant create logfile ($logfile)\n";
 	
 	my $noiseq_dir=undef;
 	my $edger_dir=undef;
@@ -412,7 +412,7 @@ EOF
 				if(scalar(keys %$up)<51 or scalar(keys %$down)<51){
 					print STDERR date(). " WARN :: The number of differentially expressed genes is too small (<50). Some errors could appear. Try to use a less restringet cut_off for $method(>$cut_off)\n";
 				}
-				print STDERR date(). " ERROR :: Nothing significative was found using $method data\n";
+				print STDERR date(). " ERROR :: Nothing significative was found using $method data. No Functional analisis result files were generated\n\n";
 			}
 			else{
 				foreach my $res_file (@{$result}){

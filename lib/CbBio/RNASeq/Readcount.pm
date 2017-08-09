@@ -178,11 +178,9 @@ sub featureCount{
 			# 	exit;
 			# }
 			#Checking the processation of the sample to classify it correctly
-			$name =~ /.*_([a-z]{2,3}_bw[1-2])/;
+			$name =~ /.*_([a-z]{2,3}_bw[1-2]|his|str)/;
 			my $prefix=$1;
-			
 			my $output_dir="/".$prefix."_readcount_results/";
-
 			#htseq-count execution command
 			$command="featureCounts ".$htseqpardef." -a ".$database." -o ".$projectdir.$output_dir.$name.".tab " . $file ;
 			#commandef is the command will be executed by system composed of the results directory creation 
@@ -310,10 +308,9 @@ sub featureFormat{
 				#Fileparse is used to obtain the name of the file
 				my $name=fileparse($file, qr{\.tab$});
 				#Obtaining the process info from the file name and the original name of the file
-				$name =~ /(.*)_([a-z]{2,3}_bw[1-2])/;
+				$name =~ /(.*)_([a-z]{2,3}_bw[1-2]|his|str)/;
 				my $originalname=$1;
 				my $suffix=$2;
-			
 				#Saving the Suffix with process information in a hash
 				$process->{$suffix}++;
 				$files->{$originalname}++;
@@ -1318,6 +1315,7 @@ sub featureSummary{
 				$real_file=fileparse($data[$#data]);
 				$real_file=~s/\.tab$//g;
 				$real_file=~s/\.bam$//g;
+				$real_file=~s/\.sam$//g;
 				
 				$processed=0;
 				$assigned=0;
@@ -1373,7 +1371,6 @@ sub featureSummary{
 			close TAB;
 		}
 	}
-	
 	if(scalar(keys %$summary)>0 and scalar(keys %$results)>0){
 		open(SUMM,">>$summary_file") || warn "Can't create summary file ($summary_file)\n";
 		print SUMM "\nReadCount [".$summary_path."]\n";

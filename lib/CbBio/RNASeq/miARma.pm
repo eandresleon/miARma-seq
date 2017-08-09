@@ -417,6 +417,18 @@ sub run_miARma{
 			print STDERR "\nERROR " . date() . " BWA has been selected as aligner but bwaindex/fasta is missing/unfilled. Please check documentation\n";
 			help_check_aligner();
 		}
+		elsif( lc($cfg->val("Aligner","aligner")) eq "star" and ( $cfg->val("Aligner","starindex") eq "" and $cfg->val("Aligner","fasta") eq "")){
+			print STDERR "\nERROR " . date() . " STAR has been selected as aligner but starindex/fasta is missing/unfilled. Please check documentation\n";
+			help_check_aligner();
+		}
+		elsif( lc($cfg->val("Aligner","aligner")) eq "star" and $cfg->exists("Aligner","startindex") ne "" and ( $cfg->val("Aligner","gft") eq "" )){
+			print STDERR "\nERROR " . date() . " STAR has been selected to index a fasta file, but gtf file is missing/unfilled. Please check documentation\n";
+			help_check_aligner();
+		}
+		elsif( lc($cfg->val("Aligner","aligner")) eq "hisat2" and ( $cfg->val("Aligner","hisat2index") eq "" and $cfg->val("Aligner","fasta") eq "")){
+			print STDERR "\nERROR " . date() . " Hisat2 has been selected as aligner but hisat2index/fasta is missing/unfilled. Please check documentation\n";
+			help_check_aligner();
+		}
 		else{
 			#run Adapter
 			use CbBio::RNASeq::Aligner;
@@ -431,9 +443,18 @@ sub run_miARma{
 				$do_index=undef;
 			}
 			if($do_index and $cfg->val("Aligner","bwaindex") ne "" and lc($cfg->val("Aligner","aligner")) eq "bwa"){
+				print STDERR date() . " Inside [Aligner] fasta and bwaindex are excluyent, discarding fasta parameter\n";
+				$do_index=undef;
+			}
+			if($do_index and $cfg->val("Aligner","hisat2index") ne "" and lc($cfg->val("Aligner","aligner")) eq "hisat2"){
+				print STDERR date() . " Inside [Aligner] fasta and hisat2index are excluyent, discarding fasta parameter\n";
+				$do_index=undef;
+			}
+			if($do_index and $cfg->val("Aligner","starindex") ne "" and lc($cfg->val("Aligner","aligner")) eq "star"){
 				print STDERR date() . " Inside [Aligner] fasta and bwaiindex are excluyent, discarding fasta parameter\n";
 				$do_index=undef;
 			}
+			
 			if($do_index){
 				if($cfg->exists("Aligner","indexname") ne ""){
 					print STDERR date() . " Indexing ".$cfg->val("Aligner","fasta") ." for a ".$cfg->val("Aligner","aligner")." analysis\n";
@@ -443,7 +464,10 @@ sub run_miARma{
 					  	dir=>$cfg->val("General","output_dir"),
 						logfile=>$log_file || $cfg->val("General","logfile"),
 					  	indexname=>$cfg->val("Aligner","indexname"),
-						miARmaPath=>$miARmaPath
+						miARmaPath=>$miARmaPath,
+						threads=>$cfg->val("General","threads") || 1,
+						gtf=>$cfg->val("Aligner","gtf") || undef,
+						
 					 );
 					 
  					print STDERR date() . " Index $index_value[0] created\n";
@@ -458,6 +482,14 @@ sub run_miARma{
 					}
 					if(lc($cfg->val("Aligner","aligner")) eq "bwa" and $cfg->val("Aligner","bwaindex") eq ""){
 			 			$cfg->newval("Aligner", "bwaindex", $index_value[0]);
+			 			$cfg->RewriteConfig;
+					}
+					if(lc($cfg->val("Aligner","aligner")) eq "star" and $cfg->val("Aligner","starindex") eq ""){
+			 			$cfg->newval("Aligner", "starindex", $index_value[0]);
+			 			$cfg->RewriteConfig;
+					}
+					if(lc($cfg->val("Aligner","aligner")) eq "hisat2" and $cfg->val("Aligner","hisat2index") eq ""){
+			 			$cfg->newval("Aligner", "hisat2index", $index_value[0]);
 			 			$cfg->RewriteConfig;
 					}
 				 }
@@ -506,7 +538,8 @@ sub run_miARma{
 			}
 			elsif(lc($cfg->val("General","type")) eq "mrna"){
 				#Mandatory for mRNA analysis
-				if($cfg->exists("Aligner","tophat_aligner") eq "" or ($cfg->val("Aligner","aligner") eq "")){
+				#if($cfg->exists("Aligner","tophat_aligner") eq "" or ($cfg->val("Aligner","aligner") eq "")){
+				if( lc($cfg->val("Aligner","aligner")) eq "tophat" and ( $cfg->val("Aligner","tophat_aligner") eq "")){
 					print STDERR "\nERROR " . date() . " aligner parameter in Section [Aligner] is missing/unfilled. Please check documentation\n";
 					help_check_aligner();
 				}
@@ -518,8 +551,16 @@ sub run_miARma{
 					print STDERR "\nERROR " . date() . " Bowtie2 has been selected as TopHat aligner but bowtie2index/fasta is missing/unfilled. Please check documentation\n";
 					help_check_aligner();
 				}
-				elsif($cfg->exists("Aligner","gtf") eq "" or $cfg->val("Aligner","gtf") eq ""){
-					print STDERR "\nERROR " . date() . " gtf parameter in Section [Aligner] is missing. Please check documentation\n";
+				elsif( lc($cfg->val("Aligner","aligner")) eq "hisat2" and ( $cfg->val("Aligner","hisat2index") eq "" and $cfg->val("Aligner","fasta") eq "")){
+					print STDERR "\nERROR " . date() . " hisat2 has been selected as aligner but hisat2index/fasta is missing/unfilled. Please check documentation\n";
+					help_check_aligner();
+				}
+				elsif( lc($cfg->val("Aligner","aligner")) eq "star" and ( $cfg->val("Aligner","starindex") eq "" and $cfg->val("Aligner","fasta") eq "")){
+					print STDERR "\nERROR " . date() . " star has been selected as aligner but starindex/fasta is missing/unfilled. Please check documentation\n";
+					help_check_aligner();
+				}
+				elsif( lc($cfg->val("Aligner","aligner")) eq "tophat" and ($cfg->exists("Aligner","gtf") eq "" or $cfg->val("Aligner","gtf") eq "")){
+					print STDERR "\nERROR " . date() . " gtf parameter in Section [Aligner] is missing for tophat. Please check documentation\n";
 					help_check_aligner();
 				}
 								
@@ -625,6 +666,8 @@ sub run_miARma{
 					    bowtie2index=>$cfg->val("Aligner","bowtie2index") || undef,
 					    bowtie1index=>$cfg->val("Aligner","bowtie1index") || undef,
 					    bwaindex=>$cfg->val("Aligner","bwaindex") || undef,
+					    hisat2index=>$cfg->val("Aligner","hisat2index") || undef,
+					    starindex=>$cfg->val("Aligner","starindex") || undef,
 						logfile=>$log_file||$cfg->val("General","logfile"),
 						statsfile=>$stat_file|| $cfg->val("General","stats_file"),
 						verbose=>$cfg->val("General","verbose") || 0,
@@ -689,6 +732,22 @@ sub run_miARma{
 					my @bw2_files= readdir(BW2DIR);
 					push(@files,map("$bw2_dir$_",@bw2_files));
 					close BW2DIR;
+				}
+				#Reading results directory, collecting the files and completing with the path
+				my $his_dir=$cfg->val("General","output_dir")."/hisat2_results/";
+				if(-e $his_dir){
+					opendir(HISDIR, $his_dir) || warn "5 Aligner:: Folder $his_dir is not found\n"; 
+					my @his_files= readdir(HISDIR);
+					push(@files,map("$his_dir$_",@his_files));
+					close HISDIR;
+				}
+				#Reading results directory, collecting the files and completing with the path
+				my $star_dir=$cfg->val("General","output_dir")."/star_results/";
+				if(-e $star_dir){
+					opendir(STARDIR, $star_dir) || warn "5 Aligner:: Folder $star_dir is not found\n"; 
+					my @star_files= readdir(STARDIR);
+					push(@files,map("$star_dir$_",@star_files));
+					close STARDIR;
 				}
 				if(scalar(@files)>0 and lc($cfg->val("General","type")) ne "circrna"){
 					print STDERR date()." Starting a Readcount Analysis\n";
@@ -1483,11 +1542,14 @@ sub print_header{
 	system("clear");
 	print "#########################################################################	
 #   miARma, miRNA and RNASeq Multiprocess Analysis			#
-#                miARma v 1.6.1 (Feb-2017)                              #
+#                miARma v 1.7 (Aug-2017)                                #
 #               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
-#   Copyright (c) 2017 IBIS. All rights reserved.                       #
+#   Modified and Updated at Bioinformatics Unit at IPBLN-CSIC   	#
+#   Institue for Parasitology and Biomedicine Lopez-Neyra (IPBLN-CSIC). #
+#   Granada (Spain)             				        #
+#   Copyright (c) 2017 IBIS & IPBLN. All rights reserved.               #
 #   mail : miARma-devel\@cbbio.es                                        #
 #########################################################################\n\n";
 }
