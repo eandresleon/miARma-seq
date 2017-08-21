@@ -7,6 +7,15 @@ Modified and Updated at Bioinformatics Unit at IPBLN-CSIC (Institue for Parasito
 Granada (Spain). 
 Copyright (c) 2017 IBIS & IPBLN. All rights reserved.
 
+### miARma 1.7.1 release (21/Aug/17) ###
+Minor bugs fixed eg.
+ * No aligned reads in hisat2 paired end analysis added.
+
+Added stuff:
+* Unaligned files are compressed
+* miRDeeparam added to include parameters to miRDeep execution
+
+
 ### miARma 1.7.0 release (09/Aug/17) ###
  * [Hisat v2.1.0](https://ccb.jhu.edu/software/hisat2/index.shtml) has been included as a mRNA aligner.
  * [STAR v020201](https://github.com/alexdobin/STAR/) has been included as a mRNA aligner.
