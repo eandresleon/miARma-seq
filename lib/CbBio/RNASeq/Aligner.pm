@@ -2579,7 +2579,7 @@ sub hisat2{
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
 	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
-	my $strand=($args{"strand"}; #are this reads processed by miArma 
+	my $strand=$args{"strand"}; #are this reads processed by miArma 
 	
 	#Variable declaration and describing results directory 
 	my $commanddef;
