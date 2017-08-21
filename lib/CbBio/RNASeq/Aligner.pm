@@ -2238,24 +2238,11 @@ sub miRDeep{
 	system("mkdir -p $projectdir");
 	#Collecting miRDeep parameters provided by the user
 	my $bowtiepardef= "";
-	#The number of missmatches can be provided by the user
-	if(defined($args{"bowtiemiss"})){
-		my $bowtiemiss=$args{"bowtiemiss"};
-		$bowtiepardef.=" -N $bowtiemiss";
-	}
-	#Seed length can be provided by the user
-	if(defined($args{"bowtieleng"})){
-		my $bowtieleng=$args{"bowtieleng"};
-		$bowtiepardef.=" -L $bowtieleng";
-	}
-	#Number of threads can be provided by the user
-	if($threads>0){
-		$bowtiepardef.= " -p $threads";
-	}
+
 	#Any other bowtie parameter can be provided by the user using the correct sintaxis
-	if(defined($args{"bowtieparameters"})){
-		my $bowtieparameters=$args{"bowtieparameters"};
-		$bowtiepardef.=" $bowtieparameters";
+	if(defined($args{"miRDeeparameters"})){
+		my $miRDeeparameters=$args{"miRDeeparameters"};
+		$bowtiepardef.=" $miRDeeparameters";
 	}
 	
 	#Checking the mandatory parameters
@@ -2306,7 +2293,7 @@ sub miRDeep{
 		else{
 			$command_mapper="export PERL5LIB=$miARmaPath/lib/Perl/; mapper.pl ".$file." -e -h -i -j -n -m -o ". $threads ." -p " . $bowtieindex." -s ". $projectdir.$output_dir.$name.".fa -t ".$projectdir.$output_dir.$name."_vs_genome.arf";
 		}
-		my $command_novo=" export PERL5LIB=$miARmaPath/lib/Perl/;miRDeep2.pl ".$projectdir.$output_dir.$name.".fa ".$genome. " ". $projectdir.$output_dir.$name."_vs_genome.arf $mature_miRNA_file none $precursor_miRNA_file -r $name -P -d -c -v";
+		my $command_novo=" export PERL5LIB=$miARmaPath/lib/Perl/;miRDeep2.pl ".$projectdir.$output_dir.$name.".fa ".$genome. " ". $projectdir.$output_dir.$name."_vs_genome.arf $mature_miRNA_file none $precursor_miRNA_file -r $name -P -d -c -v $bowtiepardef ";
 		#Bowtie execution with verbose option
 		if($verbose){
 			#commandef is the command will be executed by system composed of the results directory 
