@@ -724,6 +724,7 @@ sub ReadAligment{
 						precursors=>$precursors,
 						genome=>$genome,
 						organism=>$organism,
+						miRDeeparameters=>$args{"miRDeeparameters"}
 			  		);
 			 		return($output_file1);
 			  	}
@@ -762,8 +763,8 @@ sub ReadAligment{
 					projectdir=>$projectdir,
 					miARmaPath=>$miARmaPath,
 					adapter=>$adapter,	
-					Seqtype=>$Seqtype
-								
+					Seqtype=>$Seqtype,
+					strand=>$args{"strand"}
 		  		);
 		  		return($output_file2);
 			}
