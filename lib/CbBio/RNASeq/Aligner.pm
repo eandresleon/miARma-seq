@@ -2655,7 +2655,7 @@ sub hisat2{
 			}
 			
 			print STDOUT "\tHISAT 2 :: ".date()." Checking $file for hisat2 (single-end) analysis\n" if($verbose);
-			$command="hisat2 -q ".$hisatpardef." -x ".$hisat2index." -U ".$file." --met-file ". $output_file_bw2.".metrics --un-gz ".$output_file_bw2."_no_aligned.fastq -S ". $output_file_bw2.".sam";
+			$command="hisat2 -q ".$hisatpardef." -x ".$hisat2index." -U ".$file." --met-file ". $output_file_bw2.".metrics --un-gz ".$output_file_bw2."_no_aligned.fastq.gz -S ". $output_file_bw2.".sam";
 		}
 		
 		#Bowtie execution with verbose option
