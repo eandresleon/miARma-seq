@@ -2592,6 +2592,7 @@ sub hisat2{
 	my $projectdir=$args{"projectdir"}; #Input directory where results directory will be created
 	my $Seqtype=$args{"Seqtype"}; #Sequencing method. SingleEnd by default. Acepted values : [Paired-End|Single-End]
 	my $adapter=$args{"adapter"}; #are this reads processed by miArma 
+	my $strand=($args{"strand"}; #are this reads processed by miArma 
 	
 	#Variable declaration and describing results directory 
 	my $commanddef;
@@ -2606,7 +2607,7 @@ sub hisat2{
 	if($threads>0){
 		$hisatpardef.= " -p $threads";
 	}
-	
+
 	#Checking the mandatory parameters
 	if ($file and $projectdir and $hisat2index and $logfile and $statsfile){ 
 		#Extracting the name of the file
@@ -2627,6 +2628,13 @@ sub hisat2{
 		if(lc($Seqtype) eq "pairedend" or lc($Seqtype) eq "paired" or lc($Seqtype) eq "paired-end"){
 			print STDOUT "\tHISAT 2 :: ".date()." Checking $file for hisat2 (paired-end) analysis\n" if($verbose);
 			
+			if(lc($strand) eq "reverse"){
+				$hisatpardef.= " --rna-strandness RF";
+			}
+			elsif(lc($strand) eq "yes"){
+				$hisatpardef.= " --rna-strandness FR";
+			}
+
 			#Check if the file is a paired-end file
 			if($file =~ /.*_R?1.*/){
 				#it contains the _1 label
@@ -2639,7 +2647,7 @@ sub hisat2{
 				}
 				if(-e $mate_file){
 					if($file ne $mate_file){
-						$command="hisat2 -q ".$hisatpardef." -x ".$hisat2index." -1 ".$file." -2 ". $mate_file ." --met-file ".$output_file_bw2.".metrics --un ".$output_file_bw2."_no_aligned.fastq -S ". $output_file_bw2 . ".sam";
+						$command="hisat2 -q ".$hisatpardef." -x ".$hisat2index." -1 ".$file." -2 ". $mate_file ." --met-file ".$output_file_bw2.".metrics --un-conc-gz ".$output_file_bw2."_no_aligned.fastq.gz -S ". $output_file_bw2 . ".sam";
 					}
 				}
 				else{
@@ -2652,8 +2660,15 @@ sub hisat2{
 			}
 		}
 		else{
+			if(lc($strand) eq "reverse"){
+				$hisatpardef.= " --rna-strandness R";
+			}
+			elsif(lc($strand) eq "yes"){
+				$hisatpardef.= " --rna-strandness F";
+			}
+			
 			print STDOUT "\tHISAT 2 :: ".date()." Checking $file for hisat2 (single-end) analysis\n" if($verbose);
-			$command="hisat2 -q ".$hisatpardef." -x ".$hisat2index." -U ".$file." --met-file ". $output_file_bw2.".metrics --un ".$output_file_bw2."_no_aligned.fastq -S ". $output_file_bw2.".sam";
+			$command="hisat2 -q ".$hisatpardef." -x ".$hisat2index." -U ".$file." --met-file ". $output_file_bw2.".metrics --un-gz ".$output_file_bw2."_no_aligned.fastq -S ". $output_file_bw2.".sam";
 		}
 		
 		#Bowtie execution with verbose option
