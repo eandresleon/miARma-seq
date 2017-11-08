@@ -1,3 +1,7 @@
+# miARma WebPage #
+
+miARma web page that includes guides, installation details and examples has been moved to [http://miarmaseq.idoproteins.com](http://miarmaseq.idoproteins.com)
+
 # miARma #
 
 miARma is a fully customizable pipeline for NGS transcriptome analyses. Including gene/transcripts, miRNAs and circRNAs expression measurements.
@@ -62,17 +66,17 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 
 ### How do I get set up? ###
 
-* [miARma can be installed using the following guide](http://miarmaseq.cbbio.es/installation)
+* [miARma can be installed using the following guide](http://idproteins.com/installation)
 
 
 ### Guidelines/How to ###
 
-* [miRNAs guide](http://miarmaseq.cbbio.es/Documentation)
-* [mRNAs guide](http://miarmaseq.cbbio.es/Documentation)
-* [circRNAs guide](http://miarmaseq.cbbio.es/Documentation)
+* [miRNAs guide](http://miarmaseq.idproteins.com/Documentation)
+* [mRNAs guide](http://miarmaseq.idproteins.com/Documentation)
+* [circRNAs guide](http://miarmaseq.idproteins.com/Documentation)
 
 ### Code Documentation ####
-* [Perldoc](http://miarmaseq.cbbio.es/PDoc/)
+* [Perldoc](http://miarmaseq.idproteins.com/PDoc/)
 
 ### Who do I talk to? ###
 
