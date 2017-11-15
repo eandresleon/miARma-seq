@@ -1,6 +1,6 @@
 # miARma WebPage #
 
-miARma web page that includes guides, installation details and examples has been moved to [http://miarmaseq.idoproteins.com](http://miarmaseq.idoproteins.com)
+miARma web page that includes guides, installation details and examples has been moved to [http://miarmaseq.com](http://miarmaseq.com)
 
 # miARma #
 
