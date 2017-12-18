@@ -117,7 +117,7 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	}
 	
 	#ensembl = useMart("ensembl",dataset=mydataset)
-	ensembl = useMart("ENSEMBL_MART_ENSEMBL",dataset=mydataset, host="www.ensembl.org")
+	ensembl = useMart("ENSEMBL_MART_ENSEMBL",dataset=mydataset, host="grch37.ensembl.org")
 	
 	if(tolower(seq_id)=="transcript_id" ){
 		mapping_table<-getBM(
