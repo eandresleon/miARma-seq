@@ -11,6 +11,13 @@ Modified and Updated at Bioinformatics Unit at IPBLN-CSIC (Institue for Parasito
 Granada (Spain). 
 Copyright (c) 2017 IBIS & IPBLN. All rights reserved.
 
+### miARma 1.7.2 release (18/Dec/17) ###
+Minor bugs fixed.
+ 
+ * New Ensembl BiomaRt URL used
+ * Order columns from ReadCount section without checking samples names
+ * Fixed a bug in the TargetPrediction
+ 
 ### miARma 1.7.1 release (21/Aug/17) ###
 Minor bugs fixed eg.
  * No aligned reads in hisat2 paired end analysis added.
