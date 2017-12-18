@@ -557,13 +557,13 @@ sub miRGate{
 					}
 					if(lc($miRNA) eq lc($found_miRNA)){
 						$result->{$id}->{miRNA}=$found_miRNA;
-						$result->{$id}->{EnsEMBL}=$found_miRNA;
-						$result->{$id}->{HGNC}=$found_miRNA;
-						$result->{$id}->{utr}=$found_miRNA;
-						$result->{$id}->{method}=$found_miRNA;
-						$result->{$id}->{target_site}=$found_miRNA;
-						$result->{$id}->{score}=$found_miRNA;
-						$result->{$id}->{energy}=$found_miRNA;
+						$result->{$id}->{EnsEMBL}=$ensembl;
+						$result->{$id}->{HGNC}=$hgnc;
+						$result->{$id}->{utr}=$utr;
+						$result->{$id}->{method}=$method;
+						$result->{$id}->{target_site}=$target_site;
+						$result->{$id}->{score}=$score;
+						$result->{$id}->{energy}=$energy;
 					}
 				}
 			}
