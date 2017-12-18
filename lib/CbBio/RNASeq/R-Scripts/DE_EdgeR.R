@@ -98,7 +98,9 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   #Importing the data
   workingDir<-projectdir
   setwd(workingDir)
-  data <- read.table(file, header=TRUE, sep="\t")
+  
+  #added check.names=F suggested by Guillaume Noell
+  data <- read.table(file, header=TRUE, sep="\t",check.names=F)
   data<-data[,sort(colnames(data))]
   
 

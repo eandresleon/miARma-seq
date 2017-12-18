@@ -98,7 +98,8 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   workingDir<-dir
   setwd(workingDir)
   filepath<-file.path(workingDir,file)
-  data <- read.table(filepath, header=TRUE, sep="\t")
+  #added check.names=F suggested by Guillaume Noell
+  data <- read.table(filepath, header=TRUE, sep="\t",check.names=F)
   
   data<-data[,sort(colnames(data))]
   

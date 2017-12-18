@@ -85,7 +85,8 @@ DE_noiseq<-function(projectdir,dir,file,targetsfile,label,filter,contrastfile,le
   #Importing the data
   workingDir<-dir
   setwd(workingDir)
-  data<-read.table(file=file, sep="\t", header=T)
+  #added check.names=F suggested by Guillaume Noell
+  data<-read.table(file=file, sep="\t", header=T,check.names=F)
   #Checking any additional data provided to use in data exploration
   if(!missing(lenghtfile)){
     mylength<-read.table(file=lenghtfile, sep="\t", header=T)
