@@ -87,4 +87,4 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 
 ### Who do I talk to? ###
 
-* miARma-devel@cbbio.es
+* miARma-devel@idoproteins.com
