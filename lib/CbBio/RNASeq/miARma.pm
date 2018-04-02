@@ -3,7 +3,7 @@
 #																		#
 #	Created at Computational Biology and Bioinformatics Group (CbBio)	#
 #	Institute of Biomedicine of Seville. IBIS (Spain)					#
-#	Copyright (c) 2017 IBIS. All rights reserved.						#
+#	Copyright (c) 2018 IBIS. All rights reserved.						#
 #	mail : miARma-devel@cbbio.es 										#
 #########################################################################
 
@@ -1131,7 +1131,7 @@ sub run_miARma{
 				verbose=>$cfg->val("General","verbose") || 0,
 			);
 		}
-		if(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") ne ""){
+		elsif(lc($cfg->val("General","type")) eq "mirna" and $cfg->val("TargetPrediction","genes_folder") ne ""){
 			TargetPrediction(
 				miRNAs_folder=>$dir,
 				genes_folder=>$cfg->val("TargetPrediction","genes_folder"),
@@ -1143,9 +1143,10 @@ sub run_miARma{
 				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
 				fc_threshold=>$cfg->val("TargetPrediction","fc_threshold")|| 0,
 				verbose=>$cfg->val("General","verbose") || 0,
+				method=>$cfg->val("TargetPrediction","method")|| "Pearson"
 			);
 		}
-		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") eq ""){
+		elsif(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") eq ""){
 			TargetPrediction(
 				genes_folder=>$dir,
 				logfile=>$log_file || $cfg->val("General","logfile"),
@@ -1155,10 +1156,11 @@ sub run_miARma{
 				edger_cutoff=>$cfg->val("TargetPrediction","edger_cutoff")|| undef,
 				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
 				fc_threshold=>$cfg->val("TargetPrediction","fc_threshold")|| 0,
-				verbose=>$cfg->val("General","verbose") || 0,				
+				verbose=>$cfg->val("General","verbose") || 0,		
+						
 			);
 		}
-		if(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") ne "") {
+		elsif(lc($cfg->val("General","type")) eq "mrna" and $cfg->val("TargetPrediction","miRNAs_folder") ne "") {
 			TargetPrediction(
 				genes_folder=>$dir,
 				miRNAs_folder=>$cfg->val("TargetPrediction","miRNAs_folder"),
@@ -1170,6 +1172,7 @@ sub run_miARma{
 				noiseq_cutoff=>$cfg->val("TargetPrediction","noiseq_cutoff")|| undef,
 				verbose=>$cfg->val("General","verbose") || 0,
 				fc_threshold=>$cfg->val("TargetPrediction","fc_threshold")|| 0,
+				method=>$cfg->val("TargetPrediction","method")|| "Pearson"				
 			);
 		}
 		
@@ -1546,14 +1549,14 @@ sub print_header{
 	system("clear");
 	print "#########################################################################	
 #   miARma, miRNA and RNASeq Multiprocess Analysis			#
-#                miARma v 1.7.2 (Dec-2017)                              #
+#                miARma v 1.7.5 (May-2018)                              #
 #               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
 #   Modified and Updated at Bioinformatics Unit at IPBLN-CSIC   	#
 #   Institue for Parasitology and Biomedicine Lopez-Neyra (IPBLN-CSIC). #
 #   Granada (Spain)             				        #
-#   Copyright (c) 2017 IBIS & IPBLN. All rights reserved.               #
+#   Copyright (c) 2018 IBIS & IPBLN. All rights reserved.               #
 #   mail : miARma-devel\@cbbio.es                                        #
 #########################################################################\n\n";
 }

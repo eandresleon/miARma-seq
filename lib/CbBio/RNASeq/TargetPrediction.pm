@@ -13,7 +13,7 @@ package CbBio::RNASeq::TargetPrediction;
 require Exporter;
 $|=1;
 @ISA=qw(Exporter);
-@EXPORT=qw(TargetPrediction TargetPrediction_Summary);
+@EXPORT=qw(TargetPrediction TargetPrediction_Summary correlation);
 
 use strict;
 use LWP;
@@ -93,6 +93,7 @@ sub TargetPrediction{
 	my $verbose=$args{"verbose"}; #Optional arguments to show the execution data on screen
 	my $organism=$args{"organism"};
 	my $fc_threshold=$args{"fc_threshold"};
+	my $method=$args{"method"};
 	
 	my $miARmaPath=$args{"miARmaPath"};
 	use lib "$miARmaPath/lib/Perl";
@@ -247,8 +248,12 @@ sub TargetPrediction{
 		my $genes_edgeR_results;
 		my $genes_noiseq_results;
 		
-		####### miRNAs ########
+		my $miRNA_edgeR_RPKMs;
+		my $miRNA_noiseq_RPKMs;
+		my $genes_edgeR_RPKMs;
+		my $genes_noiseq_RPKMs;
 		
+		####### miRNAs ########		
 		print STDOUT "LOG :: " . date() . " Starting a miRNA-gene target prediction\n" if($verbose);
 		opendir(DIR, $args{"miRNAs_folder"}) || die $!;
 		my @files= readdir(DIR);
@@ -261,6 +266,7 @@ sub TargetPrediction{
 					opendir(DIR, $args{"miRNAs_folder"} ."/$file") || die "$! : ".$args{"miRNAs_folder"} ."/$file";
 					my @files= readdir(DIR);
 					@files=map($args{"miRNAs_folder"} ."/$file/$_",@files);
+					
 					foreach my $edger_files(@files){
 						if($edger_files =~ /\.xls$/){
 							my $output_file=fileparse($edger_files);
@@ -270,7 +276,13 @@ sub TargetPrediction{
 							    edger_cutoff=>$edgeR_cutoff,
 							    verbose=>$verbose,
 								fc_threshold=>$fc_threshold,
-								
+							);
+						}
+					}
+					foreach my $edger_files(@files){
+						if($edger_files =~ /RPKM\.tsv$/){
+							$miRNA_edgeR_RPKMs=get_RPKM(
+								file=>$edger_files
 							);
 						}
 					}
@@ -279,6 +291,7 @@ sub TargetPrediction{
 					opendir(DIR, $args{"miRNAs_folder"} ."/$file") || die "$! : ".$args{"miRNAs_folder"} ."/$file";
 					my @files= readdir(DIR);
 					@files=map($args{"miRNAs_folder"} ."/$file/$_",@files);
+					
 					foreach my $noise_files(@files){
 						if($noise_files =~ /\.xls$/){
 							$miRNA_noiseq_results->{$noise_files}=get_NoiSeq_data(
@@ -287,6 +300,13 @@ sub TargetPrediction{
 								verbose=>$verbose,
 								fc_threshold=>$fc_threshold,
 								
+							);
+						}
+					}
+					foreach my $noise_files(@files){
+						if($noise_files =~ /RPKM\.tsv$/){
+							$miRNA_noiseq_RPKMs=get_RPKM(
+								file=>$noise_files
 							);
 						}
 					}
@@ -312,8 +332,14 @@ sub TargetPrediction{
 							    edger_cutoff=>$edgeR_cutoff,
 							    verbose=>$verbose,
 								fc_threshold=>$fc_threshold,
-								
 							);
+						}
+					}
+					foreach my $edger_files(@files){
+						if($edger_files =~ /RPKM\.tsv$/){
+							$genes_edgeR_RPKMs=get_RPKM(
+								file=>$edger_files
+							)	
 						}
 					}
 				}
@@ -331,31 +357,58 @@ sub TargetPrediction{
 							);
 						}
 					}
+					foreach my $noise_files(@files){
+						if($noise_files =~ /RPKM\.tsv$/){
+							$genes_noiseq_RPKMs=get_RPKM(
+								file=>$noise_files
+							);
+						}
+					}
 				}
 			}
 		}
 
 		###### Both in miRGate ########
 		
+		foreach my $aa (keys %$genes_edgeR_results){
+			print $aa ."\n";
+			#me faltan la mitad de los genes
+		}
 		#edgeR
+		my $pares;
+		
 		foreach my $gene_edger_data (sort keys %$genes_edgeR_results){
 			my $g_o_edger=fileparse($gene_edger_data);
 			$g_o_edger=~s/\.xls$/_genes/;
 			foreach my $miRNA_files (sort keys %$miRNA_edgeR_results){
 				my $m_o_edger=fileparse($miRNA_files);
 				$m_o_edger=~s/\.xls$/_miRNAs/;
-				print STDOUT "LOG :: ".date()." Gathering Prediction from ".scalar(keys %{$miRNA_edgeR_results->{$miRNA_files}})." miRNAs in " . fileparse($miRNA_files) ." and ".scalar(keys %{$genes_edgeR_results->{$gene_edger_data}})." genes from " . fileparse($gene_edger_data) . " using miRGate\n" if($verbose);
+				print STDOUT "LOG :: ".date()." Gathering Prediction from ".scalar(keys %{$miRNA_edgeR_results->{$miRNA_files}})." miRNAs in " . fileparse($miRNA_files) ." and ".scalar(keys %{$genes_edgeR_results->{$gene_edger_data}})." genes from " . fileparse($gene_edger_data) . " using miRGate\n";# if($verbose);
 				
-				 miRGate(
+				 $pares=miRGate(
 				 	UTRs=>$genes_edgeR_results->{$gene_edger_data},
 				 	miRNAs=>$miRNA_edgeR_results->{$miRNA_files},
 				 	organism=>$organism,
 				 	verbose=>$verbose,
 				 	output=>$projectdir ."/miRGate_results/". $g_o_edger ."_" . $m_o_edger .".xls",
 				 );
+
+				 correlation(
+				 	pares=>$pares,
+					UTRs_rpkm=>$genes_edgeR_RPKMs,
+					miRNAs_rpkm=>$miRNA_edgeR_RPKMs,
+				 	organism=>$organism,
+				 	verbose=>$verbose,
+				 	output=>$projectdir ."/miRGate_results/". $g_o_edger,
+					miARmaPath=>$miARmaPath,
+					method=>$method,
+					DE_type=>"edgeR",
+					logfile=>$logfile
+				 );
 			}
 		}
 		#Noiseq
+		my $pares;
 		foreach my $gene_noiseq_data (sort keys %$genes_noiseq_results){
 			my $g_o_noiseq=fileparse($gene_noiseq_data);
 			$g_o_noiseq=~s/\.xls$/_genes/;
@@ -363,12 +416,25 @@ sub TargetPrediction{
 				my $m_o_noiseq=fileparse($miRNA_files);
 				$m_o_noiseq=~s/\.xls$/_miRNAs/;
 				print STDOUT "LOG :: ".date()." Gathering Prediction from ".scalar(keys %{$miRNA_noiseq_results->{$miRNA_files}})." miRNAs in " . fileparse($miRNA_files) ." and ".scalar(keys %{$genes_noiseq_results->{$gene_noiseq_data}})." genes from " . fileparse($gene_noiseq_data) . " using miRGate\n" if($verbose);
-				 miRGate(
+				 $pares=miRGate(
 				 	UTRs=>$genes_noiseq_results->{$gene_noiseq_data},
 				 	miRNAs=>$miRNA_noiseq_results->{$miRNA_files},
 				 	organism=>$organism,
 				 	verbose=>$verbose,
 				 	output=>$projectdir ."/miRGate_results/". $g_o_noiseq ."_" . $m_o_noiseq . ".xls",
+				 );
+				 correlation(
+				 	pares=>$pares,
+					UTRs_rpkm=>$genes_noiseq_RPKMs,
+					miRNAs_rpkm=>$miRNA_noiseq_RPKMs,
+				 	organism=>$organism,
+				 	verbose=>$verbose,
+				 	output=>$projectdir ."/miRGate_results/". $g_o_noiseq,
+					miARmaPath=>$miARmaPath,
+					method=>$method,
+					DE_type=>"NOISeq",
+					logfile=>$logfile
+					
 				 );
 			}
 		}
@@ -391,6 +457,7 @@ sub TargetPrediction{
 	print STDERR $usage;
 	exit(); 
 	}
+	return();
 }
 sub get_edgeR_data{
 	my %args=@_;
@@ -433,7 +500,7 @@ sub get_NoiSeq_data{
 	my $verbose=$args{"verbose"};
 	my $fc_threshold=$args{"fc_threshold"};
 	my $data;
-	print STDERR "LOG :: " . date() . " Reading $file (cut_off $noiseq_cutoff and fc_threshold $fc_threshold)\n" if($verbose);
+	print STDOUT "LOG :: " . date() . " Reading $file (cut_off $noiseq_cutoff and fc_threshold $fc_threshold)\n" if($verbose);
 	#Read edgeR data
 	open(NOISEQ,$file) || warn "cant find $file\n";
 	while(<NOISEQ>){
@@ -463,11 +530,13 @@ sub miRGate{
 	my $output_file=$args{"output"};
 	my $verbose=$args{"verbose"};
 
+	my $pares;
+	
 	my $miARmaPath=$args{"miARmaPath"};
 	use lib "$miARmaPath/lib/Perl";
 	use LWP::Simple;
 	my $parser;
-	#print STDERR "REcibidos un total de " . scalar(keys %$miRNAs) ." miRNAs y " . scalar(keys %$UTRs) ." genes\n";
+	#print STDERR "REcibidos un total de " . scalar(keys %$miRNAs) ." miRNAs y " . scalar(keys %$UTRs) ." genes y los guard en $output_file\n";
 	open (OUT,">$output_file") || warn "Cant create output ($output_file)\n";
 	print OUT "#miRNA\tmiRNA FC\tmiRNA FDR\tEnsembl Gene\tGene Symbol\tEnsembl Transcript\tGene FC\tGene FDR\tMethod\tTarget Site\tScore\tEnergy\n";
 	my $correct=0;
@@ -552,6 +621,12 @@ sub miRGate{
 					if(exists $UTRs->{$ensembl}->{DOWN}){
 						$fc=$UTRs->{$ensembl}->{DOWN}
 					}
+					elsif(exists $UTRs->{$hgnc}->{DOWN}){
+						$fc=$UTRs->{$hgnc}->{DOWN}
+					}
+					elsif(exists $UTRs->{$hgnc}->{UP}){
+						$fc=$UTRs->{$hgnc}->{UP}
+					}
 					else{
 						$fc=$UTRs->{$ensembl}->{UP}
 					}
@@ -568,21 +643,21 @@ sub miRGate{
 				}
 			}
 			else{
-				sleep 5;
+				sleep 2;
 				next;
 			}
 			foreach my $id (keys %$result){
 				foreach my $gene (keys %$UTRs){
 					if(($gene eq $result->{$id}->{EnsEMBL}) or ($gene eq $result->{$id}->{HGNC}) or ($gene eq $result->{$id}->{utr})){
 						if(exists ($UTRs->{$gene}->{DOWN}) and $miRNAs->{$miRNA}->{UP}){
+							$pares->{$miRNA}->{$result->{$id}->{HGNC} }++;
 							print OUT $miRNA ."\t" . $miRNAs->{$miRNA}->{UP} ."\t" . $result->{$id}->{EnsEMBL} ."\t" . $result->{$id}->{HGNC} ."\t" . $result->{$id}->{utr} ."\t" . $UTRs->{$gene}->{DOWN};
-							print OUT "\t" . $result->{$id}->{method} ."\t" . $result->{$id}->{target_site} ."\t" . $result->{$id}->{normalized_score} ."\t";
-							print OUT "\t" . $result->{$id}->{score} ."\t".$result->{$id}->{energy} ."\n";
+							print OUT "\t" . $result->{$id}->{method} ."\t" . $result->{$id}->{target_site} ."\t" . $result->{$id}->{score} ."\t".$result->{$id}->{energy} ."\n";
 						}
 						if(exists ($UTRs->{$gene}->{UP}) and $miRNAs->{$miRNA}->{DOWN}){
+							$pares->{$miRNA}->{$result->{$id}->{HGNC} }++;
 							print OUT $miRNA ."\t" . $miRNAs->{$miRNA}->{DOWN} ."\t" . $result->{$id}->{EnsEMBL} ."\t" . $result->{$id}->{HGNC} ."\t" . $result->{$id}->{utr} ."\t" . $UTRs->{$gene}->{UP};
-							print OUT "\t" . $result->{$id}->{method} ."\t" . $result->{$id}->{target_site} ."\t" . $result->{$id}->{normalized_score} ."\t";
-							print OUT "\t" . $result->{$id}->{score} ."\t".$result->{$id}->{energy} ."\n";
+							print OUT "\t" . $result->{$id}->{method} ."\t" . $result->{$id}->{target_site} ."\t" . $result->{$id}->{score} ."\t".$result->{$id}->{energy} ."\n";
 						}
 					}
 				}
@@ -595,9 +670,8 @@ sub miRGate{
 		print STDOUT "\t". date(). " miRGate:: No data for miRGate found in [ $miRNAs $UTRs ]\n" if($verbose);
 		return();
 	}
-	return();
+	return($pares);
 }
-
 sub TargetPrediction_Summary{
 	my %args=@_;
 	my $summary_file=$args{"summary"}; #Path of the logfile to write the execution data
@@ -677,11 +751,92 @@ sub TargetPrediction_Summary{
 		close SUMM;
 	}
 	closedir(DIR);
+	return();
 }
+sub get_RPKM{
+	my %args=@_;
+	my $file=$args{"file"};
+	my $resultado;
+	my $min;
+	open(FILE,$file) || warn "Can't read $file\n";
+	my $line=0;
+	while(<FILE>){
+		chomp;
+		if($line !=0){
+			$_=~ s/\"//g;
+			my(@data)=split(/\t/);
+			my $gene=shift @data;
+			$resultado->{$gene}=join(",",@data);
+			foreach my $rpkm(@data){
+				$min->{$rpkm}++;
+			}
+		}
+		$line++;
+	}
+	close FILE;
+	my @mins = sort { $a <=> $b } keys %$min;
+	$resultado->{MIN}=$mins[1];
+	return($resultado);
+}
+sub correlation{
 
+	my %args=@_;
+	my $pares= $args{"pares"};
+	my $output_file=$args{"output"};
+	my $gene_RPKM=$args{"UTRs_rpkm"};
+	my $miRNA_RPKM=$args{"miRNAs_rpkm"};
+	my $miARmaPath=$args{"miARmaPath"};
+	my $method=$args{"method"}|| "Pearson";
+	my $DE_type=$args{"DE_type"};
+	my $logfile=$args{"logfile"}; #Path of the logfile to write the execution data
+	
+	$output_file=~s/(.+)_\w+_\w+_results.*/$1/g;
+	$output_file=$output_file."_Integrative_DifferentiallyExpressed_miRNA_mRNA_$DE_type\_$method\_correlation.xls";
+	my ($tmp_file_tmp,$path)=fileparse($output_file);
+	my $tmp_file="$path/.$tmp_file_tmp";
+
+	print date()." Including an Integrative analysis based on ". ucfirst($method)." correlation ($DE_type)\n";
+	
+	my $interesting_miRNAs;
+	my $interesting_genes;
+	
+	open(TMP,">$tmp_file") || warn "Can't create integrative file $output_file\n";
+	foreach my $miRNA (sort keys %$pares){
+		$interesting_miRNAs->{$miRNA}++;
+		foreach my $gene (sort keys %{$pares->{$miRNA}}){
+			print TMP "$miRNA\t".$miRNA_RPKM->{$miRNA} ."\t$gene\t". $gene_RPKM->{$gene} ."\n";
+			$interesting_genes->{$gene}++;
+		}
+	}
+	
+	close TMP;
+	
+	my $R_cmd="R --no-save --silent --args $tmp_file ". lc($method) ." $output_file ". $miRNA_RPKM->{MIN} ." " . $gene_RPKM->{MIN} ." < $miARmaPath/lib/CbBio/RNASeq/R-Scripts/Cor.R >>$logfile";
+	#Executing the command or if system can't be executed die showing the error.
+	system($R_cmd) == 0
+	    or die "TargetPrediction :: Can't create correlation file: $? ($R_cmd)";
+		
+	my $output_file2=$output_file;
+	$output_file2=~s/_DifferentiallyExpressed//g;
+	
+	open(TMP,">$tmp_file") || warn "Can't create integrative file $output_file\n";
+	foreach my $miRNA (sort keys %{$interesting_miRNAs}){
+		foreach my $gene (keys %{$interesting_genes}){
+			print TMP "$miRNA\t".$miRNA_RPKM->{$miRNA} ."\t$gene\t". $gene_RPKM->{$gene} ."\n";
+		}
+	}
+	
+	close TMP;
+	
+	my $R_cmd="R --no-save --silent --args $tmp_file ". lc($method) ." $output_file2 ". $miRNA_RPKM->{MIN} ." " . $gene_RPKM->{MIN} ." < $miARmaPath/lib/CbBio/RNASeq/R-Scripts/Cor.R >>$logfile";
+	#Executing the command or if system can't be executed die showing the error.
+	system($R_cmd) == 0
+	    or die "TargetPrediction :: Can't create correlation file: $? ($R_cmd)";
+		
+	return();
+	
+}
 sub date{
-	#my $dt = DateTime->now(time_zone=>'local');
-	#return($dt->hms . " [" . $dt->dmy ."]");
 	use Time::localtime;
 	my $now = ctime();
 	return("[$now]");
