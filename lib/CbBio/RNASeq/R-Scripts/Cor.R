@@ -34,7 +34,13 @@ for(linea in 1:nrow(mydata)){
   result[linea,3]<-mycor$estimate[[1]]
   result[linea,4]<-mycor$p.value
 }
-colnames(result)<-c("miRNA","GeneName","R","P-value")
-result<-result[order(result$`P-value`),]
 
+colnames(result)<-c("miRNA","GeneName","R","P-value")
+
+
+result<-result[order(result$`P-value`),]
 write.table(result,row.names = F,file=myoutput,sep="\t")
+
+#result$FDR<-p.adjust(result$`P-value`,n=nrow(result))
+#result<-result[order(result$FDR),]
+#write.table(result[result$`P-value`<=0.05,],row.names = F,file=myoutput,sep="\t")

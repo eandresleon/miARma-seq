@@ -1102,7 +1102,7 @@ sub run_miARma{
 		 			edger_cutoff=>$cfg->val("FAnalysis","edger_cutoff") || 0.05,
 		 			noiseq_cutoff=>$cfg->val("FAnalysis","noiseq_cutoff") || 0.8,
 					miARmaPath=>$miARmaPath,
-					
+					fc_threshold=>$cfg->val("FAnalysis","fc_threshold")|| 0,					
 		 );
 		 
 		 F_AnalysisSummary(
