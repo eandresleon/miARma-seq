@@ -3,8 +3,8 @@
 #																		#
 #	Created at Computational Biology and Bioinformatics Group (CbBio)	#
 #	Institute of Biomedicine of Seville. IBIS (Spain)					#
-#	Copyright (c) 2017 IBIS. All rights reserved.						#
-#	mail : miARma-devel@cbbio.es 										#
+#	Copyright (c) 2018 IBIS. All rights reserved.						#
+#	mail : miARma-devel@idoproteins.com 										#
 #########################################################################
 
 package CbBio::RNASeq::miARma;
@@ -1546,15 +1546,15 @@ sub print_header{
 	system("clear");
 	print "#########################################################################	
 #   miARma, miRNA and RNASeq Multiprocess Analysis			#
-#                miARma v 1.7.2 (Dec-2017)                              #
+#                miARma v 1.7.3 (Jul-2018)                              #
 #               		                              		#
 #   Created at Computational Biology and Bioinformatics Group (CbBio)   #
 #   Institute of Biomedicine of Seville. IBIS (Spain)                   #
 #   Modified and Updated at Bioinformatics Unit at IPBLN-CSIC   	#
 #   Institue for Parasitology and Biomedicine Lopez-Neyra (IPBLN-CSIC). #
 #   Granada (Spain)             				        #
-#   Copyright (c) 2017 IBIS & IPBLN. All rights reserved.               #
-#   mail : miARma-devel\@cbbio.es                                        #
+#   Copyright (c) 2018 IBIS & IPBLN. All rights reserved.               #
+#   mail : miARma-devel\@idoproteins.com                                 #
 #########################################################################\n\n";
 }
 sub date{
