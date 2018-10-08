@@ -81,7 +81,7 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 
 ### How do I get set up? ###
 
-* [miARma can be installed using the following guide](http://idproteins.com/installation)
+* [miARma can be installed using the following guide](http://miarmaseq.idproteins.com/installation)
 
 
 ### Guidelines/How to ###
