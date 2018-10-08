@@ -81,17 +81,17 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 
 ### How do I get set up? ###
 
-* [miARma can be installed using the following guide](http://miarmaseq.idproteins.com/installation)
+* [miARma can be installed using the following guide](http://miarmaseq.idoproteins.com/installation)
 
 
 ### Guidelines/How to ###
 
-* [miRNAs guide](http://miarmaseq.idproteins.com/Documentation)
-* [mRNAs guide](http://miarmaseq.idproteins.com/Documentation)
-* [circRNAs guide](http://miarmaseq.idproteins.com/Documentation)
+* [miRNAs guide](http://miarmaseq.idoproteins.com/Documentation)
+* [mRNAs guide](http://miarmaseq.idoproteins.com/Documentation)
+* [circRNAs guide](http://miarmaseq.idoproteins.com/Documentation)
 
 ### Code Documentation ####
-* [Perldoc](http://miarmaseq.idproteins.com/PDoc/)
+* [Perldoc](http://miarmaseq.idoproteins.com/PDoc/)
 
 ### Who do I talk to? ###
 
