@@ -87,6 +87,7 @@ sub F_Analysis{
 	my $verbose=$args{"verbose"};
 	my $seq_id=$args{"seqid"}; #Type of entities used in differential expresion, genes (gene_id) or transcripts (transcript_id)
 	my $miARmaPath=$args{"miARmaPath"};
+	my $fc_threshold=$args{"fc_threshold"};
 	
 	my $dataset;
 	if(defined($args{"dataset"})){
@@ -106,6 +107,7 @@ sub F_Analysis{
 		$edger_dir=$projectdir ."/" . "EdgeR_results/";
 	}
 	#Checking mandatory parameters
+	my $check=0;
 	if($projectdir and $logfile and $organism and ($noiseq_dir or $edger_dir) and $seq_id){
 		print date() . " Starting a Functional Analysis.\n";
 		
@@ -115,7 +117,7 @@ sub F_Analysis{
 		if($edger_dir){
 			print LOG date() . " Starting a Functional Analysis based on edgeR data\n";
 			print STDOUT date() . " Starting a Functional Analysis based on edgeR data\n" if($verbose);
-			
+			$check=1;
 			my $edger_cutoff;
 			if(defined $args{"edger_cutoff"}){
 				$edger_cutoff=$args{"edger_cutoff"};
@@ -146,13 +148,13 @@ sub F_Analysis{
 						my($feature,$length,$fc,$cpm,$pvalue,$fdr)=split(/\t/);
 						$universe_edger_data->{$feature}++;
 						#filtering over-expressed
-						if($fdr<=$edger_cutoff and $fc>0){
+						if($fdr<=$edger_cutoff and $fc>=$fc_threshold){
 							$up_edger_data->{$feature}++;
 							$up_number++;
 							#last if scalar(keys %$up_edger_data)==5;
 						}
 						#filtering down-expressed
-						if($fdr<=$edger_cutoff and $fc<0){
+						if($fdr<=$edger_cutoff and $fc <($fc_threshold * -1)){
 							$down_edger_data->{$feature}++;
 							$down_number++;
 						}
@@ -190,6 +192,7 @@ sub F_Analysis{
 			#return();
 		}		
 		if($noiseq_dir){
+			$check=1;
 			print STDOUT date() . " Starting a Functional Analysis based on NoiSeq data\n" if($verbose);
 			print LOG date() . " Starting a Functional Analysis based on NoiSeq data\n";
 			my $noiseq_cutoff;
@@ -226,13 +229,13 @@ sub F_Analysis{
 						
 						$universe_noiseq_data->{$feature}++;
 						#filtering over-expressed
-						if($fdr>=$noiseq_cutoff and $fc>0){
+						if($fdr>=$noiseq_cutoff and $fc>=$fc_threshold){
 							$up_noiseq_data->{$feature}++;
 							$up_number++;
 							#last if scalar(keys %$up_edger_data)==5;
 						}
 						#filtering down-expressed
-						if($fdr>=$noiseq_cutoff and $fc <0){
+						if($fdr>=$noiseq_cutoff and $fc <($fc_threshold * -1)){
 							$down_noiseq_data->{$feature}++;
 							$down_number++;
 						}
@@ -271,8 +274,10 @@ sub F_Analysis{
 			#return();
 		}
 		else{
-			print STDERR date() ." WARN :: No files provided for functional anaysis, please check your edgeR folder ($edger_dir) and/or your NoiSeq folder ($noiseq_dir)\n";
-			return();
+			if($check ==0){
+				print STDERR date() ." WARN :: No files provided for functional anaysis, please check your edgeR folder ($edger_dir) and/or your NoiSeq folder ($noiseq_dir)\n";
+				return();
+			}
 		}
 		print date() . " Functional Analysis finished.\n";
 		return();
