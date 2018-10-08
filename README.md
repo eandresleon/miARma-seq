@@ -11,7 +11,7 @@ Modified and Updated at Bioinformatics Unit at IPBLN-CSIC (Institue for Parasito
 Granada (Spain). 
 Copyright (c) 2018 IBIS & IPBLN. All rights reserved.
 
-### miARma 1.7.5 release (08/Oct/18) ###
+### miARma 1.7.5 release (22/Sep/18) ###
 New utilities have been included and publisehd in a new [scientific article](https://www.ncbi.nlm.nih.gov/pubmed/30253202). An example to integrate miRNA and mRNA data to infer potential regulation partners is included in a [GitHub repository](https://github.com/eandresleon/miRNA-mRNA_Integration).
 
  * The possibility of integrating data from miRNAs and mRNAs
