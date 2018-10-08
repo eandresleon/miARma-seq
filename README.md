@@ -9,7 +9,15 @@ Created at Computational Biology and Bioinformatics Group (CbBio)
 Institute of Biomedicine of Seville. IBIS (Spain)
 Modified and Updated at Bioinformatics Unit at IPBLN-CSIC (Institue for Parasitology and Biomedicine Lopez-Neyra, CSIC).
 Granada (Spain). 
-Copyright (c) 2017 IBIS & IPBLN. All rights reserved.
+Copyright (c) 2018 IBIS & IPBLN. All rights reserved.
+
+### miARma 1.7.5 release (08/Oct/18) ###
+New utilities have been included and publisehd in a new [scientific article](https://www.ncbi.nlm.nih.gov/pubmed/30253202). An example to integrate miRNA and mRNA data to infer potential regulation partners is included in a [GitHub repository](https://github.com/eandresleon/miRNA-mRNA_Integration).
+
+ * The possibility of integrating data from miRNAs and mRNAs
+ * A statistical correlation (Pearson/Spearman) can be calculated to infer linked miRNA/mRNA expression profiles
+ * miRNA/mRNA target prediction based on statstical correlated pairs
+ 
 
 ### miARma 1.7.2 release (18/Dec/17) ###
 Minor bugs fixed.
