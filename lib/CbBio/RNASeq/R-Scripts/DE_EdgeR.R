@@ -250,7 +250,7 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         y_rpkm[y_rpkm==0] <- NA
         y_rpkm <- replace(y_rpkm, is.na(y_rpkm), min(na.omit(y_rpkm)))
         
-        plot_barplot(selected_FC,log(y_rpkm))
+        plot_barplot(unique(selected_FC),log(y_rpkm))
         
         #Printing the date and information of the proccess
         time<-Sys.time()
