@@ -890,7 +890,7 @@ sub Integration{
 	
 	$output_file=~s/(.+)_\w+_\w+_results.*/$1/g;
 	$output_file=$output_file."_Integrative_DE_miRNA_mRNA_pairs_statistical_correlation.xls";
-	print STDERR "Generating $output_file\n";
+	#print STDERR "Generating $output_file\n";
 	open(OUT,">$output_file") || die "Can't create $output_file\n";
 	print OUT "GeneName\tmiRNA\tGene logFC\tmiRNA logFC\tPrediction Method\tTarget Site\tR coefficient\tCorrelation P-val\n";
 	foreach my $miR (sort keys %{$corr_pairs}){
