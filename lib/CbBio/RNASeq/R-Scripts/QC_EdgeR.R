@@ -64,14 +64,23 @@ QC_EdgeR<-function(projectdir,dir,file,targetfile,label,filter, cpmvalue=1, rept
   list.of.packages <- c("ggplot2", "Rcpp","edgeR","NOISeq","gplots","lattice","genefilter","RColorBrewer")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)){
-    
-    #install.packages(new.packages)
-    source("http://bioconductor.org/biocLite.R")
-  biocLite(new.packages,
-           suppressUpdates=T,
-           suppressAutoUpdate=T,
-           ask=F)
+                
+  	if(R.version$minor>5){
+  		if (!requireNamespace("BiocManager"))
+  		install.packages("BiocManager")
+  		BiocManager::install(new.packages,
+  		update = F, 
+  		ask = F)
+  	}
+  	else{
+  		source("http://bioconductor.org/biocLite.R")
+  		biocLite(new.packages,
+  	                   suppressUpdates=T,
+  	                   suppressAutoUpdate=T,
+  					   ask=F)
+  	}
   }
+  
   
   #Loading the needed packagge
   require(edgeR)

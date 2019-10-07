@@ -63,13 +63,21 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	list.of.packages <- c("goseq","biomaRt","Hmisc","geneLenDataBase","GO.db","org.Hs.eg.db")
 	new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 	if(length(new.packages)){
-		
-		#install.packages(new.packages)
-		source("http://bioconductor.org/biocLite.R")
-	  biocLite(new.packages,
-	           suppressUpdates=T,
-	           suppressAutoUpdate=T,
-	           ask=F)
+                
+		if(R.version$minor>5){
+			if (!requireNamespace("BiocManager"))
+			install.packages("BiocManager")
+			BiocManager::install(new.packages,
+			update = F, 
+			ask = F)
+		}
+		else{
+			source("http://bioconductor.org/biocLite.R")
+			biocLite(new.packages,
+		                   suppressUpdates=T,
+		                   suppressAutoUpdate=T,
+						   ask=F)
+		}
 	}
 
 	#Loading the needed packagge
