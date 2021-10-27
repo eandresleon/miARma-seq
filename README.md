@@ -1,6 +1,9 @@
 # miARma WebPage #
+This is a new repository created in Oct 2021 to store the source code and the guides from miARma-seq. The guides will be available soon in the wiki.
 
-miARma web page that includes guides, installation details and examples has been moved to [http://miarmaseq.com](http://miarmaseq.com)
+This repository contains the source code published in:
+- Andrés-León E, Rojas AM. miARma-Seq, a comprehensive pipeline for the simultaneous study and integration of miRNA and mRNA expression data. Methods. 2019 Jan 1;152:31-40. doi: 10.1016/j.ymeth.2018.09.002. Epub 2018 Sep 22. PMID: 30253202.
+- Andrés-León E, Núñez-Torres R, Rojas AM. miARma-Seq: a comprehensive tool for miRNA, mRNA and circRNA analysis. Sci Rep. 2016 May 11;6:25749. doi: 10.1038/srep25749. Erratum in: Sci Rep. 2018 Jan 08;8:46928. PMID: 27167008; PMCID: PMC4863143.
 
 # miARma #
 
