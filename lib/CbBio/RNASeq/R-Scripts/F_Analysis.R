@@ -63,13 +63,21 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	list.of.packages <- c("goseq","biomaRt","Hmisc","geneLenDataBase","GO.db","org.Hs.eg.db")
 	new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 	if(length(new.packages)){
-		
-		#install.packages(new.packages)
-		source("http://bioconductor.org/biocLite.R")
-	  biocLite(new.packages,
-	           suppressUpdates=T,
-	           suppressAutoUpdate=T,
-	           ask=F)
+                
+		if(R.version$minor>5){
+			if (!requireNamespace("BiocManager"))
+			install.packages("BiocManager")
+			BiocManager::install(new.packages,
+			update = F, 
+			ask = F)
+		}
+		else{
+			source("http://bioconductor.org/biocLite.R")
+			biocLite(new.packages,
+		                   suppressUpdates=T,
+		                   suppressAutoUpdate=T,
+						   ask=F)
+		}
 	}
 
 	#Loading the needed packagge
@@ -126,17 +134,22 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 		  mart=ensembl,
 		  uniqueRows=T
 		)
+		#up
 		idx<-match(up,mapping_table$ensembl_transcript_id)
 		up_entrez<-mapping_table[idx,1]
-
 		genes_up<-as.integer(unique(mapping_table$ensembl_gene_id) %nin% up_entrez)
-
 		names(genes_up)<-unique(mapping_table$ensembl_gene_id)
-
+		#down
 		idx<-match(down,mapping_table$ensembl_transcript_id)
 		down_entrez<-mapping_table[idx,1]
 		genes_down<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% down_entrez)
 		names(genes_down)<-unique(mapping_table$ensembl_gene_id)
+  	    #de
+  	    all_de<-c(up,down)
+  	    idx<-match(all_de,mapping_table$ensembl_transcript_id)
+  	    de_entrez<-mapping_table[idx,1]
+  	    genes_de<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% de_entrez)
+  	    names(genes_de)<-unique(mapping_table$ensembl_gene_id)
 		
 	} else if(tolower(seq_id)=="gene_name" ){
 	  mapping_table<-getBM(
@@ -145,19 +158,27 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	    mart=ensembl,
 	    uniqueRows=T
 	  )
-	  idx<-match(up,mapping_table$ensembl_transcript_id)
+	  #up
+	  idx<-match(up,mapping_table$external_gene_name)
 	  up_entrez<-mapping_table[idx,1]
-	  
 	  genes_up<-as.integer(unique(mapping_table$ensembl_gene_id) %nin% up_entrez)
-	  
 	  names(genes_up)<-unique(mapping_table$ensembl_gene_id)
 	  
-	  idx<-match(down,mapping_table$ensembl_transcript_id)
+	  #down
+	  idx<-match(down,mapping_table$external_gene_name)
 	  down_entrez<-mapping_table[idx,1]
 	  genes_down<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% down_entrez)
 	  names(genes_down)<-unique(mapping_table$ensembl_gene_id)
 	  
-	}	else{
+	  #de
+	  all_de<-c(up,down)
+	  idx<-match(all_de,mapping_table$external_gene_name)
+	  de_entrez<-mapping_table[idx,1]
+	  genes_de<-as.integer(unique(mapping_table$ensembl_gene_id)  %nin% de_entrez)
+	  names(genes_de)<-unique(mapping_table$ensembl_gene_id)
+	  table(genes_de)
+	  
+	}else{
 		genes_up<-as.integer(unique(universe) %nin% up)
 		names(genes_up)<-unique(universe)
 		genes_down<-as.integer(unique(universe) %nin% down)
@@ -172,28 +193,34 @@ F_Analysis<-function(projectdir,up,down,universe,organism,method,seq_id,mydatase
 	go_dw<-try(goseq(pwf_dw,mybuild,'ensGene',method="Wallenius",test.cats=c("GO:CC", "GO:BP", "GO:MF","KEGG")),silent=T)
 	file_down<-paste(method,"_", label, "_FAnalysys_Down.xls",sep="")
 	
+	pwf_de=try(nullp(genes_de,mybuild,"ensGene",plot.fit=F),silent=T)
+	go_de<-try(goseq(pwf_de,mybuild,'ensGene',method="Wallenius",test.cats=c("GO:CC", "GO:BP", "GO:MF","KEGG")),silent=T)
+	file_de<-paste(method,"_", label, "_FAnalysys_DE.xls",sep="")
+	
 	
 	pathways<-mapPathwayToName()
-	#up
-	if( (!is.null(nrow(go_up)))&(!is.null(nrow(go_dw)))){
+	if( (!is.null(nrow(go_up)))&(!is.null(nrow(go_dw)))&(!is.null(nrow(go_de)))){
+		#up
 		go_up[is.na(go_up$ontology),"ontology"] <- "KEGG"
-		# 
 		kegg_up<-go_up[go_up$ontology=="KEGG",]
 		go_up<-go_up[-grep("KEGG",go_up$ontology),]
 		kegg_up$term<-pathways[match(kegg_up$category,pathways$path),2]
-		# 
 		write.table(file=file_up,rbind(go_up,kegg_up),sep="\t",col.names=T,row.names=F)
 		# down
 		go_dw[is.na(go_dw$ontology),"ontology"] <- "KEGG"
-	
 		kegg_dw<-go_dw[go_dw$ontology=="KEGG",]
 		go_dw<-go_dw[-grep("KEGG",go_dw$ontology),]
-	
 		kegg_dw$term<-pathways[match(kegg_dw$category,pathways$path),2]
-	
 		write.table(file=file_down,rbind(go_dw,kegg_dw),sep="\t",col.names=T,row.names=F)
+		# de
+		go_de[is.na(go_de$ontology),"ontology"] <- "KEGG"
+		kegg_de<-go_de[go_de$ontology=="KEGG",]
+		go_de<-go_de[-grep("KEGG",go_de$ontology),]
+		kegg_de$term<-pathways[match(kegg_de$category,pathways$path),2]
+		write.table(file=file_de,rbind(go_de,kegg_de),sep="\t",col.names=T,row.names=F)
+		
 		resultsfiles<-NA
-		resultsfiles<-(c(file_up,file_down))
+		resultsfiles<-(c(file_up,file_down,file_de))
 		return(resultsfiles);
 	}	else{
 		return(NA)

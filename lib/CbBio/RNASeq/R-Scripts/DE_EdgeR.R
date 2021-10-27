@@ -61,7 +61,7 @@ Optional arguments:
 }
 
 
-DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cpmvalue=1, repthreshold=2, normethod="TMM", replicates="yes", bcvvalue=0.4,rpkm=F,cpm=F,file_size=F){
+DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cpmvalue=1, repthreshold=2, normethod="TMM", replicates="yes", bcvvalue=0.4,rpkm=T,cpm=F,file_size=F){
   
   #Checking the mandatory parameters
   if(missing(projectdir) | missing(dir) | missing(file) | missing(targetfile) | missing(label) | missing(filter) | missing(contrastfile)){
@@ -75,21 +75,31 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
   #########################################################################
   
   #installing need packages
-	list.of.packages <- c("ggplot2", "Rcpp","edgeR","NOISeq","gplots","lattice","genefilter","RColorBrewer")
+	list.of.packages <- c("ggplot2", "Rcpp","edgeR","NOISeq","gplots","lattice","genefilter","RColorBrewer","ggrepel")
 	new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 	if(length(new.packages)){
-		
-		#install.packages(new.packages)
-		source("http://bioconductor.org/biocLite.R")
-  	  biocLite(new.packages,
-  	           suppressUpdates=T,
-  	           suppressAutoUpdate=T,
-  	           ask=F)
+                
+		if(R.version$minor>5){
+			if (!requireNamespace("BiocManager"))
+			install.packages("BiocManager")
+			BiocManager::install(new.packages,
+			update = F, 
+			ask = F)
+		}
+		else{
+			source("http://bioconductor.org/biocLite.R")
+			biocLite(new.packages,
+		                   suppressUpdates=T,
+		                   suppressAutoUpdate=T,
+						   ask=F)
+		}
 	}
 
   #Loading the needed packagge
   require(edgeR)
-  
+  library("genefilter")
+  library("ggplot2")
+  library("ggrepel")
   #Printing the date and information of the proccess
   time<-Sys.time()
   message<-paste(time, " Starting Differential expression analysis with EdgeR of ", label,"\n", sep="")
@@ -216,6 +226,40 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         abline(h = c(-2, 2), col = "indianred")
         #Saving the path of the results file to return it to the function
         filepaths[a]<-resultsfile
+        
+		    #volcano plot
+        data<-top$table
+        data$threshold = data$FDR < 0.05
+        
+        data[data$FDR > 0.05,"threshold"]<-"NoDE"
+        data[data$FDR <= 0.05,"threshold"]<-"DE"
+        
+        de_data<-data[data$FDR<=0.05,]
+        
+        selected_FC<-rbind(head(de_data[order(de_data$logFC,decreasing = T),], 10),head(de_data[order(de_data$logFC,decreasing = F),],10))
+        g = ggplot(data=data, aes(x=logFC, y=-log10(FDR), colour=threshold)) +
+          geom_point(alpha=0.4, size=1.75) +
+          xlab("log2 fold change") + ylab("-log10 FDR") +
+          geom_text_repel(data=selected_FC, aes(label=rownames(selected_FC)),colour="black",size=3) #adding text for the top 20 genes
+        
+        plot(g)
+
+        #bar plots
+        
+        plot_barplot<-function(mydata,rpkm){
+          genes<-rownames(mydata)
+          FC<-mydata$logFC
+          for(gene in genes){
+            FC<-round(mydata[rownames(mydata)==gene,]$logFC,2)
+            boxplot(split(as.numeric(rpkm[gene,]),contrastval),col=c("salmon","lightblue"),main=paste("Relative ", gene, " expression (logFC:",FC,")",sep=""), ylab="log(RPKM)")
+          }
+        }
+        
+        y_rpkm[y_rpkm==0] <- NA
+        y_rpkm <- replace(y_rpkm, is.na(y_rpkm), min(na.omit(y_rpkm)))
+        
+        plot_barplot(unique(selected_FC),log(y_rpkm))
+        
         #Printing the date and information of the proccess
         time<-Sys.time()
         message<-paste(time, " The file ", resultsfile ," has been generated in ", projectdir," for ",contrastsname[1]," comparison\n", sep="")
@@ -267,6 +311,23 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         detags <- rownames(dgenorm)[as.logical(de)]
         plotSmear(lrt, de.tags=detags, col="forestgreen", main=paste("Expression plot of ", contrastsname[1], sep=""), cex=0.3)
         abline(h = c(-2, 2), col = "indianred")
+        
+        #volcano plot
+		
+        de_data<-top$table
+        de_data$threshold = de_data$FDR < 0.05
+        
+        de_data[de_data$FDR > 0.05,"threshold"]<-"NoDE"
+        de_data[de_data$FDR <= 0.05,"threshold"]<-"DE"
+        
+        selected_FC<-rbind(head(de_data[order(de_data$logFC,decreasing = T) & de_data$FDR<=0.05,], 5),head(de_data[order(de_data$logFC,decreasing = F) & de_data$FDR<=0.05,],5))
+        g = ggplot(data=de_data, aes(x=logFC, y=-log10(FDR), colour=threshold)) +
+          geom_point(alpha=0.4, size=1.75) +
+          xlab("log2 fold change") + ylab("-log10 FDR") +
+          geom_text_repel(data=selected_FC, aes(label=rownames(selected_FC)),colour="black",size=3) #adding text for the top 20 genes
+        
+        plot(g)
+        
         #Printing the date and information of the proccess
         time<-Sys.time()
         message<-paste(time, " The file ", resultsfile ," has been generated in ", projectdir," for ",contrastsname[1]," comparison\n", sep="")
@@ -298,6 +359,21 @@ DE_EdgeR<-function(projectdir,dir,file,targetfile,label,contrastfile, filter, cp
         abline(h = c(-2, 2), col = "indianred")
         #Saving the path of the results file to return it to the function
         filepaths[a]<-resultsfile
+        
+        #volcano plot
+        de_data<-top$table
+        de_data$threshold = de_data$FDR < 0.05
+        
+        de_data[de_data$FDR > 0.05,"threshold"]<-"NoDE"
+        de_data[de_data$FDR <= 0.05,"threshold"]<-"DE"
+        
+        selected_FC<-rbind(head(de_data[order(de_data$logFC,decreasing = T) & de_data$FDR<=0.05,], 5),head(de_data[order(de_data$logFC,decreasing = F) & de_data$FDR<=0.05,],5))
+        g = ggplot(data=de_data, aes(x=logFC, y=-log10(FDR), colour=threshold)) +
+          geom_point(alpha=0.4, size=1.75) +
+          xlab("log2 fold change") + ylab("-log10 FDR") +
+          geom_text_repel(data=selected_FC, aes(label=rownames(selected_FC)),colour="black",size=3) #adding text for the top 20 genes
+        
+        plot(g)
         #Printing the date and information of the proccess
         time<-Sys.time()
         message<-paste(time, " The file ", resultsfile ," has been generated in ", projectdir," for ",contrastsname[1]," comparison\n", sep="")

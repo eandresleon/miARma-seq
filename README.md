@@ -9,7 +9,18 @@ Created at Computational Biology and Bioinformatics Group (CbBio)
 Institute of Biomedicine of Seville. IBIS (Spain)
 Modified and Updated at Bioinformatics Unit at IPBLN-CSIC (Institue for Parasitology and Biomedicine Lopez-Neyra, CSIC).
 Granada (Spain). 
-Copyright (c) 2017 IBIS & IPBLN. All rights reserved.
+Copyright (c) 2019 IBIS & IPBLN. All rights reserved.
+
+### miARma 1.7.6 release (07/Oct/19) ###
+The latest Bioconductor versions that use R3.5 and R.6 install the packages differently than the other versions. So miARma has been modified to take this into account.
+ 
+### miARma 1.7.5 release (22/Sep/18) ###
+New utilities have been included and publisehd in a new [scientific article](https://www.ncbi.nlm.nih.gov/pubmed/30253202). An example to integrate miRNA and mRNA data to infer potential regulation partners is included in a [GitHub repository](https://github.com/eandresleon/miRNA-mRNA_Integration).
+
+ * The possibility of integrating data from miRNAs and mRNAs
+ * A statistical correlation (Pearson/Spearman) can be calculated to infer linked miRNA/mRNA expression profiles
+ * miRNA/mRNA target prediction based on statstical correlated pairs
+ 
 
 ### miARma 1.7.2 release (18/Dec/17) ###
 Minor bugs fixed.
@@ -73,17 +84,17 @@ miARma-Seq is a tool that provides an easy and common interface to various analy
 
 ### How do I get set up? ###
 
-* [miARma can be installed using the following guide](http://idproteins.com/installation)
+* [miARma can be installed using the following guide](http://miarmaseq.idoproteins.com/installation)
 
 
 ### Guidelines/How to ###
 
-* [miRNAs guide](http://miarmaseq.idproteins.com/Documentation)
-* [mRNAs guide](http://miarmaseq.idproteins.com/Documentation)
-* [circRNAs guide](http://miarmaseq.idproteins.com/Documentation)
+* [miRNAs guide](http://miarmaseq.idoproteins.com/Documentation)
+* [mRNAs guide](http://miarmaseq.idoproteins.com/Documentation)
+* [circRNAs guide](http://miarmaseq.idoproteins.com/Documentation)
 
 ### Code Documentation ####
-* [Perldoc](http://miarmaseq.idproteins.com/PDoc/)
+* [Perldoc](http://miarmaseq.idoproteins.com/PDoc/)
 
 ### Who do I talk to? ###
 
